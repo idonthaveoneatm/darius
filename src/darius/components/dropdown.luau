@@ -1,0 +1,610 @@
+local darius = script.Parent.Parent
+
+return function(property)
+	local Bundles = require(darius.Bundles)
+	local data = Bundles.data
+	local theme = Bundles.themeSystem
+	local icons = Bundles.icons
+	local Fusion = Bundles.Fusion
+		local new = Fusion.New
+		local children = Fusion.Children
+		local value = Fusion.Value
+		local observe = Fusion.Observer
+		local onevent = Fusion.OnEvent
+		local computed = Fusion.Computed
+		local ref = Fusion.Ref
+
+	local utilities = require(darius.utilities)
+	local get = utilities.get
+	local animate = utilities.animate
+	local typecheck = utilities.typecheck
+	local customFont = utilities.customFont
+
+	local simpleElements = require(darius.simpleElements)
+	local UIListLayout = simpleElements.UIListLayout
+	local UIPadding = simpleElements.UIPadding
+	local UICorner = simpleElements.UICorner
+	local SO = Enum.SortOrder
+	local FD = Enum.FillDirection
+	local HA = Enum.HorizontalAlignment
+	local VA = Enum.VerticalAlignment
+
+	-- Typecheck
+
+	local didPass, failedItems = typecheck(property,{
+		Name = "",
+		DisabledText = "",
+        FLAG = "",
+        IsEnabled = false,
+        Callback = function()end,
+        Items = {},
+        Multiselect = true,
+        Regex = function()end
+	},{
+		property.DisabledText and "" or "DisabledText",
+		property.FLAG and "" or "FLAG",
+		property.IsEnabled and "" or "IsEnabled",
+		property.Multiselect and "" or "Multiselect",
+		property.Regex and "" or "Regex",
+	})
+	assert(didPass, table.concat(failedItems, "\n"))
+
+	didPass, failedItems = typecheck(property,{
+		Default = property.Multiselect and {} or ""
+	},{
+		property.Default and "" or "Default",
+	})
+	assert(didPass, table.concat(failedItems, "\n"))
+
+	assert(property.Regex and property.Regex("") ~= nil, "no work regex")
+
+	-- Data
+
+	local selectedTab = data.find("selectedTab")
+	local useConfig = data.find("useConfig")
+	local flags = data.find("flags")
+	local configLoaded = data.find("configLoaded")
+	local searchText = data.find("searchText")
+	local dropdown = data.add(property)
+
+	-- Properties
+
+	local _parent = property.Parent
+	local name = property.Name
+	local callback = property.Callback
+	local items = value({})
+	local isEnabled = property.IsEnabled or value(true)
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
+	local multiselect = property.Multiselect or value(false)
+	local flag =  property.FLAG or value("")
+	local hasFlag = false
+	if get(flag) ~= "" then
+		local _names = get(flags.names)
+		assert(not table.find(_names, get(flag)), ('FLAG "%s" already exists'):format(get(flag)))
+		table.insert(_names, get(flag))
+		flags:update("names", _names)
+		hasFlag = true
+	end
+
+	-- Variables
+
+	local dropdownRef = value()
+	local searchRef = value()
+
+	local isDropped = value(false)
+	local lastReturnedValue = value(get(multiselect) and {} or "")
+	local selectedItems = value({})
+	local itemElements = value({})
+	local hasSelectedAll = value(false)
+	observe(selectedItems):onChange(function()
+		if #get(selectedItems) == #get(items) then
+			hasSelectedAll:set(true)
+		else
+			hasSelectedAll:set(false)
+		end
+		if get(multiselect) then
+			local _cbTable = {}
+			for _,v in get(selectedItems) do
+				table.insert(_cbTable, get(regex)(v))
+			end
+			task.spawn(get(callback), _cbTable)
+			lastReturnedValue:set(get(selectedItems))
+		else
+			task.spawn(get(callback), get(regex)(get(selectedItems)[1]))
+			lastReturnedValue:set(get(regex)(get(selectedItems)[1]))
+		end
+	end)
+	observe(items):onChange(function()
+		if #get(selectedItems) == #get(items) then
+			hasSelectedAll:set(true)
+		else
+			hasSelectedAll:set(false)
+		end
+	end)
+
+	local isSelected = value(get(selectedTab.string) == get(dropdown.tab).uid)
+	observe(selectedTab.string):onChange(function()
+		isSelected:set(get(selectedTab.string) == get(dropdown.tab).uid)
+	end)
+	local selectedAnimation = animate(function()
+		return get(isSelected) and 0 or 1
+	end, 40, 1)
+	local function configLoad()
+		if get(configLoaded.boolean) then
+			local savedFlag = get(flags.list)[get(flag)]
+			local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = {}})
+			if savedFlag and _didPass then
+				selectedItems:set(savedFlag)
+			end
+			observe(selectedItems):onChange(function()
+				local _list = get(flags.list)
+				_list[get(flag)] = get(selectedItems)
+				flags:update("list", _list)
+			end)
+		end
+	end
+
+	-- Dropdown
+
+	new "Frame" {
+		Parent = _parent,
+		Visible = computed(function()
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+				return false
+			end
+			return true
+		end),
+		Size = animate(function()
+			if get(isDropped) and get(dropdownRef) then
+				local _dropdown = get(dropdownRef)
+				local y = 3
+				for _,child in _dropdown:GetChildren() do
+					if child:IsA("UIListLayout") or child:IsA("UICorner") or not child.Visible then
+						continue
+					end
+					y += (4 + child.Size.Y.Offset)
+				end
+				return UDim2.new(1,0,0,y)
+			end
+			return UDim2.new(1,0,0,36)
+		end, 40, 1),
+		BackgroundColor3 = theme.background2,
+		BackgroundTransparency = selectedAnimation,
+		ClipsDescendants = true,
+
+		[ref] = dropdownRef,
+
+		[children] = {
+			UICorner(6),
+			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,4)),
+			new "TextButton" {
+				Interactable = computed(function()
+					if not get(isEnabled) then
+						return false
+					end
+					return get(isSelected)
+				end),
+				Size = UDim2.new(1,0,0,36),
+				BackgroundTransparency = 1,
+
+				[onevent "Activated"] = function()
+					isDropped:set(not get(isDropped))
+				end,
+
+				[children] = {
+					new "Frame" { -- Disabled Frame
+						ZIndex = 2,
+						Visible = computed(function()
+							if not get(isEnabled)  then
+								return true
+							end
+							return false
+						end),
+						BackgroundTransparency = animate(function()
+							return get(isSelected) and 0.2 or 1
+						end,40,1),
+						BackgroundColor3 = theme.disabledBackground,
+						Size = UDim2.fromScale(1,1),
+
+						[children] = {
+							UICorner(6),
+							new "ImageLabel" { -- Icon
+								Size = UDim2.fromOffset(24,24),
+								AnchorPoint = Vector2.new(0,0.5),
+								Position = UDim2.new(0,5,0.5,0),
+								BackgroundTransparency = 1,
+								Image = icons.lock,
+								ImageColor3 = theme.disabledText,
+								ImageTransparency = selectedAnimation,
+							},
+							new "TextLabel" {
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								BackgroundTransparency = 1,
+								Size = UDim2.new(1,-24,0,18),
+								TextColor3 = theme.disabledText,
+								TextTransparency = selectedAnimation,
+								TextScaled = true,
+								AnchorPoint = Vector2.new(0,0.5),
+								Position = UDim2.new(0,29,0.5,0),
+								Text = computed(function()
+									return get(disabledText)
+								end),
+								TextXAlignment = Enum.TextXAlignment.Left,
+								RichText = true,
+
+								[children] = {
+									UIPadding(0,5)
+								}
+							}
+						}
+					},
+					new "Frame" {
+						Size = UDim2.fromScale(1,1),
+						BackgroundTransparency = 1,
+						[children] = {
+							UIPadding(8),
+							new "TextLabel" {
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								Size = UDim2.new(1,-39,0,18),
+								BackgroundTransparency = 1,
+								TextColor3 = theme.text,
+								TextScaled = true,
+								AnchorPoint = Vector2.new(0,0.5),
+								Position = UDim2.new(0,0,0.5,0),
+								Text = computed(function()
+									if get(multiselect) then
+										return get(name).." "..tostring(#get(selectedItems)).."/"..tostring(#get(items))
+									end
+									return get(name)..": "..get(lastReturnedValue)
+								end),
+								TextTransparency = selectedAnimation,
+								TextXAlignment = Enum.TextXAlignment.Left,
+								RichText = true
+							},
+							new "ImageLabel" {
+								Size = UDim2.fromOffset(24,24),
+								AnchorPoint = Vector2.new(1,0.5),
+								Position = UDim2.new(1,0,0.5,0),
+								BackgroundTransparency = 1,
+								Image = computed(function()
+									return get(multiselect) and icons.multiDropdown or icons.normalDropdown
+								end),
+								ImageColor3 = theme.text2,
+								ImageTransparency = selectedAnimation
+							}
+						}
+					}
+				}
+			},
+			new "Frame" {
+				Size = UDim2.new(1,0,0,32),
+				BackgroundTransparency = 1,
+				[children] = {
+					UIPadding(0,6),
+					new "TextBox" {
+						Size = UDim2.fromScale(1,1),
+						BackgroundColor3 = theme.background,
+						BackgroundTransparency = selectedAnimation,
+						FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+						TextXAlignment = Enum.TextXAlignment.Left,
+						TextScaled = true,
+						PlaceholderText = "Search",
+						TextColor3 = theme.text,
+						TextTransparency = selectedAnimation,
+
+						[ref] = searchRef,
+
+						[onevent "Changed"] = function(changedProperty)
+							local search = get(searchRef)
+							if changedProperty == "Text" and search and search.Text then
+								local text = search.Text
+								for _,item in get(itemElements) do
+									if string.find(get(regex)(item.Name), text) or text == "" then
+										item.Visible = true
+									else
+										item.Visible = false
+									end
+								end
+							end
+						end,
+
+						[children] = {
+							new "UITextSizeConstraint" {
+								MinTextSize = 0,
+								MaxTextSize = 16
+							},
+							UICorner(4),
+							UIPadding(6,6,6,6)
+						}
+					}
+				}
+			},
+			new "Frame" {
+				Size = UDim2.new(1,0,0,32),
+				BackgroundTransparency = 1,
+				Visible = multiselect,
+				[children] = {
+					UIPadding(6,6,0,6),
+					new "TextButton" {
+						Interactable = multiselect,
+						Size = UDim2.new(1,0,0,24),
+						BackgroundTransparency = selectedAnimation,
+						BackgroundColor3 = theme.background,
+
+						[onevent "Activated"] = function()
+							local tableToSet = {}
+							if not get(hasSelectedAll) then
+								for _,item in get(items) do
+									item = typeof(item) == "table" and item.Value or item
+									table.insert(tableToSet, get(regex)(item))
+								end
+							end
+							selectedItems:set(tableToSet)
+						end,
+
+						[children] = {
+							UICorner(4),
+							UIPadding(8),
+							new "TextLabel" {
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								Size = UDim2.new(1,0,0,14),
+								BackgroundTransparency = 1,
+								TextColor3 = theme.text2,
+								TextScaled = true,
+								AnchorPoint = Vector2.new(0,0.5),
+								Position = UDim2.new(0,0,0.5,0),
+								Text = computed(function()
+									if get(hasSelectedAll) then
+										return "Deselect All"
+									end
+									return "Select All"
+								end),
+								TextTransparency = selectedAnimation,
+								TextXAlignment = Enum.TextXAlignment.Left,
+								RichText = true
+							}
+						}
+					}
+				}
+			},
+			new "ScrollingFrame" {
+				ZIndex = 3,
+				Size = UDim2.new(1,0,0,136),
+				BackgroundTransparency = 1,
+				ScrollBarThickness = 0,
+				CanvasSize = UDim2.new(0,0,0,0),
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
+
+				[children] = {
+					UIPadding(6,6,0,6),
+					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
+					itemElements
+				}
+			}
+		}
+	}
+
+	observe(items):onChange(function()
+		local tableOfElements = {}
+		for _,item in get(items) do
+			local itemValue, itemImage
+			local isItemSelected = value(false)
+			if typeof(item) == "table" then
+				local _didPass, _failedItems = typecheck(item, {Value = "",Image = ""},{item.Image and "" or "Image"})
+				assert(_didPass, table.concat(_failedItems, "\n"))
+
+				itemValue = item.Value
+				itemImage = item.Image or nil
+			else
+				local _didPass, _failedItems = typecheck({['Item'] = item}, {Item = "",})
+				assert(_didPass, table.concat(_failedItems, "\n"))
+
+				itemValue = item
+			end
+
+			observe(selectedItems):onChange(function()
+				if table.find(get(selectedItems), get(regex)(itemValue)) then
+					isItemSelected:set(true)
+				else
+					isItemSelected:set(false)
+				end
+			end)
+
+			local itemElement = new "TextButton" {
+				Name = itemValue,
+				Size = UDim2.new(1,0,0,28),
+				BackgroundTransparency = selectedAnimation,
+				BackgroundColor3 = theme.background,
+
+				[onevent "Activated"] = function()
+					local _selectedItems = get(selectedItems)
+					if get(multiselect) then
+						isItemSelected:set(not get(isItemSelected))
+						if get(isItemSelected) then
+							table.insert(_selectedItems, get(regex)(itemValue))
+						else
+							table.remove(_selectedItems, table.find(_selectedItems, get(regex)(itemValue)))
+						end
+						selectedItems:set(_selectedItems)
+					else
+						selectedItems:set({itemValue})
+						isDropped:set(false)
+					end
+				end,
+
+				[children] = {
+					UICorner(4),
+					UIPadding(8),
+					UIListLayout(SO.LayoutOrder, FD.Horizontal,HA.Left,VA.Center,UDim.new(0,6)),
+					new "Frame" {
+						Visible = computed(function()
+							return get(multiselect) and true or false
+						end),
+						Size = UDim2.fromOffset(20,20),
+						AnchorPoint = Vector2.new(1,0.5),
+						Position = UDim2.new(1,0,0.5,0),
+						BackgroundTransparency = selectedAnimation,
+						BackgroundColor3 = animate(function()
+							return get(isItemSelected) and theme.get("toggled") or theme.get("selectedTab")
+						end,40,1),
+
+						[children] = {
+							UICorner(6),
+							new "ImageLabel" {
+								Size = UDim2.fromOffset(14,14),
+								AnchorPoint = Vector2.new(0.5,0.5),
+								Position = UDim2.new(0.5,0,0.5,0),
+								BackgroundTransparency = 1,
+								Image = icons.check,
+								ImageTransparency = animate(function()
+									if not get(isSelected) then
+										return 1
+									end
+									if get(isItemSelected) then
+										return 0
+									end
+									return 1
+								end,40,1),
+								ImageColor3 = theme.selectedTab
+							}
+						}
+					},
+					new "ImageLabel" {
+						Visible = computed(function()
+							return itemImage and true or false
+						end),
+						Size = UDim2.fromOffset(18,18),
+						AnchorPoint = Vector2.new(1,0.5),
+						Position = UDim2.new(1,0,0.5,0),
+						BackgroundTransparency = 1,
+						Image = itemImage,
+						ImageTransparency = selectedAnimation,
+						ImageColor3 = theme.text2
+					},
+					new "TextLabel" {
+						FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+						Size = computed(function()
+							return get(multiselect) and UDim2.new(1,-48,0,16) or UDim2.new(1,-24,0,16)
+						end),
+						BackgroundTransparency = 1,
+						TextColor3 = theme.text,
+						TextScaled = true,
+						AnchorPoint = Vector2.new(0,0.5),
+						Position = UDim2.new(0,0,0.5,0),
+						Text = itemValue,
+						TextTransparency = selectedAnimation,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						RichText = true
+					}
+				}
+			}
+
+			table.insert(tableOfElements,itemElement)
+		end
+		itemElements:set(tableOfElements)
+	end)
+
+	-- Closure
+
+	items:set(get(property.Items))
+
+	if get(useConfig.boolean) and hasFlag then
+		if not get(configLoaded.boolean) then
+			observe(configLoaded.boolean):onChange(configLoad)
+		else
+			configLoad()
+		end
+	end
+
+	local returnFunctions = {}
+	function returnFunctions:SetName(newText)
+		local _didPass, _failedItems = typecheck({['SetName'] = newText}, {SetName = ""})
+		assert(_didPass, table.concat(_failedItems, "\n"))
+
+		name:set(newText)
+	end
+	function returnFunctions:SetItems(newTable) -- Sets a new table of items
+		local _didPass, _failedItems = typecheck({['SetItems'] = newTable}, {SetItems = {}})
+		assert(_didPass, table.concat(_failedItems, "\n"))
+
+		selectedItems:set({})
+		items:set(newTable)
+		local multiselectTable = {}
+		local foundAnything = false
+		for _,v in get(items) do
+			local item
+			if typeof(v) == "table" then
+				item = v.Value
+			else
+				item  = v
+			end
+			if get(multiselect) then
+				if typeof(get(lastReturnedValue)) == "table" and table.find(get(lastReturnedValue), get(regex)(item)) then
+					table.insert(multiselectTable, get(regex)(item))
+					foundAnything = true
+				end
+			else
+				if get(lastReturnedValue) == get(regex)(item) then
+					foundAnything = true
+					task.spawn(get(callback), get(regex)(item))
+					break
+				end
+			end
+		end
+		if foundAnything then
+			if get(multiselect) then
+				selectedItems:set(multiselectTable)
+			end
+		end
+	end
+	function returnFunctions:SelectItem(item) -- Sets item used when Multiselect is false
+		assert(not get(multiselect), ":SelectItem requires Multiselect to be false")
+		local _didPass, _failedItems = typecheck({['SelectItem'] = item}, {SelectItem = ""})
+		assert(_didPass, table.concat(_failedItems, "\n"))
+
+		local hasItem = false
+		for _,v in get(items) do
+			local itemValue = v
+			if typeof(v) == "table" then
+				itemValue = v.Value
+			end
+			if get(regex)(itemValue) == get(regex)(item) then
+				hasItem = true
+				break
+			end
+		end
+		assert(hasItem, ":SelectItem couldn't find "..item)
+		selectedItems:set({item})
+	end
+	function returnFunctions:SelectItems(newSelecteds) -- Sets items used when Multiselect is true
+		assert(get(multiselect), ":SelectItems requires Multiselect to be true")
+		local _didPass, _failedItems = typecheck({['SelectItems'] = newSelecteds}, {SelectItems = {}})
+		assert(_didPass, table.concat(_failedItems, "\n"))
+
+		for i,v in newSelecteds do
+			local found = false
+			for _,item in get(items) do
+				local itemValue = typeof(item) == "table" and get(regex)(item.Value) or get(regex)(item)
+				if v == itemValue then
+					found = true
+					break
+				end
+			end
+			if found then
+				newSelecteds[i] = get(regex)(v)
+			else
+				warn(":SelectItems couldn't find", v, "in Items. Removing it.")
+				newSelecteds[i] = nil
+			end
+		end
+		selectedItems:set(newSelecteds)
+	end
+	function returnFunctions:Enable()
+		isEnabled:set(true)
+	end
+	function returnFunctions:Disable()
+		isEnabled:set(false)
+	end
+	return returnFunctions
+end

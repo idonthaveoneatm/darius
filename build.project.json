@@ -1,0 +1,12 @@
+{
+    "name": "Darius",
+    "tree": {
+        "$className": "DataModel",
+
+        "ReplicatedStorage":{
+            "darius":{
+                "$path":"src/darius"
+            }
+        }
+    }
+}
