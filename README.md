@@ -17,11 +17,11 @@ Video of user interface: [https://www.youtube.com/watch?v=-yLwTmJhK7A](https://w
 Each type varies in compatbility
 ```lua
 -- Bundled with wax
-local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/normal/bundled.luau"))()
+local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/bundled.luau"))()
 -- Bundled + Minified via darklua
-local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/normal/minified.luau"))()
+local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/minified.luau"))()
 -- rbxm-suite
-local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/normal/rbxmSuite.luau"))()
+local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/rbxmSuite.luau"))()
 ```
 ## Create a Window
 ```lua
@@ -89,7 +89,7 @@ darius:Notify({
 })
 ```
 ### Loading config
-Place this at the **END** of your implementation of the user interface. See [here](https://github.com/idonthaveoneatm/darius/blob/normal/example/source.luau) for an example.
+Place this at the **END** of your implementation of the user interface. See [here](https://github.com/idonthaveoneatm/darius/blob/main/example/source.luau) for an example.
 ```lua
 darius:LoadConfig()
 ```
