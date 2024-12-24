@@ -28,9 +28,9 @@ local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/i
 local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
-    HideBind = Enum.KeyCode.T,
 
     -- Optional
+    HideBind = Enum.KeyCode.T,
     Parent = target, -- Defaults to game.CoreGui
     UseConfig = false,
     Config = "config",
