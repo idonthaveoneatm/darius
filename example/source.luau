@@ -55,7 +55,6 @@ end
 
 tab:Button({
     Name = "Button",
-    DisabledText = "heyy",
     Callback = function()
         print("Hello World!")
     end

@@ -66,7 +66,7 @@ function darius:Window(windowProperty)
 
 	-- Theme
 
-	theme.create(windowProperty.Theme)
+	theme.create(windowProperty.Theme or {})
 
 	-- Data
 
