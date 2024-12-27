@@ -149,7 +149,7 @@ local dropdown = tab:Dropdown({
     IsEnabled = false, -- Defaults true
     DisabledText = "Hey you cant use this!",
     FLAG = "dropdown_SingleSelection",
-    Default = "" or {} -- Table if Multiselect and string if not
+    Default = "" or {}, -- Table if Multiselect and string if not
     Multiselect = false,
     Regex = function(itemToClean)
     -- MUST RETURN A STRING NO MATTER WHAT
@@ -239,7 +239,7 @@ local textbox = tab:TextBox({
     -- Optional
     IsEnabled = false,
     DisabledText = "Hey you cant use this!",
-    FLAG = "textbox"
+    FLAG = "textbox",
     Default = "Hey",
     OnlyNumbers = false,
     OnLeave = false,
