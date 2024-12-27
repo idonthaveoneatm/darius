@@ -46,7 +46,7 @@ return function(property)
     local title = value(property.Title)
     local body = value(property.Body)
     local duration = value(property.Duration)
-    local image = value(property.Image)
+    local image = value(property.Image or "")
     local imageColor = property.ImageColor and value(property.ImageColor) or theme.text
     local buttons = value(property.Buttons or {})
 
@@ -162,7 +162,7 @@ return function(property)
                     UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4)),
                     UICorner(4),
                     new "Frame" {
-                        Visible = image and true or false,
+                        Visible = get(image) ~= "" and true or false,
                         Size = UDim2.new(0,24,1,0),
                         BackgroundTransparency = 1,
 
@@ -178,7 +178,7 @@ return function(property)
                         }
                     },
                     new "Frame" {
-                        Size = UDim2.new(1,image and -28 or 0,1,0),
+                        Size = UDim2.new(1,get(image) ~= "" and -28 or 0,1,0),
                         BackgroundTransparency = 1,
 
                         [children] = {

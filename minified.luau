@@ -681,13 +681,13 @@ Children,ai.Value,ai.Computed,ac(ae.utilities)local ap,aq,ar,as,at,au=ao.get,ao.
 SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,at(af,{Title='',Body='',Duration=1,Image=''
 ,ImageColor=Color3.fromRGB(0,0,0),Buttons={}},{af.Image and''or'Image',af.ImageColor and''or'ImageColor',af.Buttons and
 ''or'Buttons'})assert(aC,table.concat(aD,'\n'))local aE,aF,b,c,d,e,f,g,h,i,j=am(af.Title),am(af.Body),am(af.Duration),
-am(af.Image),af.ImageColor and am(af.ImageColor)or ah.text,am(af.Buttons or{}),am(false),am(false),am(false),am'',am(250
-)local k=am(ar(ap(aF),{Size=14,Font=as('Montserrat',Enum.FontWeight.Medium),Width=ap(j)-8-(c and 32 or 0)}))local l=am(
-20+math.clamp(ap(k).Y+4+10+(#ap(e)>0 and 26 or 0),#ap(e)>0 and 56 or 30,9e9))local function m(n,o)local p=1 for t=1,n do
-p=p*10 end local t=tostring(math.round(o*p)/p)local u=string.split(t,'.')if#u==1 then local v=''for E=1,n do v=v..'0'end
-t=t..'.'..v end return t end local n,o={}for p,t in ap(e)do local u,v=at({Button=t},{Button={}})assert(u,table.concat(v,
-'\n'))u,v=at(t,{Name='',Callback=function()end})assert(u,table.concat(v,'\n'))local E,F=t.Name,t.Callback local G=aj
-'TextButton'{Size=UDim2.new(1/#ap(e),-2,1,-4),TextSize=14,Text=E,FontFace=as('Montserrat',Enum.FontWeight.Bold),
+am(af.Image or''),af.ImageColor and am(af.ImageColor)or ah.text,am(af.Buttons or{}),am(false),am(false),am(false),am'',
+am(250)local k=am(ar(ap(aF),{Size=14,Font=as('Montserrat',Enum.FontWeight.Medium),Width=ap(j)-8-(c and 32 or 0)}))local
+l=am(20+math.clamp(ap(k).Y+4+10+(#ap(e)>0 and 26 or 0),#ap(e)>0 and 56 or 30,9e9))local function m(n,o)local p=1 for t=1
+,n do p=p*10 end local t=tostring(math.round(o*p)/p)local u=string.split(t,'.')if#u==1 then local v=''for E=1,n do v=v..
+'0'end t=t..'.'..v end return t end local n,o={}for p,t in ap(e)do local u,v=at({Button=t},{Button={}})assert(u,table.
+concat(v,'\n'))u,v=at(t,{Name='',Callback=function()end})assert(u,table.concat(v,'\n'))local E,F=t.Name,t.Callback local
+G=aj'TextButton'{Size=UDim2.new(1/#ap(e),-2,1,-4),TextSize=14,Text=E,FontFace=as('Montserrat',Enum.FontWeight.Bold),
 BackgroundColor3=ah.notificationButton,TextColor3=ah.text,[ak'Activated']=function()task.spawn(F)g:set(false)task.wait(
 0.4)f:set(false)task.delay(0.3,function()h:set(true)end)task.wait(2)o:Destroy()end,[al]={av(4)}}table.insert(n,G)end o=
 aj'Frame'{Parent=af.Parent,BackgroundTransparency=1,Size=aq(function()return UDim2.fromOffset(ap(j),ap(f)and ap(l)+5 or
@@ -696,12 +696,12 @@ AnchorPoint=Vector2.new(0,1),Position=UDim2.fromScale(0,1),BackgroundTransparenc
 ak'Activated']=function()g:set(false)task.wait(0.4)f:set(false)task.delay(0.3,function()h:set(true)end)task.wait(2)o:
 Destroy()end},aj'Frame'{AnchorPoint=Vector2.new(0,1),BackgroundColor3=ah.background,Size=UDim2.fromOffset(ap(j),ap(l)),
 Position=aq(function()return UDim2.fromScale(ap(g)and 0 or 1.2,1)end,30,1),[al]={aw(0,4),ax(ay.LayoutOrder,az.Horizontal
-,aA.Left,aB.Center,UDim.new(0,4)),av(4),aj'Frame'{Visible=c and true or false,Size=UDim2.new(0,24,1,0),
+,aA.Left,aB.Center,UDim.new(0,4)),av(4),aj'Frame'{Visible=ap(c)~=''and true or false,Size=UDim2.new(0,24,1,0),
 BackgroundTransparency=1,[al]={aj'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0.5,0.5),Position=
-UDim2.fromScale(0.5,0.5),BackgroundTransparency=1,Image=c,ImageColor3=d}}},aj'Frame'{Size=UDim2.new(1,c and-28 or 0,1,0)
-,BackgroundTransparency=1,[al]={aw(2,0),ax(ay.LayoutOrder,az.Vertical,aA.Left,aB.Top),aj'TextLabel'{Size=UDim2.new(1,0,0
-,16),BackgroundTransparency=1,FontFace=as('Montserrat',Enum.FontWeight.Bold),TextXAlignment=Enum.TextXAlignment.Left,
-TextSize=16,RichText=true,TextColor3=ah.text,Text=aE},aj'TextLabel'{Size=UDim2.new(1,0,0,1),AutomaticSize=Enum.
+UDim2.fromScale(0.5,0.5),BackgroundTransparency=1,Image=c,ImageColor3=d}}},aj'Frame'{Size=UDim2.new(1,ap(c)~=''and-28 or
+0,1,0),BackgroundTransparency=1,[al]={aw(2,0),ax(ay.LayoutOrder,az.Vertical,aA.Left,aB.Top),aj'TextLabel'{Size=UDim2.
+new(1,0,0,16),BackgroundTransparency=1,FontFace=as('Montserrat',Enum.FontWeight.Bold),TextXAlignment=Enum.TextXAlignment
+.Left,TextSize=16,RichText=true,TextColor3=ah.text,Text=aE},aj'TextLabel'{Size=UDim2.new(1,0,0,1),AutomaticSize=Enum.
 AutomaticSize.Y,Position=UDim2.fromOffset(8,25),BackgroundTransparency=1,FontFace=as('Montserrat',Enum.FontWeight.Medium
 ),TextSize=14,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,TextWrapped=true,RichText=
 true,TextColor3=ah.text2,Text=aF},aj'Frame'{Visible=an(function()return#ap(e)>0 and true or false end),Size=UDim2.new(1,
@@ -1010,10 +1010,9 @@ ClipsDescendants=true,[aq]=f,[ao]={av(az.LayoutOrder,aA.Vertical,aB.Left,aC.Top,
 BackgroundTransparency=1,Size=UDim2.fromOffset(24,24),ImageColor3=aj.red,Image=ak.close,ImageTransparency=0.3},an
 'TextLabel'{Size=UDim2.new(1,-28,1),FontFace=aH('Montserrat',Enum.FontWeight.Bold),TextColor3=aj.red,TextScaled=true,
 Text='Destroy Interface',BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left,TextTransparency=0.3,[ao]={an
-'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=16}}}}}}}}},an'ScrollingFrame'{Name='notificationList',
-BackgroundTransparency=1,Size=UDim2.new(0,2,1,-20),Position=UDim2.new(1,-5,0.5,0),AnchorPoint=Vector2.new(1,0.5),
-ScrollBarThickness=0,CanvasSize=UDim2.new(0,0,1,0),AutomaticCanvasSize=Enum.AutomaticSize.Y,ClipsDescendants=false,[aq]=
-h,[ao]={av(az.LayoutOrder,aA.Vertical,aB.Right,aC.Bottom)}}}}O=an'TextButton'{Visible=ar(function()return(aE(L)and aE(t.
+'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=16}}}}}}}}},an'Frame'{Name='notificationList',BackgroundTransparency=1,
+Size=UDim2.new(0,2,1,-20),Position=UDim2.new(1,-5,0.5,0),AnchorPoint=Vector2.new(1,0.5),ClipsDescendants=false,[aq]=h,[
+ao]={av(az.LayoutOrder,aA.Vertical,aB.Right,aC.Bottom)}}}}O=an'TextButton'{Visible=ar(function()return(aE(L)and aE(t.
 boolean))end),Interactable=ar(function()return(aE(L)and aE(t.boolean))end),Parent=aF.get(aE(l.name)),Size=UDim2.
 fromOffset(60,60),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),TextScaled=true,Text='Hide UI',
 FontFace=aH('Montserrat',Enum.FontWeight.Bold),TextColor3=aj.mobileButtonText,BackgroundColor3=aj.mobileButtonBackground
@@ -1096,36 +1095,36 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[97]=function()local aa,ab,ac=a(97)local ad return(function(...)return function(ae:table,
 af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(not ae[aj]or typeof(ae[aj])~=typeof(ak))and
 not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah
-,ai end end)()end},{{1,2,{'Darius'},{{80,2,{'simpleElements'},{{82,2,{'UICorner'}},{84,2,{'UIPadding'}},{81,2,{
-'UIAspectRatioConstraint'}},{83,2,{'UIListLayout'}},{85,2,{'UITextSizeConstraint'}}}},{77,2,{'darius.story'}},{63,1,{
-'components'},{{71,2,{'slider'}},{75,2,{'toggle'}},{73,2,{'tabFrame'}},{76,2,{'warn'}},{69,2,{'notification'}},{74,2,{
-'textbox'}},{66,2,{'dropdown'}},{70,2,{'paragraph'}},{65,2,{'divider'}},{67,2,{'keybind'}},{64,2,{'button'}},{72,2,{
-'tabButton'}},{68,2,{'label'}}}},{86,2,{'utilities'},{{88,2,{'connections'}},{95,2,{'references'}},{92,2,{'get'}},{91,2,
-{'drag'}},{93,2,{'getStringBounds'}},{96,2,{'tween'}},{90,2,{'customFunctions'}},{94,2,{'randomString'}},{87,2,{
-'animate'}},{97,2,{'typecheck'}},{89,2,{'customFont'}}}},{78,1,{'layouts'},{{79,2,{'main'}}}},{2,2,{'Bundles'},{{59,2,{
-'lucide'}},{3,2,{'Fusion'},{{49,1,{'Utility'},{{50,2,{'None'}},{52,2,{'doNothing'}},{51,2,{'cleanup'}},{54,2,{
-'needsDestruction'}},{55,2,{'restrictRead'}},{53,2,{'isSimilar'}},{56,2,{'xtypeof'}}}},{48,2,{'Types'}},{14,1,{'Colour'}
-,{{15,2,{'Oklab'}}}},{4,1,{'Animation'},{{8,2,{'TweenScheduler'}},{12,2,{'springCoefficients'}},{13,2,{'unpackType'}},{6
-,2,{'SpringScheduler'}},{7,2,{'Tween'}},{11,2,{'packType'}},{10,2,{'lerpType'}},{5,2,{'Spring'}},{9,2,{'getTweenRatio'}}
-}},{39,2,{'PubTypes'}},{40,1,{'State'},{{45,2,{'Observer'}},{41,2,{'Computed'}},{42,2,{'ForKeys'}},{44,2,{'ForValues'}},
-{46,2,{'Value'}},{43,2,{'ForPairs'}},{47,2,{'unwrap'}}}},{33,1,{'Logging'},{{37,2,{'messages'}},{35,2,{
-'logErrorNonFatal'}},{38,2,{'parseError'}},{36,2,{'logWarn'}},{34,2,{'logError'}}}},{22,1,{'Instances'},{{25,2,{
-'Hydrate'}},{24,2,{'Cleanup'}},{30,2,{'Ref'}},{31,2,{'applyInstanceProps'}},{27,2,{'OnChange'}},{26,2,{'New'}},{28,2,{
-'OnEvent'}},{32,2,{'defaultProps'}},{23,2,{'Children'}},{29,2,{'Out'}}}},{16,1,{'Dependencies'},{{20,2,{'updateAll'}},{
-21,2,{'useDependency'}},{17,2,{'captureDependencies'}},{19,2,{'sharedState'}},{18,2,{'initDependency'}}}}}},{61,2,{
-'themeSystem'},{{62,2,{'default'}}}},{58,2,{'icons'}},{57,2,{'data'}},{60,2,{'services'}}}}}}},'0.4.1','WaxRuntime',
-string,task,setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au
-,av,aw,ax,ay,az,aA=aj.insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as
-and ay(as,1,4)=='Lune'then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local
-aC,aD,aE,aF,aG,aH,b,c,d=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]=
-'LocalScript',[5]='StringValue'},{},{},{},{},{},{},{}local e,f={GetFullName={{},function(e)local f,g=e.Name,e.Parent
-while g do f=g.Name..'.'..f g=g.Parent end return f end},GetChildren={{},function(e)local f={}for g in ai,d[e]do au(f,g)
-end return f end},GetDescendants={{},function(e)local f={}for g in ai,d[e]do au(f,g)for h,i in ai,g:GetDescendants()do
-au(f,i)end end return f end},FindFirstChild={{'string','boolean?'},function(e,f,g)local h=d[e]for i in ai,h do if i.Name
-==f then return i end end if g then for j in ai,h do return j:FindFirstChild(f,true)end end end},FindFirstAncestor={{
-'string'},function(e,f)local g=e.Parent while g do if g.Name==f then return g end g=g.Parent end end},WaitForChild={{
-'string','number?'},function(e,f)return e:FindFirstChild(f)end}},{}for g,h in ai,e do local i,j,k=h[1],h[2],{}for l,m in
-ai,i do local n,o=az(m,'^([^%?]+)(%??)')k[l]={n,o}end f[g]=function(n,...)if not d[n]then ah(
+,ai end end)()end},{{1,2,{'Darius'},{{77,2,{'darius.story'}},{63,1,{'components'},{{68,2,{'label'}},{76,2,{'warn'}},{73,
+2,{'tabFrame'}},{65,2,{'divider'}},{75,2,{'toggle'}},{74,2,{'textbox'}},{69,2,{'notification'}},{72,2,{'tabButton'}},{67
+,2,{'keybind'}},{64,2,{'button'}},{71,2,{'slider'}},{70,2,{'paragraph'}},{66,2,{'dropdown'}}}},{86,2,{'utilities'},{{90,
+2,{'customFunctions'}},{88,2,{'connections'}},{91,2,{'drag'}},{94,2,{'randomString'}},{96,2,{'tween'}},{92,2,{'get'}},{
+89,2,{'customFont'}},{95,2,{'references'}},{93,2,{'getStringBounds'}},{87,2,{'animate'}},{97,2,{'typecheck'}}}},{2,2,{
+'Bundles'},{{59,2,{'lucide'}},{57,2,{'data'}},{3,2,{'Fusion'},{{22,1,{'Instances'},{{24,2,{'Cleanup'}},{27,2,{'OnChange'
+}},{29,2,{'Out'}},{28,2,{'OnEvent'}},{32,2,{'defaultProps'}},{30,2,{'Ref'}},{23,2,{'Children'}},{31,2,{
+'applyInstanceProps'}},{25,2,{'Hydrate'}},{26,2,{'New'}}}},{49,1,{'Utility'},{{51,2,{'cleanup'}},{52,2,{'doNothing'}},{
+54,2,{'needsDestruction'}},{53,2,{'isSimilar'}},{50,2,{'None'}},{55,2,{'restrictRead'}},{56,2,{'xtypeof'}}}},{40,1,{
+'State'},{{41,2,{'Computed'}},{47,2,{'unwrap'}},{46,2,{'Value'}},{44,2,{'ForValues'}},{45,2,{'Observer'}},{43,2,{
+'ForPairs'}},{42,2,{'ForKeys'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{16,1,{'Dependencies'},{{19,2,{'sharedState'}},{
+18,2,{'initDependency'}},{20,2,{'updateAll'}},{17,2,{'captureDependencies'}},{21,2,{'useDependency'}}}},{4,1,{
+'Animation'},{{7,2,{'Tween'}},{11,2,{'packType'}},{13,2,{'unpackType'}},{6,2,{'SpringScheduler'}},{12,2,{
+'springCoefficients'}},{8,2,{'TweenScheduler'}},{10,2,{'lerpType'}},{5,2,{'Spring'}},{9,2,{'getTweenRatio'}}}},{39,2,{
+'PubTypes'}},{48,2,{'Types'}},{33,1,{'Logging'},{{36,2,{'logWarn'}},{35,2,{'logErrorNonFatal'}},{34,2,{'logError'}},{37,
+2,{'messages'}},{38,2,{'parseError'}}}}}},{58,2,{'icons'}},{60,2,{'services'}},{61,2,{'themeSystem'},{{62,2,{'default'}}
+}}}},{78,1,{'layouts'},{{79,2,{'main'}}}},{80,2,{'simpleElements'},{{83,2,{'UIListLayout'}},{84,2,{'UIPadding'}},{85,2,{
+'UITextSizeConstraint'}},{82,2,{'UICorner'}},{81,2,{'UIAspectRatioConstraint'}}}}}}},'0.4.1','WaxRuntime',string,task,
+setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay
+,az,aA=aj.insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)
+=='Lune'then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,
+aG,aH,b,c,d=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]=
+'StringValue'},{},{},{},{},{},{},{}local e,f={GetFullName={{},function(e)local f,g=e.Name,e.Parent while g do f=g.Name..
+'.'..f g=g.Parent end return f end},GetChildren={{},function(e)local f={}for g in ai,d[e]do au(f,g)end return f end},
+GetDescendants={{},function(e)local f={}for g in ai,d[e]do au(f,g)for h,i in ai,g:GetDescendants()do au(f,i)end end
+return f end},FindFirstChild={{'string','boolean?'},function(e,f,g)local h=d[e]for i in ai,h do if i.Name==f then return
+i end end if g then for j in ai,h do return j:FindFirstChild(f,true)end end end},FindFirstAncestor={{'string'},function(
+e,f)local g=e.Parent while g do if g.Name==f then return g end g=g.Parent end end},WaitForChild={{'string','number?'},
+function(e,f)return e:FindFirstChild(f)end}},{}for g,h in ai,e do local i,j,k=h[1],h[2],{}for l,m in ai,i do local n,o=
+az(m,'^([^%?]+)(%??)')k[l]={n,o}end f[g]=function(n,...)if not d[n]then ah(
 "Expected ':' not '.' calling member function "..g,2)end local o={...}for p,t in ai,k do local u=o[p]local v,E,F=an(u),t
 [1],t[2]if u==nil and not F then ah('Argument '..u..' missing or nil',3)end if E~='any'and v~=E and not(v=='nil'and F)
 then ah('Argument '..p..' expects type "'..E..'", got "'..v..'"',2)end end return j(n,...)end end local function i(j,k,l
