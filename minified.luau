@@ -13,24 +13,24 @@ noOffset and 0 or 58},'absoluteOffset')g.add({name=q(32)},'instanceName')g.add({
 'isListening')local A,B,C,D,E=g.add({list={},names={}},'flags'),g.add({boolean=false},'configLoaded'),g.add({boolean=
 false},'useConfig'),(g.add{data=x})if x.UseConfig then C:update('boolean',x.UseConfig)E=x.Config local F,G={
 'darius-configs',`/{E}`},''for H=1,#F do G=G..F[H]if not p.isfolder(G)then p.makefolder(G)end end E=G..'/config.json'if
-not p.isfile(E)then p.writefile(E,'{}')end end t(x)local F,G,H=n.get'tabButtonList',n.get'tabFrameList',k.New
-'BindableEvent'{}v.OnDestruction=H.Event v[D.uid]={}local I=v[D.uid]function I.Tab(J,K)local L=u('tabButton',F,K)local M
-=u('tabFrame',G,{uid=L.uid})I[L.uid]={}local N=I[L.uid]function N.Button(O,P)P.tab=L return u('button',M,P)end function
-N.Toggle(O,P)P.tab=L return u('toggle',M,P)end function N.Dropdown(O,P)P.tab=L return u('dropdown',M,P)end function N.
+not p.isfile(E)then p.writefile(E,'{}')end end local F=k.New'BindableEvent'{}v.OnDestruction=F.Event t(x,F)local G,H=n.
+get'tabButtonList',n.get'tabFrameList'v[D.uid]={}local I=v[D.uid]function I.Tab(J,K)local L=u('tabButton',G,K)local M=u(
+'tabFrame',H,{uid=L.uid})I[L.uid]={}local N=I[L.uid]function N.Button(O,P)P.tab=L return u('button',M,P)end function N.
+Toggle(O,P)P.tab=L return u('toggle',M,P)end function N.Dropdown(O,P)P.tab=L return u('dropdown',M,P)end function N.
 Label(O,P)return u('label',M,{tab=L,Text=P})end function N.Paragraph(O,P)P.tab=L return u('paragraph',M,P)end function N
 .TextBox(O,P)P.tab=L return u('textbox',M,P)end function N.Slider(O,P)P.tab=L return u('slider',M,P)end function N.
 Keybind(O,P)P.tab=L return u('keybind',M,P)end function N.Divider(O)return u('divider',M,{tab=L})end return I[L.uid]end
-function v.Notify(J,K)return u('notification',n.get'notificationList',K)end function v.Destroy(J)o:deleteConnections()n:
-clear()H:Fire()end function v.LoadConfig(J)if not x.UseConfig then return end A:update('list',j:JSONDecode(p.readfile(E)
-))l(A.list):onChange(function()p.writefile(E,j:JSONEncode(r(A.list)))end)B:update('boolean',true)end function v.SetTheme
-(J,K)local L,M=s({['New Theme']=K},{['New Theme']={}})assert(L,table.concat(M,'\n'))h.create(K)end if p.getgenv then p.
-getgenv().dariusInstance=v else _G.dariusInstance=v end return v[D.uid]end return v end)()end,function()local b,c,d=a(2)
-local e return(function(...)return setmetatable({},{__index=function(f,g)if c:FindFirstChild(g)then return d(c[g])else
-error('no bundle: '..g)end end})end)()end,function()local b,c,d=a(3)local e return(function(...)local f,g=d(c.PubTypes),
-d(c.Utility.restrictRead)export type StateObject<T> =PubTypes.StateObject<T>export type CanBeState<T> =PubTypes.
-CanBeState<T>export type Symbol=PubTypes.Symbol export type Value<T> =PubTypes.Value<T>export type Computed<T> =PubTypes
-.Computed<T>export type ForPairs<KO,VO> =PubTypes.ForPairs<KO,VO>export type ForKeys<KI,KO> =PubTypes.ForKeys<KI,KO>
-export type ForValues<VI,VO> =PubTypes.ForKeys<VI,VO>export type Observer=PubTypes.Observer export type Tween<T> =
+function v.Notify(J,K)return u('notification',n.get'notificationList',K)end function v.Destroy(J)F:Fire()F:Destroy()o:
+deleteConnections()n:clear()end function v.LoadConfig(J)if not x.UseConfig then return end A:update('list',j:JSONDecode(
+p.readfile(E)))l(A.list):onChange(function()p.writefile(E,j:JSONEncode(r(A.list)))end)B:update('boolean',true)end
+function v.SetTheme(J,K)local L,M=s({['New Theme']=K},{['New Theme']={}})assert(L,table.concat(M,'\n'))h.create(K)end if
+p.getgenv then p.getgenv().dariusInstance=v else _G.dariusInstance=v end return v[D.uid]end return v end)()end,function(
+)local b,c,d=a(2)local e return(function(...)return setmetatable({},{__index=function(f,g)if c:FindFirstChild(g)then
+return d(c[g])else error('no bundle: '..g)end end})end)()end,function()local b,c,d=a(3)local e return(function(...)local
+f,g=d(c.PubTypes),d(c.Utility.restrictRead)export type StateObject<T> =PubTypes.StateObject<T>export type CanBeState<T>
+=PubTypes.CanBeState<T>export type Symbol=PubTypes.Symbol export type Value<T> =PubTypes.Value<T>export type Computed<T>
+=PubTypes.Computed<T>export type ForPairs<KO,VO> =PubTypes.ForPairs<KO,VO>export type ForKeys<KI,KO> =PubTypes.ForKeys<
+KI,KO>export type ForValues<VI,VO> =PubTypes.ForKeys<VI,VO>export type Observer=PubTypes.Observer export type Tween<T> =
 PubTypes.Tween<T>export type Spring<T> =PubTypes.Spring<T>type Fusion={version:PubTypes.Version,New:(className:string)->
 ((propertyTable:PubTypes.PropertyTable)->Instance),Hydrate:(target:Instance)->((propertyTable:PubTypes.PropertyTable)->
 Instance),Ref:PubTypes.SpecialKey,Cleanup:PubTypes.SpecialKey,Children:PubTypes.SpecialKey,Out:PubTypes.SpecialKey,
@@ -524,42 +524,43 @@ J,K,L,M,N,O,P,Q,R=I.UIListLayout,I.UIPadding,I.UICorner,Enum.SortOrder,Enum.Fill
 VerticalAlignment,G(f,{Name='',DisabledText='',FLAG='',IsEnabled=false,Callback=function()end,Items={},Multiselect=true,
 Regex=function()end},{f.DisabledText and''or'DisabledText',f.FLAG and''or'FLAG',f.IsEnabled and''or'IsEnabled',f.
 Multiselect and''or'Multiselect',f.Regex and''or'Regex'})assert(Q,table.concat(R,'\n'))Q,R=G(f,{Default=f.Multiselect
-and{}or''},{f.Default and''or'Default'})assert(Q,table.concat(R,'\n'))assert(f.Regex and f.Regex''~=nil,'no work regex')
-local S,T,U,V,W,X,Y,Z,_,ab,ac,ad,ae,af,ag,ah=h.find'selectedTab',h.find'useConfig',h.find'flags',h.find'configLoaded',h.
-find'searchText',h.add(f),f.Parent,f.Name,f.Callback,n{},f.IsEnabled or n(true),f.DisabledText or n'Component Disabled',
-f.Regex or n(function(S)return S end),f.Multiselect or n(false),f.FLAG or n'',false if E(ag)~=''then local ai=E(U.names)
-assert(not table.find(ai,E(ag)),('FLAG "%s" already exists'):format(E(ag)))table.insert(ai,E(ag))U:update('names',ai)ah=
-true end local ai,aj,ak,al,am,an,ao=n(),n(),n(false),n(E(af)and{}or''),n{},n{},n(false)o(am):onChange(function()if#E(am)
-==#E(ab)then ao:set(true)else ao:set(false)end if E(af)then local ap={}for aq,ar in E(am)do table.insert(ap,E(ae)(ar))
-end task.spawn(E(_),ap)al:set(E(am))else task.spawn(E(_),E(ae)(E(am)[1]))al:set(E(ae)(E(am)[1]))end end)o(ab):onChange(
-function()if#E(am)==#E(ab)then ao:set(true)else ao:set(false)end end)local ap=n(E(S.string)==E(X.tab).uid)o(S.string):
-onChange(function()ap:set(E(S.string)==E(X.tab).uid)end)local aq=F(function()return E(ap)and 0 or 1 end,40,1)
-local function ar()if E(V.boolean)then local as=E(U.list)[E(ag)]local at=G({[E(ag)]=as},{[E(ag)]={}})if as and at then
-am:set(as)end o(am):onChange(function()local au=E(U.list)au[E(ag)]=E(am)U:update('list',au)end)end end l'Frame'{Parent=Y
-,Visible=t(function()if E(W.string)~=''and not string.find(E(Z):lower(),E(W.string):lower())then return false end return
-true end),Size=F(function()if E(ak)and E(ai)then local as,at=E(ai),3 for au,av in as:GetChildren()do if av:IsA
-'UIListLayout'or av:IsA'UICorner'or not av.Visible then continue end at+=(4+av.Size.Y.Offset)end return UDim2.new(1,0,0,
-at)end return UDim2.new(1,0,0,36)end,40,1),BackgroundColor3=i.background2,BackgroundTransparency=aq,ClipsDescendants=
-true,[u]=ai,[m]={L(6),J(M.LayoutOrder,N.Vertical,O.Center,P.Top,UDim.new(0,4)),l'TextButton'{Interactable=t(function()if
-not E(ac)then return false end return E(ap)end),Size=UDim2.new(1,0,0,36),BackgroundTransparency=1,[p'Activated']=
-function()ak:set(not E(ak))end,[m]={l'Frame'{ZIndex=2,Visible=t(function()if not E(ac)then return true end return false
-end),BackgroundTransparency=F(function()return E(ap)and 0.2 or 1 end,40,1),BackgroundColor3=i.disabledBackground,Size=
-UDim2.fromScale(1,1),[m]={L(6),l'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0,0.5),Position=UDim2.
-new(0,5,0.5,0),BackgroundTransparency=1,Image=j.lock,ImageColor3=i.disabledText,ImageTransparency=aq},l'TextLabel'{
-FontFace=H('Montserrat',Enum.FontWeight.Bold),BackgroundTransparency=1,Size=UDim2.new(1,-24,0,18),TextColor3=i.
-disabledText,TextTransparency=aq,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,29,0.5,0),Text=t(
-function()return E(ad)end),TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[m]={K(0,5)}}}},l'Frame'{Size=UDim2.
-fromScale(1,1),BackgroundTransparency=1,[m]={K(8),l'TextLabel'{FontFace=H('Montserrat',Enum.FontWeight.Bold),Size=UDim2.
-new(1,-39,0,18),BackgroundTransparency=1,TextColor3=i.text,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2
-.new(0,0,0.5,0),Text=t(function()if E(af)then return E(Z)..' '..tostring(#E(am))..'/'..tostring(#E(ab))end return E(Z)..
-': '..E(al)end),TextTransparency=aq,TextXAlignment=Enum.TextXAlignment.Left,RichText=true},l'ImageLabel'{Size=UDim2.
-fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,0),BackgroundTransparency=1,Image=t(function
-()return E(af)and j.multiDropdown or j.normalDropdown end),ImageColor3=i.text2,ImageTransparency=aq}}}}},l'Frame'{Size=
-UDim2.new(1,0,0,32),BackgroundTransparency=1,[m]={K(0,6),l'TextBox'{Size=UDim2.fromScale(1,1),BackgroundColor3=i.
-background,BackgroundTransparency=aq,FontFace=H('Montserrat',Enum.FontWeight.Bold),TextXAlignment=Enum.TextXAlignment.
-Left,TextScaled=true,PlaceholderText='Search',TextColor3=i.text,TextTransparency=aq,[u]=aj,[p'Changed']=function(as)
-local at=E(aj)if as=='Text'and at and at.Text then local au=at.Text for av,aw in E(an)do if string.find(E(ae)(aw.Name),
-au)or au==''then aw.Visible=true else aw.Visible=false end end end end,[m]={l'UITextSizeConstraint'{MinTextSize=0,
+and{}or''},{f.Default and''or'Default'})assert(Q,table.concat(R,'\n'))if f.Regex then assert(typeof(f.Regex'')=='string'
+,'The Regex function must always return a string')end local S,T,U,V,W,X,Y,Z,_,ab,ac,ad,ae,af,ag,ah=h.find'selectedTab',h
+.find'useConfig',h.find'flags',h.find'configLoaded',h.find'searchText',h.add(f),f.Parent,f.Name,f.Callback,n{},f.
+IsEnabled or n(true),f.DisabledText or n'Component Disabled',f.Regex or n(function(S)return S end),f.Multiselect or n(
+false),f.FLAG or n'',false if E(ag)~=''then local ai=E(U.names)assert(not table.find(ai,E(ag)),(
+'FLAG "%s" already exists'):format(E(ag)))table.insert(ai,E(ag))U:update('names',ai)ah=true end local ai,aj,ak,al,am,an,
+ao=n(),n(),n(false),n(E(af)and{}or''),n{},n{},n(false)o(am):onChange(function()if#E(am)==#E(ab)then ao:set(true)else ao:
+set(false)end if E(af)then local ap={}for aq,ar in E(am)do table.insert(ap,E(ae)(ar))end task.spawn(E(_),ap)al:set(E(am)
+)else task.spawn(E(_),E(ae)(E(am)[1]))al:set(E(ae)(E(am)[1]))end end)o(ab):onChange(function()if#E(am)==#E(ab)then ao:
+set(true)else ao:set(false)end end)local ap=n(E(S.string)==E(X.tab).uid)o(S.string):onChange(function()ap:set(E(S.string
+)==E(X.tab).uid)end)local aq=F(function()return E(ap)and 0 or 1 end,40,1)local function ar()if E(V.boolean)then local as
+=E(U.list)[E(ag)]local at=G({[E(ag)]=as},{[E(ag)]={}})if as and at then am:set(as)end o(am):onChange(function()local au=
+E(U.list)au[E(ag)]=E(am)U:update('list',au)end)end end l'Frame'{Parent=Y,Visible=t(function()if E(W.string)~=''and not
+string.find(E(Z):lower(),E(W.string):lower())then return false end return true end),Size=F(function()if E(ak)and E(ai)
+then local as,at=E(ai),3 for au,av in as:GetChildren()do if av:IsA'UIListLayout'or av:IsA'UICorner'or not av.Visible
+then continue end at+=(4+av.Size.Y.Offset)end return UDim2.new(1,0,0,at)end return UDim2.new(1,0,0,36)end,40,1),
+BackgroundColor3=i.background2,BackgroundTransparency=aq,ClipsDescendants=true,[u]=ai,[m]={L(6),J(M.LayoutOrder,N.
+Vertical,O.Center,P.Top,UDim.new(0,4)),l'TextButton'{Interactable=t(function()if not E(ac)then return false end return
+E(ap)end),Size=UDim2.new(1,0,0,36),BackgroundTransparency=1,[p'Activated']=function()ak:set(not E(ak))end,[m]={l'Frame'{
+ZIndex=2,Visible=t(function()if not E(ac)then return true end return false end),BackgroundTransparency=F(function()
+return E(ap)and 0.2 or 1 end,40,1),BackgroundColor3=i.disabledBackground,Size=UDim2.fromScale(1,1),[m]={L(6),l
+'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,5,0.5,0),
+BackgroundTransparency=1,Image=j.lock,ImageColor3=i.disabledText,ImageTransparency=aq},l'TextLabel'{FontFace=H(
+'Montserrat',Enum.FontWeight.Bold),BackgroundTransparency=1,Size=UDim2.new(1,-24,0,18),TextColor3=i.disabledText,
+TextTransparency=aq,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,29,0.5,0),Text=t(function()
+return E(ad)end),TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[m]={K(0,5)}}}},l'Frame'{Size=UDim2.fromScale(1,1
+),BackgroundTransparency=1,[m]={K(8),l'TextLabel'{FontFace=H('Montserrat',Enum.FontWeight.Bold),Size=UDim2.new(1,-39,0,
+18),BackgroundTransparency=1,TextColor3=i.text,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5
+,0),Text=t(function()if E(af)then return E(Z)..' '..tostring(#E(am))..'/'..tostring(#E(ab))end return E(Z)..': '..E(al)
+end),TextTransparency=aq,TextXAlignment=Enum.TextXAlignment.Left,RichText=true},l'ImageLabel'{Size=UDim2.fromOffset(24,
+24),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,0),BackgroundTransparency=1,Image=t(function()return E(af)
+and j.multiDropdown or j.normalDropdown end),ImageColor3=i.text2,ImageTransparency=aq}}}}},l'Frame'{Size=UDim2.new(1,0,0
+,32),BackgroundTransparency=1,[m]={K(0,6),l'TextBox'{Size=UDim2.fromScale(1,1),BackgroundColor3=i.background,
+BackgroundTransparency=aq,FontFace=H('Montserrat',Enum.FontWeight.Bold),TextXAlignment=Enum.TextXAlignment.Left,
+TextScaled=true,PlaceholderText='Search',TextColor3=i.text,TextTransparency=aq,[u]=aj,[p'Changed']=function(as)local at=
+E(aj)if as=='Text'and at and at.Text then local au=at.Text for av,aw in E(an)do if string.find(E(ae)(aw.Name):lower(),au
+:lower())or au==''then aw.Visible=true else aw.Visible=false end end end end,[m]={l'UITextSizeConstraint'{MinTextSize=0,
 MaxTextSize=16},L(4),K(6,6,6,6)}}}},l'Frame'{Size=UDim2.new(1,0,0,32),BackgroundTransparency=1,Visible=af,[m]={K(6,6,0,6
 ),l'TextButton'{Interactable=af,Size=UDim2.new(1,0,0,24),BackgroundTransparency=aq,BackgroundColor3=i.background,[p
 'Activated']=function()local as={}if not E(ao)then for at,au in E(ab)do au=typeof(au)=='table'and au.Value or au table.
@@ -944,88 +945,88 @@ aG)H:set(false)end return Y end end)()end,[76]=function()local aa,ab,ac=a(76)loc
 Parent.Parent return function(af)local ag,ah,ai=ac(ae.Bundles),ac(ab.Parent.notification),ac(ae.utilities).references
 local aj,ak=ag.icons,ag.themeSystem ah{Parent=ai.get'notificationList',Title='Darius Interface',Body=af,Duration=3,Image
 =aj.alert,ImageColor=ak.get'red'}end end)()end,[77]=function()local aa,ab,ac=a(77)local ad return(function(...)end)()end
-,[79]=function()local aa,ab,ac=a(79)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=
-ac(ae.Bundles)local ah=ag.services local ai,aj,ak,al,am=ah.UserInputService,ag.themeSystem,ag.icons,ag.data,ag.Fusion
-local an,ao,ap,aq,ar,as,at,au=am.New,am.Children,am.Value,am.Ref,am.Computed,am.Observer,am.OnEvent,ac(ae.simpleElements
-)local av,aw,ax,ay,az,aA,aB,aC,aD=au.UIListLayout,au.UICorner,au.UITextSizeConstraint,au.UIPadding,Enum.SortOrder,Enum.
-FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,ac(ae.utilities)local aE,aF,aG,aH,b,c,d,e,f,g,h,i,j=aD.get
-,aD.references,aD.drag,aD.customFont,aD.animate,aD.connections,ac(ab.Parent.Parent.components.warn),ap(),ap(),ap(),ap(),
-ap(),ap()aF.add(i,h,g,f,e,j)local k,l,m,n,o,p,t,u,v,E,F,G,H,I=al.find'absoluteOffset',al.find'instanceName',al.find
-'selectedTab',al.find'searchText',al.find'currentBinds',al.find'isVisible',al.find'isMobile',al.find'isListening',ap(750
-),ap(500),ap(false),ap(false),ap(false),ap(false)as(F):onChange(function()if aE(F)then G:set(not aE(G))task.wait(0.3)H:
-set(not aE(H))task.wait(0.3)I:set(not aE(I))else I:set(not aE(I))task.wait(0.3)H:set(not aE(H))task.wait(0.3)G:set(not
-aE(G))end end)as(H):onChange(function()v:set(aE(H)and 212 or 750)end)as(I):onChange(function()E:set(aE(I)and 74 or 500)
-end)local J,K,L=ap(false),ap(),ap(false)local function M(N:EnumItem,O:string)local P=aE(o.binds)if table.find(P,N)then
-d(('Key %s is already in use. %s'):format(N.Name,O))else table.insert(P,N)if aE(K)then table.remove(P,table.find(P,aE(K)
-))end o:update('binds',P)K:set(N)L:set(true)end end if not aE(t.boolean)then M(af.HideBind,'init')end local N=ap''as(m.
-string):onChange(function()local O=aE(m.string)local P=al.find(O)N:set(aE(P.Name):upper())end)local O,P an'ScreenGui'{
-Name=aE(l.name),Parent=af.Parent or ah.CoreGui,ResetOnSpawn=false,IgnoreGuiInset=true,[aq]=i,[ao]={an'Frame'{Name=
-'container',Visible=p.boolean,AnchorPoint=Vector2.new(0.5,0.5),Position=ar(function()return UDim2.new(0.5,0,0.5,aE(k.
-number))end),Size=b(function()return UDim2.fromOffset(aE(v),aE(E))end,30,1),BackgroundColor3=aj.background,[aq]=e,[ao]={
-aw(6),ay(16),av(az.LayoutOrder,aA.Horizontal,aB.Right,aC.Top,UDim.new(0,16)),an'Frame'{ZIndex=2,AnchorPoint=Vector2.new(
-0,0.5),Size=b(function()return UDim2.new(0,math.clamp(aE(v)-32-180-16,212,9e9),aE(G)and 0 or 1,0)end,30,1),
-BackgroundTransparency=1,ClipsDescendants=true,[ao]={an'TextLabel'{Size=UDim2.new(1,-1,0,70),Position=UDim2.fromOffset(0
-,10),BackgroundTransparency=1,Text=N,TextXAlignment=Enum.TextXAlignment.Right,TextYAlignment=Enum.TextYAlignment.Bottom,
-FontFace=aH('Montserrat',Enum.FontWeight.ExtraBold),TextColor3=aj.text,TextTransparency=0.95,TextScaled=true,[ao]={an
-'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=70}}},an'Frame'{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[ao]
-={av(az.LayoutOrder,aA.Vertical,aB.Left,aC.Top,UDim.new(0,16)),an'Frame'{Size=UDim2.new(1,0,0,44),BackgroundTransparency
-=1,[ao]={av(az.LayoutOrder,aA.Horizontal,aB.Left,aC.Top,UDim.new(0,10)),an'Frame'{Size=UDim2.new(0.65,0,1,0),
-BackgroundTransparency=1,[ao]={av(az.LayoutOrder,aA.Vertical,aB.Left,aC.Top,UDim.new(0,4)),an'TextLabel'{Size=UDim2.new(
-1,0,0.6,0),Text=af.Title,TextColor3=aj.text,FontFace=aH('Montserrat',Enum.FontWeight.ExtraBold),TextScaled=true,
-BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left},an'TextLabel'{Size=UDim2.new(1,0,0.4,-4),Text=af.
-Description,TextColor3=aj.text2,FontFace=aH('Montserrat',Enum.FontWeight.Bold),TextScaled=true,BackgroundTransparency=1,
-TextXAlignment=Enum.TextXAlignment.Left}}},an'TextButton'{Size=UDim2.new(0.35,-10,1,0),BackgroundColor3=aj.background2,[
-at'Activated']=function()local Q=aE(j)if Q then Q:CaptureFocus()end end,[ao]={ay(0,4),aw(6),av(az.LayoutOrder,aA.
-Horizontal,aB.Center,aC.Center,UDim.new(0,4)),an'ImageLabel'{Size=UDim2.fromOffset(20,20),BackgroundTransparency=1,Image
-=ak.search,ImageColor3=aj.text2},an'TextBox'{Size=UDim2.new(1,-32,0,16),TextColor3=aj.text2,TextSize=16,FontFace=aH(
-'Montserrat',Enum.FontWeight.Bold),PlaceholderText='Search',PlaceholderColor3=aj.text2,BackgroundTransparency=1,
-TextXAlignment=Enum.TextXAlignment.Left,TextScaled=true,ClearTextOnFocus=true,[at'Changed']=function(Q)local R=aE(j)if Q
-~='Text'and R and R.Text then return end n:update('string',R.Text)end,[aq]=j}}}}},an'Frame'{Name='tabFrameList',Size=
-UDim2.new(1,0,1,-60),BackgroundTransparency=1,[aq]=g}}}}},an'Frame'{Size=b(function()return aE(I)and UDim2.new(0,180,0,
-44)or UDim2.new(0,180,1,0)end,30,1),BackgroundColor3=aj.background2,ClipsDescendants=true,[ao]={aw(6),av(az.LayoutOrder,
-aA.Vertical,aB.Center,aC.Top,UDim.new(0,8)),an'Frame'{Size=UDim2.new(1,0,0,44),BackgroundTransparency=1,[ao]={av(az.
-LayoutOrder,aA.Horizontal,aB.Center,aC.Center,UDim.new(0,4)),an'TextButton'{Size=UDim2.new(1,-84,0,32),BackgroundColor3=
-aj.selectedTab,[at'Activated']=function()if aE(t.boolean)then L:set(true)P=aG(O,15)return end J:set(true)u:update(
-'boolean',true)end,[ao]={aw(6),ay(6),av(az.LayoutOrder,aA.Horizontal,aB.Left,aC.Center,UDim.new(0,5)),an'ImageLabel'{
-ZIndex=0,Size=UDim2.fromOffset(20,20),BackgroundTransparency=1,Image=aE(t.boolean)and ak.finger or ak.command,
-ImageColor3=aj.text2,ImageTransparency=0},an'TextLabel'{Visible=not aE(t.boolean),Size=UDim2.new(1,-25,0,16),
-BackgroundTransparency=1,FontFace=aH('Montserrat',Enum.FontWeight.Bold),TextScaled=true,TextXAlignment=Enum.
-TextXAlignment.Center,TextColor3=aj.text2,Text=ar(function()return aE(J)and'Listening'or aE(K)and aE(K).Name or'Waiting'
-end)},an'TextLabel'{Visible=aE(t.boolean),Size=UDim2.new(1,-25,0,16),BackgroundTransparency=1,FontFace=aH('Montserrat',
-Enum.FontWeight.Bold),TextScaled=true,TextXAlignment=Enum.TextXAlignment.Center,TextColor3=aj.text2,Text=ar(function()
-return aE(L)and'Move Bind'or'Place Bind'end)}}},an'TextButton'{Size=UDim2.fromOffset(32,32),BackgroundColor3=aj.
-selectedTab,[at'Activated']=function()F:set(not aE(F))end,[ao]={aw(6),an'ImageLabel'{AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(30,30),BackgroundTransparency=1,Image=ar(function()return aE(F)
-and ak.minimize or ak.maximize end),ImageColor3=aj.text2,ImageTransparency=0}}},an'TextButton'{Size=UDim2.fromOffset(32,
-32),BackgroundColor3=aj.selectedTab,[at'Activated']=function()if not aE(L)then ac(ae.components.notification){Parent=h,
-Title='Darius Interface',Body=`You must {aE(t.boolean)and'place your bind'or'bind to a key'} before hiding the UI!`,
-Duration=5,Image=ak.alert,ImageColor=aj.get'red'}return end p:update('boolean',not aE(p.boolean))end,[ao]={aw(6),an
+,[79]=function()local aa,ab,ac=a(79)local ad return(function(...)local ae=ab.Parent.Parent return function(af,ag)local
+ah=ac(ae.Bundles)local ai=ah.services local aj,ak,al,am,an=ai.UserInputService,ah.themeSystem,ah.icons,ah.data,ah.Fusion
+local ao,ap,aq,ar,as,at,au,av=an.New,an.Children,an.Value,an.Ref,an.Computed,an.Observer,an.OnEvent,ac(ae.simpleElements
+)local aw,ax,ay,az,aA,aB,aC,aD,aE=av.UIListLayout,av.UICorner,av.UITextSizeConstraint,av.UIPadding,Enum.SortOrder,Enum.
+FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,ac(ae.utilities)local aF,aG,aH,b,c,d,e,f,g,h,i,j,k=aE.get,
+aE.references,aE.drag,aE.customFont,aE.animate,aE.connections,ac(ab.Parent.Parent.components.warn),aq(),aq(),aq(),aq(),
+aq(),aq()aG.add(j,i,h,g,f,k)local l,m,n,o,p,t,u,v,E,F,G,H,I,J=am.find'absoluteOffset',am.find'instanceName',am.find
+'selectedTab',am.find'searchText',am.find'currentBinds',am.find'isVisible',am.find'isMobile',am.find'isListening',aq(750
+),aq(500),aq(false),aq(false),aq(false),aq(false)at(G):onChange(function()if aF(G)then H:set(not aF(H))task.wait(0.3)I:
+set(not aF(I))task.wait(0.3)J:set(not aF(J))else J:set(not aF(J))task.wait(0.3)I:set(not aF(I))task.wait(0.3)H:set(not
+aF(H))end end)at(I):onChange(function()E:set(aF(I)and 212 or 750)end)at(J):onChange(function()F:set(aF(J)and 74 or 500)
+end)local K,L,M=aq(false),aq(),aq(false)local function N(O:EnumItem,P:string)local Q=aF(p.binds)if table.find(Q,O)then
+e(('Key %s is already in use. %s'):format(O.Name,P))else table.insert(Q,O)if aF(L)then table.remove(Q,table.find(Q,aF(L)
+))end p:update('binds',Q)L:set(O)M:set(true)end end if not aF(u.boolean)then N(af.HideBind,'init')end local O=aq''at(n.
+string):onChange(function()local P=aF(n.string)local Q=am.find(P)O:set(aF(Q.Name):upper())end)local P,Q ao'ScreenGui'{
+Name=aF(m.name),Parent=af.Parent or ai.CoreGui,ResetOnSpawn=false,IgnoreGuiInset=true,[ar]=j,[ap]={ao'Frame'{Name=
+'container',Visible=t.boolean,AnchorPoint=Vector2.new(0.5,0.5),Position=as(function()return UDim2.new(0.5,0,0.5,aF(l.
+number))end),Size=c(function()return UDim2.fromOffset(aF(E),aF(F))end,30,1),BackgroundColor3=ak.background,[ar]=f,[ap]={
+ax(6),az(16),aw(aA.LayoutOrder,aB.Horizontal,aC.Right,aD.Top,UDim.new(0,16)),ao'Frame'{ZIndex=2,AnchorPoint=Vector2.new(
+0,0.5),Size=c(function()return UDim2.new(0,math.clamp(aF(E)-32-180-16,212,9e9),aF(H)and 0 or 1,0)end,30,1),
+BackgroundTransparency=1,ClipsDescendants=true,[ap]={ao'TextLabel'{Size=UDim2.new(1,-1,0,70),Position=UDim2.fromOffset(0
+,10),BackgroundTransparency=1,Text=O,TextXAlignment=Enum.TextXAlignment.Right,TextYAlignment=Enum.TextYAlignment.Bottom,
+FontFace=b('Montserrat',Enum.FontWeight.ExtraBold),TextColor3=ak.text,TextTransparency=0.95,TextScaled=true,[ap]={ao
+'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=70}}},ao'Frame'{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[ap]
+={aw(aA.LayoutOrder,aB.Vertical,aC.Left,aD.Top,UDim.new(0,16)),ao'Frame'{Size=UDim2.new(1,0,0,44),BackgroundTransparency
+=1,[ap]={aw(aA.LayoutOrder,aB.Horizontal,aC.Left,aD.Top,UDim.new(0,10)),ao'Frame'{Size=UDim2.new(0.65,0,1,0),
+BackgroundTransparency=1,[ap]={aw(aA.LayoutOrder,aB.Vertical,aC.Left,aD.Top,UDim.new(0,4)),ao'TextLabel'{Size=UDim2.new(
+1,0,0.6,0),Text=af.Title,TextColor3=ak.text,FontFace=b('Montserrat',Enum.FontWeight.ExtraBold),TextScaled=true,
+BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left},ao'TextLabel'{Size=UDim2.new(1,0,0.4,-4),Text=af.
+Description,TextColor3=ak.text2,FontFace=b('Montserrat',Enum.FontWeight.Bold),TextScaled=true,BackgroundTransparency=1,
+TextXAlignment=Enum.TextXAlignment.Left}}},ao'TextButton'{Size=UDim2.new(0.35,-10,1,0),BackgroundColor3=ak.background2,[
+au'Activated']=function()local R=aF(k)if R then R:CaptureFocus()end end,[ap]={az(0,4),ax(6),aw(aA.LayoutOrder,aB.
+Horizontal,aC.Center,aD.Center,UDim.new(0,4)),ao'ImageLabel'{Size=UDim2.fromOffset(20,20),BackgroundTransparency=1,Image
+=al.search,ImageColor3=ak.text2},ao'TextBox'{Size=UDim2.new(1,-32,0,16),TextColor3=ak.text2,TextSize=16,FontFace=b(
+'Montserrat',Enum.FontWeight.Bold),PlaceholderText='Search',PlaceholderColor3=ak.text2,BackgroundTransparency=1,
+TextXAlignment=Enum.TextXAlignment.Left,TextScaled=true,ClearTextOnFocus=true,[au'Changed']=function(R)local S=aF(k)if R
+~='Text'and S and S.Text then return end o:update('string',S.Text)end,[ar]=k}}}}},ao'Frame'{Name='tabFrameList',Size=
+UDim2.new(1,0,1,-60),BackgroundTransparency=1,[ar]=h}}}}},ao'Frame'{Size=c(function()return aF(J)and UDim2.new(0,180,0,
+44)or UDim2.new(0,180,1,0)end,30,1),BackgroundColor3=ak.background2,ClipsDescendants=true,[ap]={ax(6),aw(aA.LayoutOrder,
+aB.Vertical,aC.Center,aD.Top,UDim.new(0,8)),ao'Frame'{Size=UDim2.new(1,0,0,44),BackgroundTransparency=1,[ap]={aw(aA.
+LayoutOrder,aB.Horizontal,aC.Center,aD.Center,UDim.new(0,4)),ao'TextButton'{Size=UDim2.new(1,-84,0,32),BackgroundColor3=
+ak.selectedTab,[au'Activated']=function()if aF(u.boolean)then M:set(true)Q=aH(P,15)return end K:set(true)v:update(
+'boolean',true)end,[ap]={ax(6),az(6),aw(aA.LayoutOrder,aB.Horizontal,aC.Left,aD.Center,UDim.new(0,5)),ao'ImageLabel'{
+ZIndex=0,Size=UDim2.fromOffset(20,20),BackgroundTransparency=1,Image=aF(u.boolean)and al.finger or al.command,
+ImageColor3=ak.text2,ImageTransparency=0},ao'TextLabel'{Visible=not aF(u.boolean),Size=UDim2.new(1,-25,0,16),
+BackgroundTransparency=1,FontFace=b('Montserrat',Enum.FontWeight.Bold),TextScaled=true,TextXAlignment=Enum.
+TextXAlignment.Center,TextColor3=ak.text2,Text=as(function()return aF(K)and'Listening'or aF(L)and aF(L).Name or'Waiting'
+end)},ao'TextLabel'{Visible=aF(u.boolean),Size=UDim2.new(1,-25,0,16),BackgroundTransparency=1,FontFace=b('Montserrat',
+Enum.FontWeight.Bold),TextScaled=true,TextXAlignment=Enum.TextXAlignment.Center,TextColor3=ak.text2,Text=as(function()
+return aF(M)and'Move Bind'or'Place Bind'end)}}},ao'TextButton'{Size=UDim2.fromOffset(32,32),BackgroundColor3=ak.
+selectedTab,[au'Activated']=function()G:set(not aF(G))end,[ap]={ax(6),ao'ImageLabel'{AnchorPoint=Vector2.new(0.5,0.5),
+Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(30,30),BackgroundTransparency=1,Image=as(function()return aF(G)
+and al.minimize or al.maximize end),ImageColor3=ak.text2,ImageTransparency=0}}},ao'TextButton'{Size=UDim2.fromOffset(32,
+32),BackgroundColor3=ak.selectedTab,[au'Activated']=function()if not aF(M)then ac(ae.components.notification){Parent=i,
+Title='Darius Interface',Body=`You must {aF(u.boolean)and'place your bind'or'bind to a key'} before hiding the UI!`,
+Duration=5,Image=al.alert,ImageColor=ak.get'red'}return end t:update('boolean',not aF(t.boolean))end,[ap]={ax(6),ao
 'ImageLabel'{AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(30,30),
-BackgroundTransparency=1,Image=ak.close,ImageColor3=aj.orange,ImageTransparency=0}}}}},an'ScrollingFrame'{Name=
-'tabButtonList',Size=b(function()return aE(I)and UDim2.new(1,0,0,0)or UDim2.new(1,0,1,-90)end,30,1),
+BackgroundTransparency=1,Image=al.close,ImageColor3=ak.orange,ImageTransparency=0}}}}},ao'ScrollingFrame'{Name=
+'tabButtonList',Size=c(function()return aF(J)and UDim2.new(1,0,0,0)or UDim2.new(1,0,1,-90)end,30,1),
 BackgroundTransparency=1,ScrollBarThickness=0,CanvasSize=UDim2.new(0,0,0,0),AutomaticCanvasSize=Enum.AutomaticSize.Y,
-ClipsDescendants=true,[aq]=f,[ao]={av(az.LayoutOrder,aA.Vertical,aB.Left,aC.Top,UDim.new(0,6)),ay(0,10)}},an'TextButton'
-{Size=UDim2.new(1,-10,0,24),BackgroundColor3=aj.selectedTab,[at'Activated']=function()c:deleteConnections()aF:clear()end
-,[ao]={aw(4),ay(6),av(az.LayoutOrder,aA.Horizontal,aB.Left,aC.Center,UDim.new(0,4)),an'ImageLabel'{
-BackgroundTransparency=1,Size=UDim2.fromOffset(24,24),ImageColor3=aj.red,Image=ak.close,ImageTransparency=0.3},an
-'TextLabel'{Size=UDim2.new(1,-28,1),FontFace=aH('Montserrat',Enum.FontWeight.Bold),TextColor3=aj.red,TextScaled=true,
-Text='Destroy Interface',BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left,TextTransparency=0.3,[ao]={an
-'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=16}}}}}}}}},an'Frame'{Name='notificationList',BackgroundTransparency=1,
-Size=UDim2.new(0,2,1,-20),Position=UDim2.new(1,-5,0.5,0),AnchorPoint=Vector2.new(1,0.5),ClipsDescendants=false,[aq]=h,[
-ao]={av(az.LayoutOrder,aA.Vertical,aB.Right,aC.Bottom)}}}}O=an'TextButton'{Visible=ar(function()return(aE(L)and aE(t.
-boolean))end),Interactable=ar(function()return(aE(L)and aE(t.boolean))end),Parent=aF.get(aE(l.name)),Size=UDim2.
-fromOffset(60,60),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),TextScaled=true,Text='Hide UI',
-FontFace=aH('Montserrat',Enum.FontWeight.Bold),TextColor3=aj.mobileButtonText,BackgroundColor3=aj.mobileButtonBackground
-,BackgroundTransparency=0.6,TextTransparency=0.1,[at'Activated']=function()if P then P:Disconnect()P=nil else p:update(
-'boolean',not aE(p.boolean))end end,[ao]={ay(4),aw(16),ax(0,16),an'ImageLabel'{ZIndex=0,AnchorPoint=Vector2.new(0.5,0.5)
-,Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(32,32),BackgroundTransparency=1,Image=aE(t.boolean)and ak.
-finger or ak.command,ImageColor3=aj.mobileButtonImage,ImageTransparency=0.8}}}local Q=ai.InputBegan:Connect(function(Q,R
-)if aE(t.boolean)then return end if aE(J)then if Q.KeyCode and Q.KeyCode~=Enum.KeyCode.Unknown then M(Q.KeyCode,
-'From input box')end J:set(false)task.wait()u:update('boolean',false)else if Q.KeyCode and Q.KeyCode==aE(K)and not R and
-not aE(u.boolean)then p:update('boolean',not aE(p.boolean))end end end)c.add(Q)aG(aF.get'container',15)end end)()end,[80
-]=function()local aa,ab,ac=a(80)local ad return(function(...)return setmetatable({},{__index=function(ae,af)if ab:
-FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end end})end)()end,[81]=function()local aa,ab,ac=
-a(81)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)return function(af:number,ag:Enum.
+ClipsDescendants=true,[ar]=g,[ap]={aw(aA.LayoutOrder,aB.Vertical,aC.Left,aD.Top,UDim.new(0,6)),az(0,10)}},ao'TextButton'
+{Size=UDim2.new(1,-10,0,24),BackgroundColor3=ak.selectedTab,[au'Activated']=function()ag:Fire()ag:Destroy()d:
+deleteConnections()aG:clear()end,[ap]={ax(4),az(6),aw(aA.LayoutOrder,aB.Horizontal,aC.Left,aD.Center,UDim.new(0,4)),ao
+'ImageLabel'{BackgroundTransparency=1,Size=UDim2.fromOffset(24,24),ImageColor3=ak.red,Image=al.close,ImageTransparency=
+0.3},ao'TextLabel'{Size=UDim2.new(1,-28,1),FontFace=b('Montserrat',Enum.FontWeight.Bold),TextColor3=ak.red,TextScaled=
+true,Text='Destroy Interface',BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Left,TextTransparency=0.3,[ap]
+={ao'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=16}}}}}}}}},ao'Frame'{Name='notificationList',
+BackgroundTransparency=1,Size=UDim2.new(0,2,1,-20),Position=UDim2.new(1,-5,0.5,0),AnchorPoint=Vector2.new(1,0.5),
+ClipsDescendants=false,[ar]=i,[ap]={aw(aA.LayoutOrder,aB.Vertical,aC.Right,aD.Bottom)}}}}P=ao'TextButton'{Visible=as(
+function()return(aF(M)and aF(u.boolean))end),Interactable=as(function()return(aF(M)and aF(u.boolean))end),Parent=aG.get(
+aF(m.name)),Size=UDim2.fromOffset(60,60),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),TextScaled=
+true,Text='Hide UI',FontFace=b('Montserrat',Enum.FontWeight.Bold),TextColor3=ak.mobileButtonText,BackgroundColor3=ak.
+mobileButtonBackground,BackgroundTransparency=0.6,TextTransparency=0.1,[au'Activated']=function()if Q then Q:Disconnect(
+)Q=nil else t:update('boolean',not aF(t.boolean))end end,[ap]={az(4),ax(16),ay(0,16),ao'ImageLabel'{ZIndex=0,AnchorPoint
+=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(32,32),BackgroundTransparency=1,Image=aF(u
+.boolean)and al.finger or al.command,ImageColor3=ak.mobileButtonImage,ImageTransparency=0.8}}}local R=aj.InputBegan:
+Connect(function(R,S)if aF(u.boolean)then return end if aF(K)then if R.KeyCode and R.KeyCode~=Enum.KeyCode.Unknown then
+N(R.KeyCode,'From input box')end K:set(false)task.wait()v:update('boolean',false)else if R.KeyCode and R.KeyCode==aF(L)
+and not S and not aF(v.boolean)then t:update('boolean',not aF(t.boolean))end end end)d.add(R)aH(aG.get'container',15)end
+end)()end,[80]=function()local aa,ab,ac=a(80)local ad return(function(...)return setmetatable({},{__index=function(ae,af
+)if ab:FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end end})end)()end,[81]=function()local aa,
+ab,ac=a(81)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)return function(af:number,ag:Enum.
 AspectType,ah:Enum.DominantAxis)ag=ag or Enum.AspectType.FitWithinMaxSize ah=ah or Enum.DominantAxis.Height return ae.
 New'UIAspectRatioConstraint'{AspectRatio=af,AspectType=ag,DominantAxis=ah}end end)()end,[82]=function()local aa,ab,ac=a(
 82)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)return function(af,ag)ag=ag or 0 return ae.
@@ -1095,28 +1096,28 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[97]=function()local aa,ab,ac=a(97)local ad return(function(...)return function(ae:table,
 af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(not ae[aj]or typeof(ae[aj])~=typeof(ak))and
 not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah
-,ai end end)()end},{{1,2,{'Darius'},{{77,2,{'darius.story'}},{63,1,{'components'},{{68,2,{'label'}},{76,2,{'warn'}},{73,
-2,{'tabFrame'}},{65,2,{'divider'}},{75,2,{'toggle'}},{74,2,{'textbox'}},{69,2,{'notification'}},{72,2,{'tabButton'}},{67
-,2,{'keybind'}},{64,2,{'button'}},{71,2,{'slider'}},{70,2,{'paragraph'}},{66,2,{'dropdown'}}}},{86,2,{'utilities'},{{90,
-2,{'customFunctions'}},{88,2,{'connections'}},{91,2,{'drag'}},{94,2,{'randomString'}},{96,2,{'tween'}},{92,2,{'get'}},{
-89,2,{'customFont'}},{95,2,{'references'}},{93,2,{'getStringBounds'}},{87,2,{'animate'}},{97,2,{'typecheck'}}}},{2,2,{
-'Bundles'},{{59,2,{'lucide'}},{57,2,{'data'}},{3,2,{'Fusion'},{{22,1,{'Instances'},{{24,2,{'Cleanup'}},{27,2,{'OnChange'
-}},{29,2,{'Out'}},{28,2,{'OnEvent'}},{32,2,{'defaultProps'}},{30,2,{'Ref'}},{23,2,{'Children'}},{31,2,{
-'applyInstanceProps'}},{25,2,{'Hydrate'}},{26,2,{'New'}}}},{49,1,{'Utility'},{{51,2,{'cleanup'}},{52,2,{'doNothing'}},{
-54,2,{'needsDestruction'}},{53,2,{'isSimilar'}},{50,2,{'None'}},{55,2,{'restrictRead'}},{56,2,{'xtypeof'}}}},{40,1,{
-'State'},{{41,2,{'Computed'}},{47,2,{'unwrap'}},{46,2,{'Value'}},{44,2,{'ForValues'}},{45,2,{'Observer'}},{43,2,{
-'ForPairs'}},{42,2,{'ForKeys'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{16,1,{'Dependencies'},{{19,2,{'sharedState'}},{
-18,2,{'initDependency'}},{20,2,{'updateAll'}},{17,2,{'captureDependencies'}},{21,2,{'useDependency'}}}},{4,1,{
-'Animation'},{{7,2,{'Tween'}},{11,2,{'packType'}},{13,2,{'unpackType'}},{6,2,{'SpringScheduler'}},{12,2,{
-'springCoefficients'}},{8,2,{'TweenScheduler'}},{10,2,{'lerpType'}},{5,2,{'Spring'}},{9,2,{'getTweenRatio'}}}},{39,2,{
-'PubTypes'}},{48,2,{'Types'}},{33,1,{'Logging'},{{36,2,{'logWarn'}},{35,2,{'logErrorNonFatal'}},{34,2,{'logError'}},{37,
-2,{'messages'}},{38,2,{'parseError'}}}}}},{58,2,{'icons'}},{60,2,{'services'}},{61,2,{'themeSystem'},{{62,2,{'default'}}
-}}}},{78,1,{'layouts'},{{79,2,{'main'}}}},{80,2,{'simpleElements'},{{83,2,{'UIListLayout'}},{84,2,{'UIPadding'}},{85,2,{
-'UITextSizeConstraint'}},{82,2,{'UICorner'}},{81,2,{'UIAspectRatioConstraint'}}}}}}},'0.4.1','WaxRuntime',string,task,
-setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay
-,az,aA=aj.insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)
-=='Lune'then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,
-aG,aH,b,c,d=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]=
+,ai end end)()end},{{1,2,{'Darius'},{{77,2,{'darius.story'}},{63,1,{'components'},{{70,2,{'paragraph'}},{65,2,{'divider'
+}},{71,2,{'slider'}},{72,2,{'tabButton'}},{68,2,{'label'}},{66,2,{'dropdown'}},{67,2,{'keybind'}},{75,2,{'toggle'}},{74,
+2,{'textbox'}},{64,2,{'button'}},{69,2,{'notification'}},{76,2,{'warn'}},{73,2,{'tabFrame'}}}},{86,2,{'utilities'},{{93,
+2,{'getStringBounds'}},{94,2,{'randomString'}},{97,2,{'typecheck'}},{91,2,{'drag'}},{87,2,{'animate'}},{88,2,{
+'connections'}},{96,2,{'tween'}},{95,2,{'references'}},{89,2,{'customFont'}},{90,2,{'customFunctions'}},{92,2,{'get'}}}}
+,{2,2,{'Bundles'},{{60,2,{'services'}},{57,2,{'data'}},{58,2,{'icons'}},{59,2,{'lucide'}},{61,2,{'themeSystem'},{{62,2,{
+'default'}}}},{3,2,{'Fusion'},{{40,1,{'State'},{{47,2,{'unwrap'}},{43,2,{'ForPairs'}},{42,2,{'ForKeys'}},{44,2,{
+'ForValues'}},{45,2,{'Observer'}},{41,2,{'Computed'}},{46,2,{'Value'}}}},{49,1,{'Utility'},{{54,2,{'needsDestruction'}},
+{51,2,{'cleanup'}},{52,2,{'doNothing'}},{53,2,{'isSimilar'}},{56,2,{'xtypeof'}},{55,2,{'restrictRead'}},{50,2,{'None'}}}
+},{16,1,{'Dependencies'},{{19,2,{'sharedState'}},{21,2,{'useDependency'}},{18,2,{'initDependency'}},{20,2,{'updateAll'}}
+,{17,2,{'captureDependencies'}}}},{48,2,{'Types'}},{39,2,{'PubTypes'}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{33,1,{
+'Logging'},{{37,2,{'messages'}},{34,2,{'logError'}},{36,2,{'logWarn'}},{38,2,{'parseError'}},{35,2,{'logErrorNonFatal'}}
+}},{22,1,{'Instances'},{{32,2,{'defaultProps'}},{28,2,{'OnEvent'}},{30,2,{'Ref'}},{29,2,{'Out'}},{23,2,{'Children'}},{26
+,2,{'New'}},{27,2,{'OnChange'}},{31,2,{'applyInstanceProps'}},{25,2,{'Hydrate'}},{24,2,{'Cleanup'}}}},{4,1,{'Animation'}
+,{{12,2,{'springCoefficients'}},{7,2,{'Tween'}},{11,2,{'packType'}},{9,2,{'getTweenRatio'}},{6,2,{'SpringScheduler'}},{
+13,2,{'unpackType'}},{8,2,{'TweenScheduler'}},{10,2,{'lerpType'}},{5,2,{'Spring'}}}}}}}},{78,1,{'layouts'},{{79,2,{
+'main'}}}},{80,2,{'simpleElements'},{{83,2,{'UIListLayout'}},{85,2,{'UITextSizeConstraint'}},{81,2,{
+'UIAspectRatioConstraint'}},{82,2,{'UICorner'}},{84,2,{'UIPadding'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,
+error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay,az,aA=aj.
+insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)=='Lune'
+then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,aG,aH,b,c
+,d=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]=
 'StringValue'},{},{},{},{},{},{},{}local e,f={GetFullName={{},function(e)local f,g=e.Name,e.Parent while g do f=g.Name..
 '.'..f g=g.Parent end return f end},GetChildren={{},function(e)local f={}for g in ai,d[e]do au(f,g)end return f end},
 GetDescendants={{},function(e)local f={}for g in ai,d[e]do au(f,g)for h,i in ai,g:GetDescendants()do au(f,i)end end
