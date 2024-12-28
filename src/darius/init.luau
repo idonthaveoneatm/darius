@@ -107,11 +107,11 @@ function darius:Window(windowProperty)
 
 	-- Instance
 
-	mainLayout(windowProperty)
-	local tabButtonList = references.get("tabButtonList")
-	local tabFrameList = references.get("tabFrameList")
 	local bindableEvent = fusion.New "BindableEvent" {}
 	darius.OnDestruction = bindableEvent.Event
+	mainLayout(windowProperty, bindableEvent)
+	local tabButtonList = references.get("tabButtonList")
+	local tabFrameList = references.get("tabFrameList")
 
 	-- Tabs
 
@@ -163,9 +163,10 @@ function darius:Window(windowProperty)
 		return addComponent("notification", references.get("notificationList"), notifyProperty)
 	end
 	function darius:Destroy()
+		bindableEvent:Fire()
+		bindableEvent:Destroy()
 		connections:deleteConnections()
 		references:clear()
-		bindableEvent:Fire()
 	end
 	function darius:LoadConfig()
 		if not windowProperty.UseConfig then

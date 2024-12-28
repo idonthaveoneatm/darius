@@ -56,7 +56,9 @@ return function(property)
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
-	assert(property.Regex and property.Regex("") ~= nil, "no work regex")
+	if property.Regex then
+		assert(typeof(property.Regex("")) == "string", "The Regex function must always return a string")
+	end
 
 	-- Data
 
@@ -300,7 +302,7 @@ return function(property)
 							if changedProperty == "Text" and search and search.Text then
 								local text = search.Text
 								for _,item in get(itemElements) do
-									if string.find(get(regex)(item.Name), text) or text == "" then
+									if string.find(get(regex)(item.Name):lower(), text:lower()) or text == "" then
 										item.Visible = true
 									else
 										item.Visible = false

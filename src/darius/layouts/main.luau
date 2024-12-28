@@ -1,5 +1,5 @@
 local darius = script.Parent.Parent
-return function(property)
+return function(property, bindableEvent)
 	local bundles = require(darius.Bundles)
 	local services = bundles.services
 	local UserInputService = services.UserInputService
@@ -240,7 +240,7 @@ return function(property)
 														TextXAlignment = Enum.TextXAlignment.Left,
 														TextScaled = true,
 														ClearTextOnFocus = true,
-														
+
 														[onevent "Changed"] = function(changedProperty)
 															local _searchBox = get(searchBox)
 															if changedProperty ~= "Text" and _searchBox and _searchBox.Text then
@@ -287,7 +287,7 @@ return function(property)
 									new "TextButton" {
 										Size = UDim2.new(1,-84,0,32),
 										BackgroundColor3 = theme.selectedTab,
-				
+
 										[onevent "Activated"] = function()
 											if get(isMobile.boolean) then
 												hasBind:set(true)
@@ -297,7 +297,7 @@ return function(property)
 											listening:set(true)
 											isListening:update("boolean", true)
 										end,
-				
+
 										[children] = {
 											UICorner(6),
 											UIPadding(6),
@@ -414,12 +414,14 @@ return function(property)
 							new "TextButton" {
 								Size = UDim2.new(1,-10,0,24),
 								BackgroundColor3 = theme.selectedTab,
-						
+
 								[onevent "Activated"] = function()
+									bindableEvent:Fire()
+									bindableEvent:Destroy()
 									connections:deleteConnections()
 									references:clear()
 								end,
-						
+
 								[children] = {
 									UICorner(4),
 									UIPadding(6),
@@ -440,7 +442,7 @@ return function(property)
 										BackgroundTransparency = 1,
 										TextXAlignment = Enum.TextXAlignment.Left,
 										TextTransparency = 0.3,
-						
+
 										[children] = {
 											new "UITextSizeConstraint" {
 												MinTextSize = 1,
