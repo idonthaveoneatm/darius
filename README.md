@@ -93,13 +93,34 @@ Place this at the **END** of your implementation of the user interface. See [her
 ```lua
 darius:LoadConfig()
 ```
+### Flags
+This is how you can access the callback'd values with flags.
+```lua
+darius.flags.FLAGNAME.Value --> Will be the last set value of the flag
+darius.flags.FLAGNAME.OnChange:Connect(function(value): any -- Is fired every time the value of a flag is changed
+    print(value)
+end)
+-- Types are the same as the ones found for each component
+```
+### Darius Folder and File
+If `UseConfig = true` then `darius.Folder` and `darius.File` will give you strings to the folder and the config file created.
+```lua
+...
+    UseConfig = true,
+    Config = "darius rocks",
+...
+print(darius.Folder) --> darius/darius rocks
+print(darius.File) --> darius/darius rocks/config.json
+```
 ### Destroying Darius
-You can also connect functions to run when Darius is destroyed by connectiong to `darius.OnDestruction`
+You can also connect functions to run when Darius is destroyed by connectiong to `darius.OnDestruction`. You can also check if Darius has been destroyed with `darius.Destroyed`.
 ```lua
 darius.OnDestruction:Connect(function()
     print("Destroying Darius")
 end)
+print(darius.Destroyed) --> false
 darius:Destroy()
+print(darius.Destroyed) --> true
 -- In console it would print "Destroying Darius"
 ```
 ## Create a Tab
@@ -115,7 +136,7 @@ local tab = window:Tab({
 ```lua
 local button = tab:Button({
     Name = "Interact With Me!",
-    Callback = function()
+    Callback = function(): nil
         print("Hello World!")
     end,
 
@@ -141,7 +162,7 @@ local dropdown = tab:Dropdown({
             Value = "Apple"
         }, 
     "Banana", "Carrot", "Dingleberry", "Eggplant", "Fruit", "Grape", "Hen", "India", "Jumprope", "Kite", "Lime","Music","Number","Omega","Pencil","Quadrant", "Rust"},
-    Callback = function(value)
+    Callback = function(value): string | table
         print(value)
     end,
 
@@ -190,7 +211,7 @@ toggle:SetBind(Enum.KeyCode.R) -- Only if LinkKeybind
 ```lua
 local keybind = tab:Keybind({
     Name = "Binded Action",
-    Callback = function()
+    Callback = function(): nil
         
     end,
 

@@ -75,6 +75,7 @@ return function(property)
 	local name = property.Name
 	local callback = property.Callback
 	local items = value({})
+	local default = property.Default or value({})
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
@@ -87,6 +88,9 @@ return function(property)
 		table.insert(_names, get(flag))
 		flags:update("names", _names)
 		hasFlag = true
+		local _specialCase = get(flags.specialCase)
+		_specialCase[get(flag)] = {Multiselect = get(multiselect)}
+		flags:update("specialCase", _specialCase)
 	end
 
 	-- Variables
@@ -100,6 +104,10 @@ return function(property)
 	local itemElements = value({})
 	local hasSelectedAll = value(false)
 	observe(selectedItems):onChange(function()
+		if typeof(get(selectedItems)) ~= "table" then
+			selectedItems:set({get(selectedItems)})
+			return
+		end
 		if #get(selectedItems) == #get(items) then
 			hasSelectedAll:set(true)
 		else
@@ -113,6 +121,9 @@ return function(property)
 			task.spawn(get(callback), _cbTable)
 			lastReturnedValue:set(get(selectedItems))
 		else
+			if #get(selectedItems) < 1 then
+				return
+			end
 			task.spawn(get(callback), get(regex)(get(selectedItems)[1]))
 			lastReturnedValue:set(get(regex)(get(selectedItems)[1]))
 		end
@@ -140,10 +151,18 @@ return function(property)
 				selectedItems:set(savedFlag)
 			end
 			observe(selectedItems):onChange(function()
+				if typeof(get(selectedItems)) ~= "table" then
+					return
+				end
 				local _list = get(flags.list)
 				_list[get(flag)] = get(selectedItems)
+
 				flags:update("list", _list)
 			end)
+			if not savedFlag then
+				task.wait()
+				selectedItems:set(get(default))
+			end
 		end
 	end
 
@@ -404,9 +423,13 @@ return function(property)
 
 				itemValue = item
 			end
+			local cleanedItem = get(regex)(itemValue)
 
 			observe(selectedItems):onChange(function()
-				if table.find(get(selectedItems), get(regex)(itemValue)) then
+				if typeof(get(selectedItems)) ~= "table" then
+					return
+				end
+				if table.find(get(selectedItems), cleanedItem) then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
@@ -424,13 +447,13 @@ return function(property)
 					if get(multiselect) then
 						isItemSelected:set(not get(isItemSelected))
 						if get(isItemSelected) then
-							table.insert(_selectedItems, get(regex)(itemValue))
+							table.insert(_selectedItems, cleanedItem)
 						else
-							table.remove(_selectedItems, table.find(_selectedItems, get(regex)(itemValue)))
+							table.remove(_selectedItems, table.find(_selectedItems, cleanedItem))
 						end
 						selectedItems:set(_selectedItems)
 					else
-						selectedItems:set({itemValue})
+						selectedItems:set({cleanedItem})
 						isDropped:set(false)
 					end
 				end,
@@ -517,6 +540,8 @@ return function(property)
 		else
 			configLoad()
 		end
+	else
+		selectedItems:set(get(default))
 	end
 
 	local returnFunctions = {}
@@ -541,15 +566,16 @@ return function(property)
 			else
 				item  = v
 			end
+			local cleanedItem = get(regex)(item)
 			if get(multiselect) then
-				if typeof(get(lastReturnedValue)) == "table" and table.find(get(lastReturnedValue), get(regex)(item)) then
-					table.insert(multiselectTable, get(regex)(item))
+				if typeof(get(lastReturnedValue)) == "table" and table.find(get(lastReturnedValue), cleanedItem) then
+					table.insert(multiselectTable, cleanedItem)
 					foundAnything = true
 				end
 			else
-				if get(lastReturnedValue) == get(regex)(item) then
+				if get(lastReturnedValue) == cleanedItem then
 					foundAnything = true
-					task.spawn(get(callback), get(regex)(item))
+					task.spawn(get(callback), cleanedItem)
 					break
 				end
 			end
@@ -571,7 +597,8 @@ return function(property)
 			if typeof(v) == "table" then
 				itemValue = v.Value
 			end
-			if get(regex)(itemValue) == get(regex)(item) then
+			local cleanedItem = get(regex)(item)
+			if get(regex)(itemValue) == cleanedItem then
 				hasItem = true
 				break
 			end

@@ -84,9 +84,9 @@ function darius:Window(windowProperty)
 	data.add({binds = {}}, "currentBinds")
 	data.add({string = ""}, "searchText")
 	data.add({boolean = true}, "isVisible")
-	data.add({boolean = windowProperty.IsMobile}, "isMobile")
+	local isMobile = data.add({boolean = windowProperty.IsMobile}, "isMobile")
 	data.add({boolean = false}, "isListening")
-	local flags = data.add({list = {}, names = {}}, "flags")
+	local flags = data.add({list = {}, names = {}, specialCase = {}}, "flags")
 	local configLoaded = data.add({boolean = false}, "configLoaded")
 	local useConfig = data.add({boolean = false}, "useConfig")
 	local windowData = data.add({data = windowProperty})
@@ -98,7 +98,7 @@ function darius:Window(windowProperty)
 		useConfig:update("boolean", windowProperty.UseConfig)
 		config = windowProperty.Config
 
-		local path = {"darius-configs",`/{config}`}
+		local path = {"darius",`/{config}`}
 		local built = ""
 		for i=1,#path do
 			built = built..path[i]
@@ -106,11 +106,49 @@ function darius:Window(windowProperty)
 				customFunctions.makefolder(built)
 			end
 		end
+		darius.Folder = built
 		config = built.."/config.json"
+		darius.File = config
 		if not customFunctions.isfile(config) then
 			customFunctions.writefile(config, "{}")
 		end
 	end
+
+	darius.flags = {}
+	setmetatable(darius.flags, {
+		__index = function(tbl, flag)
+			local flagEvent = fusion.New "BindableEvent" {}
+			local lastFired = get(flags.list)[flag] or nil
+			local flagTable = {
+				OnChange = flagEvent.Event,
+				Value = lastFired
+			}
+			connections.add(observe(flags.list):onChange(function()
+				local _list = get(flags.list)
+
+				local specialCase = get(flags.specialCase)[flag]
+				if _list[flag] then
+					local newValue = _list[flag]
+					if specialCase then
+						if specialCase.Multiselect ~= nil and not specialCase.Multiselect then
+							newValue = newValue[1]
+						elseif specialCase.isToggle ~= nil and specialCase.isToggle then
+							newValue = newValue.boolean
+						elseif specialCase.isKeybind then
+							newValue = get(isMobile.boolean) and newValue.coordinate or newValue.keycode
+						end
+					end
+					if newValue ~= lastFired then
+						lastFired = newValue
+						flagTable.Value = newValue
+						flagEvent:Fire(flagTable.Value)
+					end
+				end
+			end))
+			tbl[flag] = flagTable
+			return flagTable
+		end
+	})
 
 	-- Instance
 
@@ -166,23 +204,25 @@ function darius:Window(windowProperty)
 		end
 		return tabs[tab.uid]
 	end
+	darius.Destroyed = false
 	function darius:Notify(notifyProperty)
 		return addComponent("notification", references.get("notificationList"), notifyProperty)
 	end
 	function darius:Destroy()
+		darius.Destroyed = true
 		bindableEvent:Fire()
-		bindableEvent:Destroy()
 		connections:deleteConnections()
 		references:clear()
+		bindableEvent:Destroy()
 	end
 	function darius:LoadConfig()
 		if not windowProperty.UseConfig then
 			return
 		end
 		flags:update("list", HttpService:JSONDecode(customFunctions.readfile(config)))
-		observe(flags.list):onChange(function()
+		connections.add(observe(flags.list):onChange(function()
 			customFunctions.writefile(config, HttpService:JSONEncode(get(flags.list)))
-		end)
+		end))
 		configLoaded:update("boolean", true)
 	end
 	function darius:SetTheme(newTheme)
@@ -5170,6 +5210,7 @@ return function(property)
 	local name = property.Name
 	local callback = property.Callback
 	local items = value({})
+	local default = property.Default or value({})
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
@@ -5182,6 +5223,9 @@ return function(property)
 		table.insert(_names, get(flag))
 		flags:update("names", _names)
 		hasFlag = true
+		local _specialCase = get(flags.specialCase)
+		_specialCase[get(flag)] = {Multiselect = get(multiselect)}
+		flags:update("specialCase", _specialCase)
 	end
 
 	-- Variables
@@ -5195,6 +5239,10 @@ return function(property)
 	local itemElements = value({})
 	local hasSelectedAll = value(false)
 	observe(selectedItems):onChange(function()
+		if typeof(get(selectedItems)) ~= "table" then
+			selectedItems:set({get(selectedItems)})
+			return
+		end
 		if #get(selectedItems) == #get(items) then
 			hasSelectedAll:set(true)
 		else
@@ -5208,6 +5256,9 @@ return function(property)
 			task.spawn(get(callback), _cbTable)
 			lastReturnedValue:set(get(selectedItems))
 		else
+			if #get(selectedItems) < 1 then
+				return
+			end
 			task.spawn(get(callback), get(regex)(get(selectedItems)[1]))
 			lastReturnedValue:set(get(regex)(get(selectedItems)[1]))
 		end
@@ -5235,10 +5286,18 @@ return function(property)
 				selectedItems:set(savedFlag)
 			end
 			observe(selectedItems):onChange(function()
+				if typeof(get(selectedItems)) ~= "table" then
+					return
+				end
 				local _list = get(flags.list)
 				_list[get(flag)] = get(selectedItems)
+
 				flags:update("list", _list)
 			end)
+			if not savedFlag then
+				task.wait()
+				selectedItems:set(get(default))
+			end
 		end
 	end
 
@@ -5499,9 +5558,13 @@ return function(property)
 
 				itemValue = item
 			end
+			local cleanedItem = get(regex)(itemValue)
 
 			observe(selectedItems):onChange(function()
-				if table.find(get(selectedItems), get(regex)(itemValue)) then
+				if typeof(get(selectedItems)) ~= "table" then
+					return
+				end
+				if table.find(get(selectedItems), cleanedItem) then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
@@ -5519,13 +5582,13 @@ return function(property)
 					if get(multiselect) then
 						isItemSelected:set(not get(isItemSelected))
 						if get(isItemSelected) then
-							table.insert(_selectedItems, get(regex)(itemValue))
+							table.insert(_selectedItems, cleanedItem)
 						else
-							table.remove(_selectedItems, table.find(_selectedItems, get(regex)(itemValue)))
+							table.remove(_selectedItems, table.find(_selectedItems, cleanedItem))
 						end
 						selectedItems:set(_selectedItems)
 					else
-						selectedItems:set({itemValue})
+						selectedItems:set({cleanedItem})
 						isDropped:set(false)
 					end
 				end,
@@ -5612,6 +5675,8 @@ return function(property)
 		else
 			configLoad()
 		end
+	else
+		selectedItems:set(get(default))
 	end
 
 	local returnFunctions = {}
@@ -5636,15 +5701,16 @@ return function(property)
 			else
 				item  = v
 			end
+			local cleanedItem = get(regex)(item)
 			if get(multiselect) then
-				if typeof(get(lastReturnedValue)) == "table" and table.find(get(lastReturnedValue), get(regex)(item)) then
-					table.insert(multiselectTable, get(regex)(item))
+				if typeof(get(lastReturnedValue)) == "table" and table.find(get(lastReturnedValue), cleanedItem) then
+					table.insert(multiselectTable, cleanedItem)
 					foundAnything = true
 				end
 			else
-				if get(lastReturnedValue) == get(regex)(item) then
+				if get(lastReturnedValue) == cleanedItem then
 					foundAnything = true
-					task.spawn(get(callback), get(regex)(item))
+					task.spawn(get(callback), cleanedItem)
 					break
 				end
 			end
@@ -5666,7 +5732,8 @@ return function(property)
 			if typeof(v) == "table" then
 				itemValue = v.Value
 			end
-			if get(regex)(itemValue) == get(regex)(item) then
+			local cleanedItem = get(regex)(item)
+			if get(regex)(itemValue) == cleanedItem then
 				hasItem = true
 				break
 			end
@@ -5810,6 +5877,9 @@ return function(property)
 		table.insert(_names, get(flag))
 		flags:update("names", _names)
 		hasFlag = true
+		local _specialCase = get(flags.specialCase)
+		_specialCase[get(flag)] = {isKeybind = true}
+		flags:update("specialCase", _specialCase)
 	end
 
 	-- Variables
@@ -5841,19 +5911,31 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
+	local coordinate = value(Vector2.new(0,0))
 	local function configLoad()
 		if hasFlag then
 			if get(configLoaded.boolean) then
 				local savedFlag = get(flags.list)[get(flag)]
-				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = ""})
-				if savedFlag and _didPass and Enum.KeyCode[savedFlag] ~= nil then
-					checkKeyCode(Enum.KeyCode[savedFlag], "From configLoad has FLAG")
+				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = {}})
+				if savedFlag and _didPass then
+					checkKeyCode(Enum.KeyCode[savedFlag.keycode], "From configLoad has FLAG")
 				end
 				observe(keyCode):onChange(function()
 					local _list = get(flags.list)
-					_list[get(flag)] = get(keyCode).Name
+					_list[get(flag)] = _list[get(flag)] or {}
+					_list[get(flag)].keycode = get(keyCode).Name
 					flags:update("list", _list)
 				end)
+				observe(coordinate):onChange(function()
+					local _list = get(flags.list)
+					_list[get(flag)] = _list[get(flag)] or {}
+					_list[get(flag)].coordinate = tostring(get(coordinate))
+					flags:update("list", _list)
+				end)
+				if not savedFlag then
+					task.wait()
+					checkKeyCode(get(property.Bind), "From configLoad no FLAG")
+				end
 			end
 		else
 			if get(configLoaded.boolean) and not hasKeyCodeBeenSet then
@@ -5866,7 +5948,8 @@ return function(property)
 	-- Keybind
 
 	local dragConnection
-	local mobileButton = new "TextButton" {
+	local mobileButton
+	mobileButton = new "TextButton" {
 		Visible = computed(function()
 			if not get(isEnabled) then
 				return get(isEnabled)
@@ -5889,6 +5972,7 @@ return function(property)
 			if dragConnection then
 				dragConnection:Disconnect()
 				dragConnection = nil
+				coordinate:set(mobileButton.AbsolutePosition)
 			else
 				task.spawn(get(callback))
 			end
@@ -6051,6 +6135,7 @@ return function(property)
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
+							coordinate:set(mobileButton.AbsolutePosition)
 						end,
 
 						[children] = {
@@ -6797,6 +6882,10 @@ return function(property)
 					_list[get(flag)] = get(percentageOf)
 					flags:update("list", _list)
 				end)
+				if not savedFlag then
+					task.wait()
+					percentageOf:set(get(default))
+				end
 			end
 		else
 			if get(configLoaded.boolean) then
@@ -7754,6 +7843,9 @@ return function(property)
 		table.insert(_names, get(flag))
 		flags:update("names", _names)
 		hasFlag = true
+		local _specialCase = get(flags.specialCase)
+		_specialCase[get(flag)] = {isToggle = true}
+		flags:update("specialCase", _specialCase)
 	end
 
 	-- Variables
@@ -8185,7 +8277,7 @@ local customFunctions = require(script.Parent.utilities).customFunctions
 local fakeData = {
 	['dropdown'] = {"apple"},
 	['dropdown_m'] = {"apple", "carrot", "banana"},
-	['keybind'] = Enum.KeyCode.Q.Name,
+	['keybind'] = {keycode = Enum.KeyCode.Q.Name, coordinate = "0,0"},
 	['toggle_lk'] = {boolean = true, keycode = Enum.KeyCode.E.Name},
 	['toggle'] = {boolean = true},
 	['slider'] = 50,
@@ -8194,7 +8286,7 @@ local fakeData = {
 }
 customFunctions.makefolder("darius-configs")
 customFunctions.makefolder("darius-configs/test")
-customFunctions.writefile("darius-configs/test/config.json", HttpService:JSONEncode(fakeData))
+--customFunctions.writefile("darius-configs/test/config.json", HttpService:JSONEncode(fakeData))
 
 local randomIcons = {}
 for _,v in lucide do
@@ -8235,6 +8327,12 @@ return function(target)
         Parent = target
     })
 
+    for i,v in fakeData do
+        darius.flags[i].OnChange:Connect(function(value)
+            print(`{i}: "{value}"`)
+        end)
+    end
+
 
     local tab = window:Tab({
         Name = "Autofarm",
@@ -8251,24 +8349,20 @@ return function(target)
         })
     end
 
-    darius.OnDestruction:Connect(function()
-        print("darius destroyed")
-    end)
-
     tab:Button({
         Name = "Button",
         DisabledText = "heyy",
         Callback = function()
-            print("Hello World!")
+            --print("Hello World!")
         end
     })
 
     local ExtractItem = function(itemToClean:string):string
-        local cleanedItem
-        if itemToClean:match('<font color="rgb%(.-%)">(.-)</font>') then
-            cleanedItem = itemToClean:match("^%s*(.-)%s*$")
+        cleanedItem = itemToClean:match('<font color="rgb%(.-%)">(.-)</font>')
+        if cleanedItem then
+            cleanedItem = cleanedItem:match("^%s*(.-)%s*$")
         end
-        return cleanedItem or itemToClean
+    return cleanedItem or itemToClean
     end
 
     tab:Dropdown({
@@ -8289,8 +8383,8 @@ return function(target)
         Multiselect = true,
         Regex = ExtractItem,
         FLAG = "dropdown_m",
+        Default = {"apple"},
         Callback = function(value)
-            print(value)
         end
     })
     tab:Dropdown({
@@ -8311,8 +8405,9 @@ return function(target)
         Multiselect = false,
         FLAG = "dropdown",
         Regex = ExtractItem,
+        Default = "apple",
         Callback = function(value)
-            print(value)
+            --print(value)
         end
     })
 
@@ -8323,7 +8418,7 @@ return function(target)
         Bind = Enum.KeyCode.E,
         FLAG = "toggle_lk",
         Callback = function(value)
-            print(`Toggle: {value}`)
+            --print(`Toggle: {value}`)
         end
     })
     local b
@@ -8346,7 +8441,7 @@ return function(target)
         Name = "Keybind",
         FLAG = "keybind",
         Callback = function()
-            print("Keybind ran")
+            --print("Keybind ran")
         end
     })
 
@@ -8354,9 +8449,10 @@ return function(target)
         Name = "Slider",
         Min = 0,
         Max = 100,
+        --Default = 10,
         FLAG = "slider",
         Callback = function(value)
-            print(`Slider: {value}`)
+            --print(`Slider: {value}`)
         end
     })
 
@@ -8369,7 +8465,7 @@ return function(target)
         Default = "",
         FLAG = "textbox_n",
         Callback = function(value)
-            print(`TextBox Numbers: {value}`)
+            --print(`TextBox Numbers: {value}`)
         end
     })
     tab:TextBox({
@@ -8381,9 +8477,10 @@ return function(target)
         Default = "",
         FLAG = "textbox",
         Callback = function(value)
-            print(`TextBox: {value}`)
+            --print(`TextBox: {value}`)
         end
     })
+    print(darius.Folder, darius.File)
 
     tab:Label("Label")
     tab:Paragraph({
@@ -8418,7 +8515,7 @@ return function(target)
         Name = "Duration",
         Min = 0,
         Max = 100,
-        Default = 10,
+        --Default = 10,
         Callback = function(value)
             duration = value
         end
@@ -9116,7 +9213,11 @@ function connectionsFunction.add(connection)
 end
 function connectionsFunction.deleteConnections()
     for i,v in connections do
-        v:Disconnect()
+        if typeof(v) == "function" then
+            v()
+        else
+            v:Disconnect()
+        end
         connections[i] = nil
     end
 end
@@ -9471,87 +9572,448 @@ local ObjectTree = {
         },
         {
             {
-                86,
+                2,
                 2,
                 {
-                    "utilities"
+                    "Bundles"
                 },
                 {
                     {
-                        89,
+                        61,
                         2,
                         {
-                            "customFont"
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                62,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
                         }
                     },
                     {
-                        87,
+                        3,
                         2,
                         {
-                            "animate"
+                            "Fusion"
+                        },
+                        {
+                            {
+                                14,
+                                1,
+                                {
+                                    "Colour"
+                                },
+                                {
+                                    {
+                                        15,
+                                        2,
+                                        {
+                                            "Oklab"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                4,
+                                1,
+                                {
+                                    "Animation"
+                                },
+                                {
+                                    {
+                                        8,
+                                        2,
+                                        {
+                                            "TweenScheduler"
+                                        }
+                                    },
+                                    {
+                                        5,
+                                        2,
+                                        {
+                                            "Spring"
+                                        }
+                                    },
+                                    {
+                                        7,
+                                        2,
+                                        {
+                                            "Tween"
+                                        }
+                                    },
+                                    {
+                                        11,
+                                        2,
+                                        {
+                                            "packType"
+                                        }
+                                    },
+                                    {
+                                        9,
+                                        2,
+                                        {
+                                            "getTweenRatio"
+                                        }
+                                    },
+                                    {
+                                        13,
+                                        2,
+                                        {
+                                            "unpackType"
+                                        }
+                                    },
+                                    {
+                                        6,
+                                        2,
+                                        {
+                                            "SpringScheduler"
+                                        }
+                                    },
+                                    {
+                                        12,
+                                        2,
+                                        {
+                                            "springCoefficients"
+                                        }
+                                    },
+                                    {
+                                        10,
+                                        2,
+                                        {
+                                            "lerpType"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                48,
+                                2,
+                                {
+                                    "Types"
+                                }
+                            },
+                            {
+                                16,
+                                1,
+                                {
+                                    "Dependencies"
+                                },
+                                {
+                                    {
+                                        21,
+                                        2,
+                                        {
+                                            "useDependency"
+                                        }
+                                    },
+                                    {
+                                        18,
+                                        2,
+                                        {
+                                            "initDependency"
+                                        }
+                                    },
+                                    {
+                                        19,
+                                        2,
+                                        {
+                                            "sharedState"
+                                        }
+                                    },
+                                    {
+                                        20,
+                                        2,
+                                        {
+                                            "updateAll"
+                                        }
+                                    },
+                                    {
+                                        17,
+                                        2,
+                                        {
+                                            "captureDependencies"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                22,
+                                1,
+                                {
+                                    "Instances"
+                                },
+                                {
+                                    {
+                                        27,
+                                        2,
+                                        {
+                                            "OnChange"
+                                        }
+                                    },
+                                    {
+                                        29,
+                                        2,
+                                        {
+                                            "Out"
+                                        }
+                                    },
+                                    {
+                                        31,
+                                        2,
+                                        {
+                                            "applyInstanceProps"
+                                        }
+                                    },
+                                    {
+                                        25,
+                                        2,
+                                        {
+                                            "Hydrate"
+                                        }
+                                    },
+                                    {
+                                        28,
+                                        2,
+                                        {
+                                            "OnEvent"
+                                        }
+                                    },
+                                    {
+                                        26,
+                                        2,
+                                        {
+                                            "New"
+                                        }
+                                    },
+                                    {
+                                        24,
+                                        2,
+                                        {
+                                            "Cleanup"
+                                        }
+                                    },
+                                    {
+                                        23,
+                                        2,
+                                        {
+                                            "Children"
+                                        }
+                                    },
+                                    {
+                                        32,
+                                        2,
+                                        {
+                                            "defaultProps"
+                                        }
+                                    },
+                                    {
+                                        30,
+                                        2,
+                                        {
+                                            "Ref"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                39,
+                                2,
+                                {
+                                    "PubTypes"
+                                }
+                            },
+                            {
+                                49,
+                                1,
+                                {
+                                    "Utility"
+                                },
+                                {
+                                    {
+                                        50,
+                                        2,
+                                        {
+                                            "None"
+                                        }
+                                    },
+                                    {
+                                        54,
+                                        2,
+                                        {
+                                            "needsDestruction"
+                                        }
+                                    },
+                                    {
+                                        51,
+                                        2,
+                                        {
+                                            "cleanup"
+                                        }
+                                    },
+                                    {
+                                        55,
+                                        2,
+                                        {
+                                            "restrictRead"
+                                        }
+                                    },
+                                    {
+                                        52,
+                                        2,
+                                        {
+                                            "doNothing"
+                                        }
+                                    },
+                                    {
+                                        56,
+                                        2,
+                                        {
+                                            "xtypeof"
+                                        }
+                                    },
+                                    {
+                                        53,
+                                        2,
+                                        {
+                                            "isSimilar"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                40,
+                                1,
+                                {
+                                    "State"
+                                },
+                                {
+                                    {
+                                        44,
+                                        2,
+                                        {
+                                            "ForValues"
+                                        }
+                                    },
+                                    {
+                                        45,
+                                        2,
+                                        {
+                                            "Observer"
+                                        }
+                                    },
+                                    {
+                                        42,
+                                        2,
+                                        {
+                                            "ForKeys"
+                                        }
+                                    },
+                                    {
+                                        43,
+                                        2,
+                                        {
+                                            "ForPairs"
+                                        }
+                                    },
+                                    {
+                                        46,
+                                        2,
+                                        {
+                                            "Value"
+                                        }
+                                    },
+                                    {
+                                        47,
+                                        2,
+                                        {
+                                            "unwrap"
+                                        }
+                                    },
+                                    {
+                                        41,
+                                        2,
+                                        {
+                                            "Computed"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                33,
+                                1,
+                                {
+                                    "Logging"
+                                },
+                                {
+                                    {
+                                        38,
+                                        2,
+                                        {
+                                            "parseError"
+                                        }
+                                    },
+                                    {
+                                        37,
+                                        2,
+                                        {
+                                            "messages"
+                                        }
+                                    },
+                                    {
+                                        34,
+                                        2,
+                                        {
+                                            "logError"
+                                        }
+                                    },
+                                    {
+                                        36,
+                                        2,
+                                        {
+                                            "logWarn"
+                                        }
+                                    },
+                                    {
+                                        35,
+                                        2,
+                                        {
+                                            "logErrorNonFatal"
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
                     {
-                        93,
+                        59,
                         2,
                         {
-                            "getStringBounds"
+                            "lucide"
                         }
                     },
                     {
-                        96,
+                        57,
                         2,
                         {
-                            "tween"
+                            "data"
                         }
                     },
                     {
-                        97,
+                        58,
                         2,
                         {
-                            "typecheck"
+                            "icons"
                         }
                     },
                     {
-                        94,
+                        60,
                         2,
                         {
-                            "randomString"
-                        }
-                    },
-                    {
-                        88,
-                        2,
-                        {
-                            "connections"
-                        }
-                    },
-                    {
-                        95,
-                        2,
-                        {
-                            "references"
-                        }
-                    },
-                    {
-                        92,
-                        2,
-                        {
-                            "get"
-                        }
-                    },
-                    {
-                        90,
-                        2,
-                        {
-                            "customFunctions"
-                        }
-                    },
-                    {
-                        91,
-                        2,
-                        {
-                            "drag"
+                            "services"
                         }
                     }
                 }
@@ -9587,13 +10049,6 @@ local ObjectTree = {
                         }
                     },
                     {
-                        82,
-                        2,
-                        {
-                            "UICorner"
-                        }
-                    },
-                    {
                         83,
                         2,
                         {
@@ -9601,17 +10056,24 @@ local ObjectTree = {
                         }
                     },
                     {
-                        85,
-                        2,
-                        {
-                            "UITextSizeConstraint"
-                        }
-                    },
-                    {
                         84,
                         2,
                         {
                             "UIPadding"
+                        }
+                    },
+                    {
+                        82,
+                        2,
+                        {
+                            "UICorner"
+                        }
+                    },
+                    {
+                        85,
+                        2,
+                        {
+                            "UITextSizeConstraint"
                         }
                     }
                 }
@@ -9624,45 +10086,10 @@ local ObjectTree = {
                 },
                 {
                     {
-                        75,
+                        65,
                         2,
                         {
-                            "toggle"
-                        }
-                    },
-                    {
-                        76,
-                        2,
-                        {
-                            "warn"
-                        }
-                    },
-                    {
-                        71,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        73,
-                        2,
-                        {
-                            "tabFrame"
-                        }
-                    },
-                    {
-                        67,
-                        2,
-                        {
-                            "keybind"
-                        }
-                    },
-                    {
-                        74,
-                        2,
-                        {
-                            "textbox"
+                            "divider"
                         }
                     },
                     {
@@ -9673,10 +10100,10 @@ local ObjectTree = {
                         }
                     },
                     {
-                        65,
+                        67,
                         2,
                         {
-                            "divider"
+                            "keybind"
                         }
                     },
                     {
@@ -9687,10 +10114,10 @@ local ObjectTree = {
                         }
                     },
                     {
-                        70,
+                        76,
                         2,
                         {
-                            "paragraph"
+                            "warn"
                         }
                     },
                     {
@@ -9701,10 +10128,17 @@ local ObjectTree = {
                         }
                     },
                     {
-                        72,
+                        70,
                         2,
                         {
-                            "tabButton"
+                            "paragraph"
+                        }
+                    },
+                    {
+                        73,
+                        2,
+                        {
+                            "tabFrame"
                         }
                     },
                     {
@@ -9712,6 +10146,34 @@ local ObjectTree = {
                         2,
                         {
                             "dropdown"
+                        }
+                    },
+                    {
+                        72,
+                        2,
+                        {
+                            "tabButton"
+                        }
+                    },
+                    {
+                        75,
+                        2,
+                        {
+                            "toggle"
+                        }
+                    },
+                    {
+                        74,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        71,
+                        2,
+                        {
+                            "slider"
                         }
                     }
                 }
@@ -9724,448 +10186,87 @@ local ObjectTree = {
                 }
             },
             {
-                2,
+                86,
                 2,
                 {
-                    "Bundles"
+                    "utilities"
                 },
                 {
                     {
-                        57,
+                        88,
                         2,
                         {
-                            "data"
+                            "connections"
                         }
                     },
                     {
-                        3,
+                        92,
                         2,
                         {
-                            "Fusion"
-                        },
-                        {
-                            {
-                                40,
-                                1,
-                                {
-                                    "State"
-                                },
-                                {
-                                    {
-                                        43,
-                                        2,
-                                        {
-                                            "ForPairs"
-                                        }
-                                    },
-                                    {
-                                        47,
-                                        2,
-                                        {
-                                            "unwrap"
-                                        }
-                                    },
-                                    {
-                                        46,
-                                        2,
-                                        {
-                                            "Value"
-                                        }
-                                    },
-                                    {
-                                        45,
-                                        2,
-                                        {
-                                            "Observer"
-                                        }
-                                    },
-                                    {
-                                        41,
-                                        2,
-                                        {
-                                            "Computed"
-                                        }
-                                    },
-                                    {
-                                        44,
-                                        2,
-                                        {
-                                            "ForValues"
-                                        }
-                                    },
-                                    {
-                                        42,
-                                        2,
-                                        {
-                                            "ForKeys"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                22,
-                                1,
-                                {
-                                    "Instances"
-                                },
-                                {
-                                    {
-                                        27,
-                                        2,
-                                        {
-                                            "OnChange"
-                                        }
-                                    },
-                                    {
-                                        32,
-                                        2,
-                                        {
-                                            "defaultProps"
-                                        }
-                                    },
-                                    {
-                                        25,
-                                        2,
-                                        {
-                                            "Hydrate"
-                                        }
-                                    },
-                                    {
-                                        30,
-                                        2,
-                                        {
-                                            "Ref"
-                                        }
-                                    },
-                                    {
-                                        24,
-                                        2,
-                                        {
-                                            "Cleanup"
-                                        }
-                                    },
-                                    {
-                                        23,
-                                        2,
-                                        {
-                                            "Children"
-                                        }
-                                    },
-                                    {
-                                        31,
-                                        2,
-                                        {
-                                            "applyInstanceProps"
-                                        }
-                                    },
-                                    {
-                                        29,
-                                        2,
-                                        {
-                                            "Out"
-                                        }
-                                    },
-                                    {
-                                        28,
-                                        2,
-                                        {
-                                            "OnEvent"
-                                        }
-                                    },
-                                    {
-                                        26,
-                                        2,
-                                        {
-                                            "New"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                33,
-                                1,
-                                {
-                                    "Logging"
-                                },
-                                {
-                                    {
-                                        38,
-                                        2,
-                                        {
-                                            "parseError"
-                                        }
-                                    },
-                                    {
-                                        34,
-                                        2,
-                                        {
-                                            "logError"
-                                        }
-                                    },
-                                    {
-                                        36,
-                                        2,
-                                        {
-                                            "logWarn"
-                                        }
-                                    },
-                                    {
-                                        35,
-                                        2,
-                                        {
-                                            "logErrorNonFatal"
-                                        }
-                                    },
-                                    {
-                                        37,
-                                        2,
-                                        {
-                                            "messages"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                49,
-                                1,
-                                {
-                                    "Utility"
-                                },
-                                {
-                                    {
-                                        53,
-                                        2,
-                                        {
-                                            "isSimilar"
-                                        }
-                                    },
-                                    {
-                                        56,
-                                        2,
-                                        {
-                                            "xtypeof"
-                                        }
-                                    },
-                                    {
-                                        54,
-                                        2,
-                                        {
-                                            "needsDestruction"
-                                        }
-                                    },
-                                    {
-                                        52,
-                                        2,
-                                        {
-                                            "doNothing"
-                                        }
-                                    },
-                                    {
-                                        55,
-                                        2,
-                                        {
-                                            "restrictRead"
-                                        }
-                                    },
-                                    {
-                                        51,
-                                        2,
-                                        {
-                                            "cleanup"
-                                        }
-                                    },
-                                    {
-                                        50,
-                                        2,
-                                        {
-                                            "None"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                14,
-                                1,
-                                {
-                                    "Colour"
-                                },
-                                {
-                                    {
-                                        15,
-                                        2,
-                                        {
-                                            "Oklab"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                48,
-                                2,
-                                {
-                                    "Types"
-                                }
-                            },
-                            {
-                                39,
-                                2,
-                                {
-                                    "PubTypes"
-                                }
-                            },
-                            {
-                                16,
-                                1,
-                                {
-                                    "Dependencies"
-                                },
-                                {
-                                    {
-                                        19,
-                                        2,
-                                        {
-                                            "sharedState"
-                                        }
-                                    },
-                                    {
-                                        21,
-                                        2,
-                                        {
-                                            "useDependency"
-                                        }
-                                    },
-                                    {
-                                        18,
-                                        2,
-                                        {
-                                            "initDependency"
-                                        }
-                                    },
-                                    {
-                                        20,
-                                        2,
-                                        {
-                                            "updateAll"
-                                        }
-                                    },
-                                    {
-                                        17,
-                                        2,
-                                        {
-                                            "captureDependencies"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                4,
-                                1,
-                                {
-                                    "Animation"
-                                },
-                                {
-                                    {
-                                        10,
-                                        2,
-                                        {
-                                            "lerpType"
-                                        }
-                                    },
-                                    {
-                                        5,
-                                        2,
-                                        {
-                                            "Spring"
-                                        }
-                                    },
-                                    {
-                                        11,
-                                        2,
-                                        {
-                                            "packType"
-                                        }
-                                    },
-                                    {
-                                        8,
-                                        2,
-                                        {
-                                            "TweenScheduler"
-                                        }
-                                    },
-                                    {
-                                        6,
-                                        2,
-                                        {
-                                            "SpringScheduler"
-                                        }
-                                    },
-                                    {
-                                        9,
-                                        2,
-                                        {
-                                            "getTweenRatio"
-                                        }
-                                    },
-                                    {
-                                        13,
-                                        2,
-                                        {
-                                            "unpackType"
-                                        }
-                                    },
-                                    {
-                                        7,
-                                        2,
-                                        {
-                                            "Tween"
-                                        }
-                                    },
-                                    {
-                                        12,
-                                        2,
-                                        {
-                                            "springCoefficients"
-                                        }
-                                    }
-                                }
-                            }
+                            "get"
                         }
                     },
                     {
-                        61,
+                        93,
                         2,
                         {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                62,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
+                            "getStringBounds"
                         }
                     },
                     {
-                        60,
+                        90,
                         2,
                         {
-                            "services"
+                            "customFunctions"
                         }
                     },
                     {
-                        58,
+                        96,
                         2,
                         {
-                            "icons"
+                            "tween"
                         }
                     },
                     {
-                        59,
+                        97,
                         2,
                         {
-                            "lucide"
+                            "typecheck"
+                        }
+                    },
+                    {
+                        95,
+                        2,
+                        {
+                            "references"
+                        }
+                    },
+                    {
+                        89,
+                        2,
+                        {
+                            "customFont"
+                        }
+                    },
+                    {
+                        91,
+                        2,
+                        {
+                            "drag"
+                        }
+                    },
+                    {
+                        94,
+                        2,
+                        {
+                            "randomString"
+                        }
+                    },
+                    {
+                        87,
+                        2,
+                        {
+                            "animate"
                         }
                     }
                 }
@@ -10177,93 +10278,93 @@ local ObjectTree = {
 -- Line offsets for debugging (only included when minifyTables is false)
 local LineOffsets = {
     8,
-    203,
-    213,
-    [5] = 287,
-    [6] = 505,
-    [7] = 598,
-    [8] = 734,
-    [9] = 809,
-    [10] = 852,
-    [11] = 1014,
-    [12] = 1113,
-    [13] = 1199,
-    [15] = 1288,
-    [17] = 1343,
-    [18] = 1400,
-    [19] = 1429,
-    [20] = 1453,
-    [21] = 1513,
-    [23] = 1543,
-    [24] = 1692,
-    [25] = 1713,
-    [26] = 1733,
-    [27] = 1769,
-    [28] = 1804,
-    [29] = 1841,
-    [30] = 1885,
-    [31] = 1915,
-    [32] = 2042,
-    [34] = 2153,
-    [35] = 2186,
-    [36] = 2221,
-    [37] = 2245,
-    [38] = 2291,
-    [39] = 2314,
-    [41] = 2461,
-    [42] = 2575,
-    [43] = 2824,
-    [44] = 3134,
-    [45] = 3381,
-    [46] = 3465,
-    [47] = 3528,
-    [48] = 3544,
-    [50] = 3691,
-    [51] = 3705,
-    [52] = 3759,
-    [53] = 3770,
-    [54] = 3788,
-    [55] = 3801,
-    [56] = 3830,
-    [57] = 3850,
-    [58] = 3921,
-    [59] = 3938,
-    [60] = 4762,
-    [61] = 4774,
-    [62] = 4836,
-    [64] = 4854,
-    [65] = 5045,
-    [66] = 5096,
-    [67] = 5709,
-    [68] = 6138,
-    [69] = 6239,
-    [70] = 6508,
-    [71] = 6661,
-    [72] = 7088,
-    [73] = 7206,
-    [74] = 7245,
-    [75] = 7643,
-    [76] = 8161,
-    [77] = 8178,
-    [79] = 8464,
-    [80] = 9005,
-    [81] = 9015,
-    [82] = 9027,
-    [83] = 9036,
-    [84] = 9048,
-    [85] = 9083,
-    [86] = 9092,
-    [87] = 9102,
-    [88] = 9109,
-    [89] = 9126,
-    [90] = 9142,
-    [91] = 9318,
-    [92] = 9364,
-    [93] = 9371,
-    [94] = 9382,
-    [95] = 9392,
-    [96] = 9442,
-    [97] = 9449
+    243,
+    253,
+    [5] = 327,
+    [6] = 545,
+    [7] = 638,
+    [8] = 774,
+    [9] = 849,
+    [10] = 892,
+    [11] = 1054,
+    [12] = 1153,
+    [13] = 1239,
+    [15] = 1328,
+    [17] = 1383,
+    [18] = 1440,
+    [19] = 1469,
+    [20] = 1493,
+    [21] = 1553,
+    [23] = 1583,
+    [24] = 1732,
+    [25] = 1753,
+    [26] = 1773,
+    [27] = 1809,
+    [28] = 1844,
+    [29] = 1881,
+    [30] = 1925,
+    [31] = 1955,
+    [32] = 2082,
+    [34] = 2193,
+    [35] = 2226,
+    [36] = 2261,
+    [37] = 2285,
+    [38] = 2331,
+    [39] = 2354,
+    [41] = 2501,
+    [42] = 2615,
+    [43] = 2864,
+    [44] = 3174,
+    [45] = 3421,
+    [46] = 3505,
+    [47] = 3568,
+    [48] = 3584,
+    [50] = 3731,
+    [51] = 3745,
+    [52] = 3799,
+    [53] = 3810,
+    [54] = 3828,
+    [55] = 3841,
+    [56] = 3870,
+    [57] = 3890,
+    [58] = 3961,
+    [59] = 3978,
+    [60] = 4802,
+    [61] = 4814,
+    [62] = 4876,
+    [64] = 4894,
+    [65] = 5085,
+    [66] = 5136,
+    [67] = 5776,
+    [68] = 6223,
+    [69] = 6324,
+    [70] = 6593,
+    [71] = 6746,
+    [72] = 7177,
+    [73] = 7295,
+    [74] = 7334,
+    [75] = 7732,
+    [76] = 8253,
+    [77] = 8270,
+    [79] = 8561,
+    [80] = 9102,
+    [81] = 9112,
+    [82] = 9124,
+    [83] = 9133,
+    [84] = 9145,
+    [85] = 9180,
+    [86] = 9189,
+    [87] = 9199,
+    [88] = 9206,
+    [89] = 9227,
+    [90] = 9243,
+    [91] = 9419,
+    [92] = 9465,
+    [93] = 9472,
+    [94] = 9483,
+    [95] = 9493,
+    [96] = 9543,
+    [97] = 9550
 }
 
 -- Misc AOT variable imports

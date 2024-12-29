@@ -8,7 +8,11 @@ function connectionsFunction.add(connection)
 end
 function connectionsFunction.deleteConnections()
     for i,v in connections do
-        v:Disconnect()
+        if typeof(v) == "function" then
+            v()
+        else
+            v:Disconnect()
+        end
         connections[i] = nil
     end
 end

@@ -77,9 +77,9 @@ function darius:Window(windowProperty)
 	data.add({binds = {}}, "currentBinds")
 	data.add({string = ""}, "searchText")
 	data.add({boolean = true}, "isVisible")
-	data.add({boolean = windowProperty.IsMobile}, "isMobile")
+	local isMobile = data.add({boolean = windowProperty.IsMobile}, "isMobile")
 	data.add({boolean = false}, "isListening")
-	local flags = data.add({list = {}, names = {}}, "flags")
+	local flags = data.add({list = {}, names = {}, specialCase = {}}, "flags")
 	local configLoaded = data.add({boolean = false}, "configLoaded")
 	local useConfig = data.add({boolean = false}, "useConfig")
 	local windowData = data.add({data = windowProperty})
@@ -91,7 +91,7 @@ function darius:Window(windowProperty)
 		useConfig:update("boolean", windowProperty.UseConfig)
 		config = windowProperty.Config
 
-		local path = {"darius-configs",`/{config}`}
+		local path = {"darius",`/{config}`}
 		local built = ""
 		for i=1,#path do
 			built = built..path[i]
@@ -99,11 +99,49 @@ function darius:Window(windowProperty)
 				customFunctions.makefolder(built)
 			end
 		end
+		darius.Folder = built
 		config = built.."/config.json"
+		darius.File = config
 		if not customFunctions.isfile(config) then
 			customFunctions.writefile(config, "{}")
 		end
 	end
+
+	darius.flags = {}
+	setmetatable(darius.flags, {
+		__index = function(tbl, flag)
+			local flagEvent = fusion.New "BindableEvent" {}
+			local lastFired = get(flags.list)[flag] or nil
+			local flagTable = {
+				OnChange = flagEvent.Event,
+				Value = lastFired
+			}
+			connections.add(observe(flags.list):onChange(function()
+				local _list = get(flags.list)
+
+				local specialCase = get(flags.specialCase)[flag]
+				if _list[flag] then
+					local newValue = _list[flag]
+					if specialCase then
+						if specialCase.Multiselect ~= nil and not specialCase.Multiselect then
+							newValue = newValue[1]
+						elseif specialCase.isToggle ~= nil and specialCase.isToggle then
+							newValue = newValue.boolean
+						elseif specialCase.isKeybind then
+							newValue = get(isMobile.boolean) and newValue.coordinate or newValue.keycode
+						end
+					end
+					if newValue ~= lastFired then
+						lastFired = newValue
+						flagTable.Value = newValue
+						flagEvent:Fire(flagTable.Value)
+					end
+				end
+			end))
+			tbl[flag] = flagTable
+			return flagTable
+		end
+	})
 
 	-- Instance
 
@@ -159,23 +197,25 @@ function darius:Window(windowProperty)
 		end
 		return tabs[tab.uid]
 	end
+	darius.Destroyed = false
 	function darius:Notify(notifyProperty)
 		return addComponent("notification", references.get("notificationList"), notifyProperty)
 	end
 	function darius:Destroy()
+		darius.Destroyed = true
 		bindableEvent:Fire()
-		bindableEvent:Destroy()
 		connections:deleteConnections()
 		references:clear()
+		bindableEvent:Destroy()
 	end
 	function darius:LoadConfig()
 		if not windowProperty.UseConfig then
 			return
 		end
 		flags:update("list", HttpService:JSONDecode(customFunctions.readfile(config)))
-		observe(flags.list):onChange(function()
+		connections.add(observe(flags.list):onChange(function()
 			customFunctions.writefile(config, HttpService:JSONEncode(get(flags.list)))
-		end)
+		end))
 		configLoaded:update("boolean", true)
 	end
 	function darius:SetTheme(newTheme)

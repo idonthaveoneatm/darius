@@ -8,7 +8,7 @@ local customFunctions = require(script.Parent.utilities).customFunctions
 local fakeData = {
 	['dropdown'] = {"apple"},
 	['dropdown_m'] = {"apple", "carrot", "banana"},
-	['keybind'] = Enum.KeyCode.Q.Name,
+	['keybind'] = {keycode = Enum.KeyCode.Q.Name, coordinate = "0,0"},
 	['toggle_lk'] = {boolean = true, keycode = Enum.KeyCode.E.Name},
 	['toggle'] = {boolean = true},
 	['slider'] = 50,
@@ -17,7 +17,7 @@ local fakeData = {
 }
 customFunctions.makefolder("darius-configs")
 customFunctions.makefolder("darius-configs/test")
-customFunctions.writefile("darius-configs/test/config.json", HttpService:JSONEncode(fakeData))
+--customFunctions.writefile("darius-configs/test/config.json", HttpService:JSONEncode(fakeData))
 
 local randomIcons = {}
 for _,v in lucide do
@@ -58,6 +58,12 @@ return function(target)
         Parent = target
     })
 
+    for i,v in fakeData do
+        darius.flags[i].OnChange:Connect(function(value)
+            print(`{i}: "{value}"`)
+        end)
+    end
+
 
     local tab = window:Tab({
         Name = "Autofarm",
@@ -74,24 +80,20 @@ return function(target)
         })
     end
 
-    darius.OnDestruction:Connect(function()
-        print("darius destroyed")
-    end)
-
     tab:Button({
         Name = "Button",
         DisabledText = "heyy",
         Callback = function()
-            print("Hello World!")
+            --print("Hello World!")
         end
     })
 
     local ExtractItem = function(itemToClean:string):string
-        local cleanedItem
-        if itemToClean:match('<font color="rgb%(.-%)">(.-)</font>') then
-            cleanedItem = itemToClean:match("^%s*(.-)%s*$")
+        cleanedItem = itemToClean:match('<font color="rgb%(.-%)">(.-)</font>')
+        if cleanedItem then
+            cleanedItem = cleanedItem:match("^%s*(.-)%s*$")
         end
-        return cleanedItem or itemToClean
+    return cleanedItem or itemToClean
     end
 
     tab:Dropdown({
@@ -112,8 +114,8 @@ return function(target)
         Multiselect = true,
         Regex = ExtractItem,
         FLAG = "dropdown_m",
+        Default = {"apple"},
         Callback = function(value)
-            print(value)
         end
     })
     tab:Dropdown({
@@ -134,8 +136,9 @@ return function(target)
         Multiselect = false,
         FLAG = "dropdown",
         Regex = ExtractItem,
+        Default = "apple",
         Callback = function(value)
-            print(value)
+            --print(value)
         end
     })
 
@@ -146,7 +149,7 @@ return function(target)
         Bind = Enum.KeyCode.E,
         FLAG = "toggle_lk",
         Callback = function(value)
-            print(`Toggle: {value}`)
+            --print(`Toggle: {value}`)
         end
     })
     local b
@@ -169,7 +172,7 @@ return function(target)
         Name = "Keybind",
         FLAG = "keybind",
         Callback = function()
-            print("Keybind ran")
+            --print("Keybind ran")
         end
     })
 
@@ -177,9 +180,10 @@ return function(target)
         Name = "Slider",
         Min = 0,
         Max = 100,
+        --Default = 10,
         FLAG = "slider",
         Callback = function(value)
-            print(`Slider: {value}`)
+            --print(`Slider: {value}`)
         end
     })
 
@@ -192,7 +196,7 @@ return function(target)
         Default = "",
         FLAG = "textbox_n",
         Callback = function(value)
-            print(`TextBox Numbers: {value}`)
+            --print(`TextBox Numbers: {value}`)
         end
     })
     tab:TextBox({
@@ -204,9 +208,10 @@ return function(target)
         Default = "",
         FLAG = "textbox",
         Callback = function(value)
-            print(`TextBox: {value}`)
+            --print(`TextBox: {value}`)
         end
     })
+    print(darius.Folder, darius.File)
 
     tab:Label("Label")
     tab:Paragraph({
@@ -241,7 +246,7 @@ return function(target)
         Name = "Duration",
         Min = 0,
         Max = 100,
-        Default = 10,
+        --Default = 10,
         Callback = function(value)
             duration = value
         end

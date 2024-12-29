@@ -102,6 +102,9 @@ return function(property)
 		table.insert(_names, get(flag))
 		flags:update("names", _names)
 		hasFlag = true
+		local _specialCase = get(flags.specialCase)
+		_specialCase[get(flag)] = {isKeybind = true}
+		flags:update("specialCase", _specialCase)
 	end
 
 	-- Variables
@@ -133,19 +136,31 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
+	local coordinate = value(Vector2.new(0,0))
 	local function configLoad()
 		if hasFlag then
 			if get(configLoaded.boolean) then
 				local savedFlag = get(flags.list)[get(flag)]
-				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = ""})
-				if savedFlag and _didPass and Enum.KeyCode[savedFlag] ~= nil then
-					checkKeyCode(Enum.KeyCode[savedFlag], "From configLoad has FLAG")
+				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = {}})
+				if savedFlag and _didPass then
+					checkKeyCode(Enum.KeyCode[savedFlag.keycode], "From configLoad has FLAG")
 				end
 				observe(keyCode):onChange(function()
 					local _list = get(flags.list)
-					_list[get(flag)] = get(keyCode).Name
+					_list[get(flag)] = _list[get(flag)] or {}
+					_list[get(flag)].keycode = get(keyCode).Name
 					flags:update("list", _list)
 				end)
+				observe(coordinate):onChange(function()
+					local _list = get(flags.list)
+					_list[get(flag)] = _list[get(flag)] or {}
+					_list[get(flag)].coordinate = tostring(get(coordinate))
+					flags:update("list", _list)
+				end)
+				if not savedFlag then
+					task.wait()
+					checkKeyCode(get(property.Bind), "From configLoad no FLAG")
+				end
 			end
 		else
 			if get(configLoaded.boolean) and not hasKeyCodeBeenSet then
@@ -158,7 +173,8 @@ return function(property)
 	-- Keybind
 
 	local dragConnection
-	local mobileButton = new "TextButton" {
+	local mobileButton
+	mobileButton = new "TextButton" {
 		Visible = computed(function()
 			if not get(isEnabled) then
 				return get(isEnabled)
@@ -181,6 +197,7 @@ return function(property)
 			if dragConnection then
 				dragConnection:Disconnect()
 				dragConnection = nil
+				coordinate:set(mobileButton.AbsolutePosition)
 			else
 				task.spawn(get(callback))
 			end
@@ -343,6 +360,7 @@ return function(property)
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
+							coordinate:set(mobileButton.AbsolutePosition)
 						end,
 
 						[children] = {

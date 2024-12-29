@@ -137,6 +137,10 @@ return function(property)
 					_list[get(flag)] = get(percentageOf)
 					flags:update("list", _list)
 				end)
+				if not savedFlag then
+					task.wait()
+					percentageOf:set(get(default))
+				end
 			end
 		else
 			if get(configLoaded.boolean) then

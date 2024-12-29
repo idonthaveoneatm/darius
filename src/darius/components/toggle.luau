@@ -112,6 +112,9 @@ return function(property)
 		table.insert(_names, get(flag))
 		flags:update("names", _names)
 		hasFlag = true
+		local _specialCase = get(flags.specialCase)
+		_specialCase[get(flag)] = {isToggle = true}
+		flags:update("specialCase", _specialCase)
 	end
 
 	-- Variables
