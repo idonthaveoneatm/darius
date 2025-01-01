@@ -155,11 +155,6 @@ return function(property)
 						focused:set(false)
 					end
 				end
-				observe(lastCorrectText):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = get(lastCorrectText)
-					flags:update("list", _list)
-				end)
 				if not savedFlag then
 					task.wait()
 					if get(default) ~= "" then
@@ -356,6 +351,14 @@ return function(property)
 
 	-- Closure
 
+	if hasFlag then
+		observe(lastCorrectText):onChange(function()
+			local _list = get(flags.list)
+			_list[get(flag)] = get(lastCorrectText)
+			flags:update("list", _list)
+		end)
+	end
+
 	if get(useConfig.boolean) then
 		if get(configLoaded.boolean) then
 			configLoad()
@@ -363,15 +366,18 @@ return function(property)
 			observe(configLoaded.boolean):onChange(configLoad)
 		end
 	else
-		if get(default) ~= "" then
-			if get(onLeave) then
-				focused:set(true)
+		task.spawn(function()
+			task.wait()
+			if get(default) ~= "" then
+				if get(onLeave) then
+					focused:set(true)
+				end
+				updatedText:set(get(default))
+				if get(onLeave) then
+					focused:set(false)
+				end
 			end
-			updatedText:set(get(default))
-			if get(onLeave) then
-				focused:set(false)
-			end
-		end
+		end)
 	end
 
 	local returnFunctions = {}

@@ -150,15 +150,6 @@ return function(property)
 			if savedFlag and _didPass then
 				selectedItems:set(savedFlag)
 			end
-			observe(selectedItems):onChange(function()
-				if typeof(get(selectedItems)) ~= "table" then
-					return
-				end
-				local _list = get(flags.list)
-				_list[get(flag)] = get(selectedItems)
-
-				flags:update("list", _list)
-			end)
 			if not savedFlag then
 				task.wait()
 				selectedItems:set(get(default))
@@ -310,6 +301,7 @@ return function(property)
 						FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 						TextXAlignment = Enum.TextXAlignment.Left,
 						TextScaled = true,
+						ClearTextOnFocus = true,
 						PlaceholderText = "Search",
 						TextColor3 = theme.text,
 						TextTransparency = selectedAnimation,
@@ -534,6 +526,17 @@ return function(property)
 
 	items:set(get(property.Items))
 
+	if hasFlag then
+		observe(selectedItems):onChange(function()
+			if typeof(get(selectedItems)) ~= "table" then
+				return
+			end
+			local _list = get(flags.list)
+			_list[get(flag)] = get(selectedItems)
+			flags:update("list", _list)
+		end)
+	end
+
 	if get(useConfig.boolean) and hasFlag then
 		if not get(configLoaded.boolean) then
 			observe(configLoaded.boolean):onChange(configLoad)
@@ -541,7 +544,10 @@ return function(property)
 			configLoad()
 		end
 	else
-		selectedItems:set(get(default))
+		task.spawn(function()
+			task.wait()
+			selectedItems:set(get(default))
+		end)
 	end
 
 	local returnFunctions = {}

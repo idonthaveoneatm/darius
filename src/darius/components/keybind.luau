@@ -89,11 +89,6 @@ return function(property)
 			hasKeyCodeBeenSet = true
 		end
 	end
-	if property.Bind then
-		if not get(useConfig.boolean) then
-			checkKeyCode(get(property.Bind), "At property set")
-		end
-	end
 	local flag = property.FLAG or value("")
 	local hasFlag = false
 	if get(flag) ~= "" then
@@ -145,18 +140,6 @@ return function(property)
 				if savedFlag and _didPass then
 					checkKeyCode(Enum.KeyCode[savedFlag.keycode], "From configLoad has FLAG")
 				end
-				observe(keyCode):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = _list[get(flag)] or {}
-					_list[get(flag)].keycode = get(keyCode).Name
-					flags:update("list", _list)
-				end)
-				observe(coordinate):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = _list[get(flag)] or {}
-					_list[get(flag)].coordinate = tostring(get(coordinate))
-					flags:update("list", _list)
-				end)
 				if not savedFlag then
 					task.wait()
 					checkKeyCode(get(property.Bind), "From configLoad no FLAG")
@@ -415,12 +398,34 @@ return function(property)
 
 	-- Closure
 
+	if hasFlag then
+		observe(keyCode):onChange(function()
+			local _list = get(flags.list)
+			_list[get(flag)] = _list[get(flag)] or {}
+			_list[get(flag)].keycode = get(keyCode).Name
+			flags:update("list", _list)
+		end)
+		observe(coordinate):onChange(function()
+			local _list = get(flags.list)
+			_list[get(flag)] = _list[get(flag)] or {}
+			_list[get(flag)].coordinate = tostring(get(coordinate))
+			flags:update("list", _list)
+		end)
+	end
+
 	if get(useConfig.boolean) then
 		if get(configLoaded.boolean) then
 			configLoad()
 		else
 			observe(configLoaded.boolean):onChange(configLoad)
 		end
+	else
+		task.spawn(function()
+			task.wait()
+			if property.Bind then
+				checkKeyCode(get(property.Bind), "At property set")
+			end
+		end)
 	end
 
 	local returnFunctions = {}

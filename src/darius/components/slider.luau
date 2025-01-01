@@ -132,11 +132,6 @@ return function(property)
 				if savedFlag and _didPass then
 					percentageOf:set(math.clamp(savedFlag, get(min), get(max)))
 				end
-				observe(percentageOf):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = get(percentageOf)
-					flags:update("list", _list)
-				end)
 				if not savedFlag then
 					task.wait()
 					percentageOf:set(get(default))
@@ -397,6 +392,14 @@ return function(property)
 
 	-- Closure
 
+	if hasFlag then
+		observe(percentageOf):onChange(function()
+			local _list = get(flags.list)
+			_list[get(flag)] = get(percentageOf)
+			flags:update("list", _list)
+		end)
+	end
+
 	if get(useConfig.boolean) then
 		if get(configLoaded.boolean) then
 			configLoad()
@@ -404,7 +407,10 @@ return function(property)
 			observe(configLoaded.boolean):onChange(configLoad)
 		end
 	else
-		percentageOf:set(get(default))
+		task.spawn(function()
+			task.wait()
+			percentageOf:set(get(default))
+		end)
 	end
 
 	local returnFunctions = {}

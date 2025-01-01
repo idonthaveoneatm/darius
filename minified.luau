@@ -477,78 +477,374 @@ return{lock='rbxassetid://10723434711',maximize='rbxassetid://15556636376',minim
 'rbxassetid://10734884548',fingerprint='rbxassetid://10723375250',check='rbxassetid://10709790644',command=
 'rbxassetid://10723416765',input='rbxassetid://10734982297',search='rbxassetid://10734943674',finger=
 'rbxassetid://10734929723',alert='rbxassetid://10709752996'}end)()end,[59]=function()local b,c,d=a(59)local e return(
-function(...)end)()end,[60]=function()local b,c,d=a(60)local e return(function(...)local f=d(c.Parent.Parent.utilities.
-customFunctions)local g,h=f.cloneref,{}h=setmetatable(h,{__index=function(i,j)return g(game:GetService(j))end})return h
-end)()end,[61]=function()local b,c,d=a(61)local e return(function(...)local f,g,h={},d(c.Parent.Fusion),d(c.default)
-local i,j,k,l,m=g.Value,g.Observer,d(c.Parent.Parent.utilities.get),d(c.Parent.Parent.utilities.animate),{}local n=i{}j(
-n):onChange(function()for o,p in ipairs(m)do task.spawn(p)end end)local o={}table.foreach(h,function(p,q)table.insert(o,
-p)end)function f.create(p)for q,t in o do if p[t]==nil then p[t]=h[t]end if typeof(p[t])~='Color3'then error(t..
-" isn't type Color3")end end for u,v in p do if not table.find(o,u)then warn('Incorrect value removed "'..tostring(u)..
-'"')p[u]=nil end end n:set(p)end function f.get(p:string)local t=k(n)if t[p]then return t[p]else error(p..
-" isn't a theme element")end end for p,t in o do f[t]=l(function()return k(n)[t]end,40,1)end n:set(h)function f.onChange
-(u)table.insert(m,u)end return f end)()end,[62]=function()local b,c,d=a(62)local e return(function(...)return{background
-=Color3.fromHex'#2C2F33',background2=Color3.fromHex'#222427',text=Color3.fromHex'#DCE1E5',text2=Color3.fromHex'#737C8A',
-selectedTab=Color3.fromHex'#1A1A1B',notificationButton=Color3.fromHex'#222427',mobileButtonBackground=Color3.fromHex
-'#DCE1E5',mobileButtonText=Color3.fromHex'#2C2F33',mobileButtonImage=Color3.fromHex'#2C2F33',disabledBackground=Color3.
-fromHex'#2A2C31',disabledText=Color3.fromHex'#D6DCE0',toggled=Color3.fromHex'#DCE1E5',red=Color3.fromRGB(255,105,97),
-orange=Color3.fromHex'#ff9b61'}end)()end,[64]=function()local b,c,d=a(64)local e return(function(...)local f=c.Parent.
-Parent return function(g)local h=d(f.Bundles)local i,j,k,l=h.data,h.themeSystem,h.icons,h.Fusion local m,n,o,p,t,u,v=l.
-New,l.Children,l.Value,l.Observer,l.OnEvent,l.Computed,d(f.utilities)local E,F,G,H,I=v.get,v.animate,v.typecheck,v.
-customFont,d(f.simpleElements)local J,K,L,M=I.UIPadding,I.UICorner,G(g,{Name='',DisabledText='',IsEnabled=false,Callback
-=function()end},{g.IsEnabled and''or'IsEnabled',g.DisabledText and''or'DisabledText'})assert(L,table.concat(M,'\n'))
-local N,O,P,Q,R,S,T,U=i.find'selectedTab',i.find'searchText',i.add(g),g.Parent,g.Name,g.Callback,g.IsEnabled or o(true),
-g.DisabledText or o'Component Disabled'local V=o(E(N.string)==E(P.tab).uid)p(N.string):onChange(function()V:set(E(N.
-string)==E(P.tab).uid)end)local W=F(function()return E(V)and 0 or 1 end,40,1)m'TextButton'{Interactable=u(function()if
-not E(T)then return false end return E(V)end),Visible=u(function()if E(O.string)~=''and not string.find(E(R):lower(),E(O
-.string):lower())then return false end return true end),Parent=Q,Size=UDim2.new(1,0,0,36),BackgroundColor3=j.background2
-,BackgroundTransparency=W,[t'Activated']=function()if not E(T)then return end task.spawn(E(S))end,[n]={K(6),m'Frame'{
-ZIndex=2,Visible=u(function()if not E(T)then return true end return false end),BackgroundTransparency=F(function()return
-E(V)and 0.2 or 1 end,40,1),BackgroundColor3=j.disabledBackground,Size=UDim2.fromScale(1,1),[n]={K(6),m'ImageLabel'{Size=
-UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image=k.
-lock,ImageColor3=j.disabledText,ImageTransparency=W},m'TextLabel'{FontFace=H('Montserrat',Enum.FontWeight.Bold),
-BackgroundTransparency=1,Size=UDim2.new(1,-24,0,18),TextColor3=j.disabledText,TextTransparency=W,TextScaled=true,
-AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,29,0.5,0),Text=U,TextXAlignment=Enum.TextXAlignment.Left,RichText=
-true,[n]={J(0,5)}}}},m'Frame'{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[n]={J(0,8),m'TextLabel'{FontFace=H(
-'Montserrat',Enum.FontWeight.Bold),Size=UDim2.new(1,-39,0,18),BackgroundTransparency=1,TextColor3=j.text,TextScaled=true
-,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5,0),Text=R,TextTransparency=W,TextXAlignment=Enum.
-TextXAlignment.Left,RichText=true},m'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=
-UDim2.new(1,0,0.5,0),BackgroundTransparency=1,Image=k.fingerprint,ImageColor3=j.text2,ImageTransparency=W}}}}}local X={}
-function X.SetName(Y,Z)local _,aa=G({SetName=Z},{SetName=''})assert(_,table.concat(aa,'\n'))R:set(Z)end function X.
-SetCallback(aa,Y)local Z,_=G({SetCallback=Y},{SetCallback=function()end})assert(Z,table.concat(_,'\n'))S:set(Y)end
-function X.Fire(aa)task.spawn(E(S))end function X.Enable(aa)T:set(true)end function X.Disable(aa)T:set(false)end return
-X end end)()end,[65]=function()local aa,b,c=a(65)local d return(function(...)local e=b.Parent.Parent return function(f)
-local g=c(e.Bundles)local h,i,j=g.data,g.themeSystem,g.Fusion local k,l,m,n,o=j.New,j.Children,j.Value,j.Observer,c(e.
-utilities)local p,t,u,v,E=o.get,o.animate,h.find'selectedTab',h.add(f),f.Parent local F=m(p(u.string)==p(v.tab).uid)n(u.
-string):onChange(function()F:set(p(u.string)==p(v.tab).uid)end)local G=t(function()return p(F)and 0 or 1 end,40,1)k
-'Frame'{Parent=E,Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,[l]={k'Frame'{Size=UDim2.new(1,0,0,2),AnchorPoint=
-Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),BackgroundColor3=i.text2,BackgroundTransparency=G}}}end end)()end
-,[66]=function()local aa,b,c=a(66)local d return(function(...)local e=b.Parent.Parent return function(f)local g=c(e.
-Bundles)local h,i,j,k=g.data,g.themeSystem,g.icons,g.Fusion local l,m,n,o,p,t,u,v=k.New,k.Children,k.Value,k.Observer,k.
-OnEvent,k.Computed,k.Ref,c(e.utilities)local E,F,G,H,I=v.get,v.animate,v.typecheck,v.customFont,c(e.simpleElements)local
-J,K,L,M,N,O,P,Q,R=I.UIListLayout,I.UIPadding,I.UICorner,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.
-VerticalAlignment,G(f,{Name='',DisabledText='',FLAG='',IsEnabled=false,Callback=function()end,Items={},Multiselect=true,
-Regex=function()end},{f.DisabledText and''or'DisabledText',f.FLAG and''or'FLAG',f.IsEnabled and''or'IsEnabled',f.
-Multiselect and''or'Multiselect',f.Regex and''or'Regex'})assert(Q,table.concat(R,'\n'))Q,R=G(f,{Default=f.Multiselect
-and{}or''},{f.Default and''or'Default'})assert(Q,table.concat(R,'\n'))if f.Regex then assert(typeof(f.Regex'')=='string'
-,'The Regex function must always return a string')end local S,T,U,V,W,X,Y,Z,_,ab,ac,ad,ae,af,ag,ah,ai=h.find
-'selectedTab',h.find'useConfig',h.find'flags',h.find'configLoaded',h.find'searchText',h.add(f),f.Parent,f.Name,f.
-Callback,n{},f.Default or n{},f.IsEnabled or n(true),f.DisabledText or n'Component Disabled',f.Regex or n(function(S)
-return S end),f.Multiselect or n(false),f.FLAG or n'',false if E(ah)~=''then local aj=E(U.names)assert(not table.find(aj
-,E(ah)),('FLAG "%s" already exists'):format(E(ah)))table.insert(aj,E(ah))U:update('names',aj)ai=true local ak=E(U.
-specialCase)ak[E(ah)]={Multiselect=E(ag)}U:update('specialCase',ak)end local aj,ak,al,am,an,ao,ap=n(),n(),n(false),n(E(
-ag)and{}or''),n{},n{},n(false)o(an):onChange(function()if typeof(E(an))~='table'then an:set{E(an)}return end if#E(an)==#
-E(ab)then ap:set(true)else ap:set(false)end if E(ag)then local aq={}for ar,as in E(an)do table.insert(aq,E(af)(as))end
-task.spawn(E(_),aq)am:set(E(an))else if#E(an)<1 then return end task.spawn(E(_),E(af)(E(an)[1]))am:set(E(af)(E(an)[1]))
-end end)o(ab):onChange(function()if#E(an)==#E(ab)then ap:set(true)else ap:set(false)end end)local aq=n(E(S.string)==E(X.
-tab).uid)o(S.string):onChange(function()aq:set(E(S.string)==E(X.tab).uid)end)local ar=F(function()return E(aq)and 0 or 1
-end,40,1)local function as()if E(V.boolean)then local at=E(U.list)[E(ah)]local au=G({[E(ah)]=at},{[E(ah)]={}})if at and
-au then an:set(at)end o(an):onChange(function()if typeof(E(an))~='table'then return end local av=E(U.list)av[E(ah)]=E(an
-)U:update('list',av)end)if not at then task.wait()an:set(E(ac))end end end l'Frame'{Parent=Y,Visible=t(function()if E(W.
-string)~=''and not string.find(E(Z):lower(),E(W.string):lower())then return false end return true end),Size=F(function()
-if E(al)and E(aj)then local at,au=E(aj),3 for av,aw in at:GetChildren()do if aw:IsA'UIListLayout'or aw:IsA'UICorner'or
-not aw.Visible then continue end au+=(4+aw.Size.Y.Offset)end return UDim2.new(1,0,0,au)end return UDim2.new(1,0,0,36)end
-,40,1),BackgroundColor3=i.background2,BackgroundTransparency=ar,ClipsDescendants=true,[u]=aj,[m]={L(6),J(M.LayoutOrder,N
-.Vertical,O.Center,P.Top,UDim.new(0,4)),l'TextButton'{Interactable=t(function()if not E(ad)then return false end return
+function(...)local f={accessibility='rbxassetid://10709751939',activity='rbxassetid://10709752035',['air-vent']=
+'rbxassetid://10709752131',airplay='rbxassetid://10709752254',['alarm-check']='rbxassetid://10709752405',['alarm-clock']
+='rbxassetid://10709752630',['alarm-clock-off']='rbxassetid://10709752508',['alarm-minus']='rbxassetid://10709752732',[
+'alarm-plus']='rbxassetid://10709752825',album='rbxassetid://10709752906',['alert-circle']='rbxassetid://10709752996',[
+'alert-octagon']='rbxassetid://10709753064',['alert-triangle']='rbxassetid://10709753149',['align-center']=
+'rbxassetid://10709753570',['align-center-horizontal']='rbxassetid://10709753272',['align-center-vertical']=
+'rbxassetid://10709753421',['align-end-horizontal']='rbxassetid://10709753692',['align-end-vertical']=
+'rbxassetid://10709753808',['align-horizontal-distribute-center']='rbxassetid://10747779791',[
+'align-horizontal-distribute-end']='rbxassetid://10747784534',['align-horizontal-distribute-start']=
+'rbxassetid://10709754118',['align-horizontal-justify-center']='rbxassetid://10709754204',[
+'align-horizontal-justify-end']='rbxassetid://10709754317',['align-horizontal-justify-start']='rbxassetid://10709754436'
+,['align-horizontal-space-around']='rbxassetid://10709754590',['align-horizontal-space-between']=
+'rbxassetid://10709754749',['align-justify']='rbxassetid://10709759610',['align-left']='rbxassetid://10709759764',[
+'align-right']='rbxassetid://10709759895',['align-start-horizontal']='rbxassetid://10709760051',['align-start-vertical']
+='rbxassetid://10709760244',['align-vertical-distribute-center']='rbxassetid://10709760351',[
+'align-vertical-distribute-end']='rbxassetid://10709760434',['align-vertical-distribute-start']=
+'rbxassetid://10709760612',['align-vertical-justify-center']='rbxassetid://10709760814',['align-vertical-justify-end']=
+'rbxassetid://10709761003',['align-vertical-justify-start']='rbxassetid://10709761176',['align-vertical-space-around']=
+'rbxassetid://10709761324',['align-vertical-space-between']='rbxassetid://10709761434',anchor='rbxassetid://10709761530'
+,angry='rbxassetid://10709761629',annoyed='rbxassetid://10709761722',aperture='rbxassetid://10709761813',apple=
+'rbxassetid://10709761889',archive='rbxassetid://10709762233',['archive-restore']='rbxassetid://10709762058',armchair=
+'rbxassetid://10709762327',['arrow-big-down']='rbxassetid://10747796644',['arrow-big-left']='rbxassetid://10709762574',[
+'arrow-big-right']='rbxassetid://10709762727',['arrow-big-up']='rbxassetid://10709762879',['arrow-down']=
+'rbxassetid://10709767827',['arrow-down-circle']='rbxassetid://10709763034',['arrow-down-left']=
+'rbxassetid://10709767656',['arrow-down-right']='rbxassetid://10709767750',['arrow-left']='rbxassetid://10709768114',[
+'arrow-left-circle']='rbxassetid://10709767936',['arrow-left-right']='rbxassetid://10709768019',['arrow-right']=
+'rbxassetid://10709768347',['arrow-right-circle']='rbxassetid://10709768226',['arrow-up']='rbxassetid://10709768939',[
+'arrow-up-circle']='rbxassetid://10709768432',['arrow-up-down']='rbxassetid://10709768538',['arrow-up-left']=
+'rbxassetid://10709768661',['arrow-up-right']='rbxassetid://10709768787',asterisk='rbxassetid://10709769095',['at-sign']
+='rbxassetid://10709769286',award='rbxassetid://10709769406',axe='rbxassetid://10709769508',['axis-3d']=
+'rbxassetid://10709769598',baby='rbxassetid://10709769732',backpack='rbxassetid://10709769841',['baggage-claim']=
+'rbxassetid://10709769935',banana='rbxassetid://10709770005',banknote='rbxassetid://10709770178',['bar-chart']=
+'rbxassetid://10709773755',['bar-chart-2']='rbxassetid://10709770317',['bar-chart-3']='rbxassetid://10709770431',[
+'bar-chart-4']='rbxassetid://10709770560',['bar-chart-horizontal']='rbxassetid://10709773669',barcode=
+'rbxassetid://10747360675',baseline='rbxassetid://10709773863',bath='rbxassetid://10709773963',battery=
+'rbxassetid://10709774640',['battery-charging']='rbxassetid://10709774068',['battery-full']='rbxassetid://10709774206',[
+'battery-low']='rbxassetid://10709774370',['battery-medium']='rbxassetid://10709774513',beaker=
+'rbxassetid://10709774756',bed='rbxassetid://10709775036',['bed-double']='rbxassetid://10709774864',['bed-single']=
+'rbxassetid://10709774968',beer='rbxassetid://10709775167',bell='rbxassetid://10709775704',['bell-minus']=
+'rbxassetid://10709775241',['bell-off']='rbxassetid://10709775320',['bell-plus']='rbxassetid://10709775448',['bell-ring'
+]='rbxassetid://10709775560',bike='rbxassetid://10709775894',binary='rbxassetid://10709776050',bitcoin=
+'rbxassetid://10709776126',bluetooth='rbxassetid://10709776655',['bluetooth-connected']='rbxassetid://10709776240',[
+'bluetooth-off']='rbxassetid://10709776344',['bluetooth-searching']='rbxassetid://10709776501',bold=
+'rbxassetid://10747813908',bomb='rbxassetid://10709781460',bone='rbxassetid://10709781605',book=
+'rbxassetid://10709781824',['book-open']='rbxassetid://10709781717',bookmark='rbxassetid://10709782154',[
+'bookmark-minus']='rbxassetid://10709781919',['bookmark-plus']='rbxassetid://10709782044',bot='rbxassetid://10709782230'
+,box='rbxassetid://10709782497',['box-select']='rbxassetid://10709782342',boxes='rbxassetid://10709782582',briefcase=
+'rbxassetid://10709782662',brush='rbxassetid://10709782758',bug='rbxassetid://10709782845',building=
+'rbxassetid://10709783051',['building-2']='rbxassetid://10709782939',bus='rbxassetid://10709783137',cake=
+'rbxassetid://10709783217',calculator='rbxassetid://10709783311',calendar='rbxassetid://10709789505',['calendar-check']=
+'rbxassetid://10709783474',['calendar-check-2']='rbxassetid://10709783392',['calendar-clock']='rbxassetid://10709783577'
+,['calendar-days']='rbxassetid://10709783673',['calendar-heart']='rbxassetid://10709783835',['calendar-minus']=
+'rbxassetid://10709783959',['calendar-off']='rbxassetid://10709788784',['calendar-plus']='rbxassetid://10709788937',[
+'calendar-range']='rbxassetid://10709789053',['calendar-search']='rbxassetid://10709789200',['calendar-x']=
+'rbxassetid://10709789407',['calendar-x-2']='rbxassetid://10709789329',camera='rbxassetid://10709789686',['camera-off']=
+'rbxassetid://10747822677',car='rbxassetid://10709789810',carrot='rbxassetid://10709789960',cast=
+'rbxassetid://10709790097',charge='rbxassetid://10709790202',check='rbxassetid://10709790644',['check-circle']=
+'rbxassetid://10709790387',['check-circle-2']='rbxassetid://10709790298',['check-square']='rbxassetid://10709790537',[
+'chef-hat']='rbxassetid://10709790757',cherry='rbxassetid://10709790875',['chevron-down']='rbxassetid://10709790948',[
+'chevron-first']='rbxassetid://10709791015',['chevron-last']='rbxassetid://10709791130',['chevron-left']=
+'rbxassetid://10709791281',['chevron-right']='rbxassetid://10709791437',['chevron-up']='rbxassetid://10709791523',[
+'chevrons-down']='rbxassetid://10709796864',['chevrons-down-up']='rbxassetid://10709791632',['chevrons-left']=
+'rbxassetid://10709797151',['chevrons-left-right']='rbxassetid://10709797006',['chevrons-right']=
+'rbxassetid://10709797382',['chevrons-right-left']='rbxassetid://10709797274',['chevrons-up']='rbxassetid://10709797622'
+,['chevrons-up-down']='rbxassetid://10709797508',chrome='rbxassetid://10709797725',circle='rbxassetid://10709798174',[
+'circle-dot']='rbxassetid://10709797837',['circle-ellipsis']='rbxassetid://10709797985',['circle-slashed']=
+'rbxassetid://10709798100',citrus='rbxassetid://10709798276',clapperboard='rbxassetid://10709798350',clipboard=
+'rbxassetid://10709799288',['clipboard-check']='rbxassetid://10709798443',['clipboard-copy']='rbxassetid://10709798574',
+['clipboard-edit']='rbxassetid://10709798682',['clipboard-list']='rbxassetid://10709798792',['clipboard-signature']=
+'rbxassetid://10709798890',['clipboard-type']='rbxassetid://10709798999',['clipboard-x']='rbxassetid://10709799124',
+clock='rbxassetid://10709805144',['clock-1']='rbxassetid://10709799535',['clock-10']='rbxassetid://10709799718',[
+'clock-11']='rbxassetid://10709799818',['clock-12']='rbxassetid://10709799962',['clock-2']='rbxassetid://10709803876',[
+'clock-3']='rbxassetid://10709803989',['clock-4']='rbxassetid://10709804164',['clock-5']='rbxassetid://10709804291',[
+'clock-6']='rbxassetid://10709804435',['clock-7']='rbxassetid://10709804599',['clock-8']='rbxassetid://10709804784',[
+'clock-9']='rbxassetid://10709804996',cloud='rbxassetid://10709806740',['cloud-cog']='rbxassetid://10709805262',[
+'cloud-drizzle']='rbxassetid://10709805371',['cloud-fog']='rbxassetid://10709805477',['cloud-hail']=
+'rbxassetid://10709805596',['cloud-lightning']='rbxassetid://10709805727',['cloud-moon']='rbxassetid://10709805942',[
+'cloud-moon-rain']='rbxassetid://10709805838',['cloud-off']='rbxassetid://10709806060',['cloud-rain']=
+'rbxassetid://10709806277',['cloud-rain-wind']='rbxassetid://10709806166',['cloud-snow']='rbxassetid://10709806374',[
+'cloud-sun']='rbxassetid://10709806631',['cloud-sun-rain']='rbxassetid://10709806475',cloudy='rbxassetid://10709806859',
+clover='rbxassetid://10709806995',code='rbxassetid://10709810463',['code-2']='rbxassetid://10709807111',codepen=
+'rbxassetid://10709810534',codesandbox='rbxassetid://10709810676',coffee='rbxassetid://10709810814',cog=
+'rbxassetid://10709810948',coins='rbxassetid://10709811110',columns='rbxassetid://10709811261',command=
+'rbxassetid://10709811365',compass='rbxassetid://10709811445',component='rbxassetid://10709811595',['concierge-bell']=
+'rbxassetid://10709811706',connection='rbxassetid://10747361219',contact='rbxassetid://10709811834',contrast=
+'rbxassetid://10709811939',cookie='rbxassetid://10709812067',copy='rbxassetid://10709812159',copyleft=
+'rbxassetid://10709812251',copyright='rbxassetid://10709812311',['corner-down-left']='rbxassetid://10709812396',[
+'corner-down-right']='rbxassetid://10709812485',['corner-left-down']='rbxassetid://10709812632',['corner-left-up']=
+'rbxassetid://10709812784',['corner-right-down']='rbxassetid://10709812939',['corner-right-up']=
+'rbxassetid://10709813094',['corner-up-left']='rbxassetid://10709813185',['corner-up-right']='rbxassetid://10709813281',
+cpu='rbxassetid://10709813383',croissant='rbxassetid://10709818125',crop='rbxassetid://10709818245',cross=
+'rbxassetid://10709818399',crosshair='rbxassetid://10709818534',crown='rbxassetid://10709818626',['cup-soda']=
+'rbxassetid://10709818763',['curly-braces']='rbxassetid://10709818847',currency='rbxassetid://10709818931',database=
+'rbxassetid://10709818996',delete='rbxassetid://10709819059',diamond='rbxassetid://10709819149',['dice-1']=
+'rbxassetid://10709819266',['dice-2']='rbxassetid://10709819361',['dice-3']='rbxassetid://10709819508',['dice-4']=
+'rbxassetid://10709819670',['dice-5']='rbxassetid://10709819801',['dice-6']='rbxassetid://10709819896',dices=
+'rbxassetid://10723343321',diff='rbxassetid://10723343416',disc='rbxassetid://10723343537',divide=
+'rbxassetid://10723343805',['divide-circle']='rbxassetid://10723343636',['divide-square']='rbxassetid://10723343737',[
+'dollar-sign']='rbxassetid://10723343958',download='rbxassetid://10723344270',['download-cloud']=
+'rbxassetid://10723344088',droplet='rbxassetid://10723344432',droplets='rbxassetid://10734883356',drumstick=
+'rbxassetid://10723344737',edit='rbxassetid://10734883598',['edit-2']='rbxassetid://10723344885',['edit-3']=
+'rbxassetid://10723345088',egg='rbxassetid://10723345518',['egg-fried']='rbxassetid://10723345347',electricity=
+'rbxassetid://10723345749',['electricity-off']='rbxassetid://10723345643',equal='rbxassetid://10723345990',['equal-not']
+='rbxassetid://10723345866',eraser='rbxassetid://10723346158',euro='rbxassetid://10723346372',expand=
+'rbxassetid://10723346553',['external-link']='rbxassetid://10723346684',eye='rbxassetid://10723346959',['eye-off']=
+'rbxassetid://10723346871',factory='rbxassetid://10723347051',fan='rbxassetid://10723354359',['fast-forward']=
+'rbxassetid://10723354521',feather='rbxassetid://10723354671',figma='rbxassetid://10723354801',file=
+'rbxassetid://10723374641',['file-archive']='rbxassetid://10723354921',['file-audio']='rbxassetid://10723355148',[
+'file-audio-2']='rbxassetid://10723355026',['file-axis-3d']='rbxassetid://10723355272',['file-badge']=
+'rbxassetid://10723355622',['file-badge-2']='rbxassetid://10723355451',['file-bar-chart']='rbxassetid://10723355887',[
+'file-bar-chart-2']='rbxassetid://10723355746',['file-box']='rbxassetid://10723355989',['file-check']=
+'rbxassetid://10723356210',['file-check-2']='rbxassetid://10723356100',['file-clock']='rbxassetid://10723356329',[
+'file-code']='rbxassetid://10723356507',['file-cog']='rbxassetid://10723356830',['file-cog-2']=
+'rbxassetid://10723356676',['file-diff']='rbxassetid://10723357039',['file-digit']='rbxassetid://10723357151',[
+'file-down']='rbxassetid://10723357322',['file-edit']='rbxassetid://10723357495',['file-heart']=
+'rbxassetid://10723357637',['file-image']='rbxassetid://10723357790',['file-input']='rbxassetid://10723357933',[
+'file-json']='rbxassetid://10723364435',['file-json-2']='rbxassetid://10723364361',['file-key']=
+'rbxassetid://10723364605',['file-key-2']='rbxassetid://10723364515',['file-line-chart']='rbxassetid://10723364725',[
+'file-lock']='rbxassetid://10723364957',['file-lock-2']='rbxassetid://10723364861',['file-minus']=
+'rbxassetid://10723365254',['file-minus-2']='rbxassetid://10723365086',['file-output']='rbxassetid://10723365457',[
+'file-pie-chart']='rbxassetid://10723365598',['file-plus']='rbxassetid://10723365877',['file-plus-2']=
+'rbxassetid://10723365766',['file-question']='rbxassetid://10723365987',['file-scan']='rbxassetid://10723366167',[
+'file-search']='rbxassetid://10723366550',['file-search-2']='rbxassetid://10723366340',['file-signature']=
+'rbxassetid://10723366741',['file-spreadsheet']='rbxassetid://10723366962',['file-symlink']='rbxassetid://10723367098',[
+'file-terminal']='rbxassetid://10723367244',['file-text']='rbxassetid://10723367380',['file-type']=
+'rbxassetid://10723367606',['file-type-2']='rbxassetid://10723367509',['file-up']='rbxassetid://10723367734',[
+'file-video']='rbxassetid://10723373884',['file-video-2']='rbxassetid://10723367834',['file-volume']=
+'rbxassetid://10723374172',['file-volume-2']='rbxassetid://10723374030',['file-warning']='rbxassetid://10723374276',[
+'file-x']='rbxassetid://10723374544',['file-x-2']='rbxassetid://10723374378',files='rbxassetid://10723374759',film=
+'rbxassetid://10723374981',filter='rbxassetid://10723375128',fingerprint='rbxassetid://10723375250',flag=
+'rbxassetid://10723375890',['flag-off']='rbxassetid://10723375443',['flag-triangle-left']='rbxassetid://10723375608',[
+'flag-triangle-right']='rbxassetid://10723375727',flame='rbxassetid://10723376114',flashlight='rbxassetid://10723376471'
+,['flashlight-off']='rbxassetid://10723376365',['flask-conical']='rbxassetid://10734883986',['flask-round']=
+'rbxassetid://10723376614',['flip-horizontal']='rbxassetid://10723376884',['flip-horizontal-2']=
+'rbxassetid://10723376745',['flip-vertical']='rbxassetid://10723377138',['flip-vertical-2']='rbxassetid://10723377026',
+flower='rbxassetid://10747830374',['flower-2']='rbxassetid://10723377305',focus='rbxassetid://10723377537',folder=
+'rbxassetid://10723387563',['folder-archive']='rbxassetid://10723384478',['folder-check']='rbxassetid://10723384605',[
+'folder-clock']='rbxassetid://10723384731',['folder-closed']='rbxassetid://10723384893',['folder-cog']=
+'rbxassetid://10723385213',['folder-cog-2']='rbxassetid://10723385036',['folder-down']='rbxassetid://10723385338',[
+'folder-edit']='rbxassetid://10723385445',['folder-heart']='rbxassetid://10723385545',['folder-input']=
+'rbxassetid://10723385721',['folder-key']='rbxassetid://10723385848',['folder-lock']='rbxassetid://10723386005',[
+'folder-minus']='rbxassetid://10723386127',['folder-open']='rbxassetid://10723386277',['folder-output']=
+'rbxassetid://10723386386',['folder-plus']='rbxassetid://10723386531',['folder-search']='rbxassetid://10723386787',[
+'folder-search-2']='rbxassetid://10723386674',['folder-symlink']='rbxassetid://10723386930',['folder-tree']=
+'rbxassetid://10723387085',['folder-up']='rbxassetid://10723387265',['folder-x']='rbxassetid://10723387448',folders=
+'rbxassetid://10723387721',['form-input']='rbxassetid://10723387841',forward='rbxassetid://10723388016',frame=
+'rbxassetid://10723394389',framer='rbxassetid://10723394565',frown='rbxassetid://10723394681',fuel=
+'rbxassetid://10723394846',['function-square']='rbxassetid://10723395041',gamepad='rbxassetid://10723395457',[
+'gamepad-2']='rbxassetid://10723395215',gauge='rbxassetid://10723395708',gavel='rbxassetid://10723395896',gem=
+'rbxassetid://10723396000',ghost='rbxassetid://10723396107',gift='rbxassetid://10723396402',['gift-card']=
+'rbxassetid://10723396225',['git-branch']='rbxassetid://10723396676',['git-branch-plus']='rbxassetid://10723396542',[
+'git-commit']='rbxassetid://10723396812',['git-compare']='rbxassetid://10723396954',['git-fork']=
+'rbxassetid://10723397049',['git-merge']='rbxassetid://10723397165',['git-pull-request']='rbxassetid://10723397431',[
+'git-pull-request-closed']='rbxassetid://10723397268',['git-pull-request-draft']='rbxassetid://10734884302',glass=
+'rbxassetid://10723397788',['glass-2']='rbxassetid://10723397529',['glass-water']='rbxassetid://10723397678',glasses=
+'rbxassetid://10723397895',globe='rbxassetid://10723404337',['globe-2']='rbxassetid://10723398002',grab=
+'rbxassetid://10723404472',['graduation-cap']='rbxassetid://10723404691',grape='rbxassetid://10723404822',grid=
+'rbxassetid://10723404936',['grip-horizontal']='rbxassetid://10723405089',['grip-vertical']='rbxassetid://10723405236',
+hammer='rbxassetid://10723405360',hand='rbxassetid://10723405649',['hand-metal']='rbxassetid://10723405508',[
+'hard-drive']='rbxassetid://10723405749',['hard-hat']='rbxassetid://10723405859',hash='rbxassetid://10723405975',haze=
+'rbxassetid://10723406078',headphones='rbxassetid://10723406165',heart='rbxassetid://10723406885',['heart-crack']=
+'rbxassetid://10723406299',['heart-handshake']='rbxassetid://10723406480',['heart-off']='rbxassetid://10723406662',[
+'heart-pulse']='rbxassetid://10723406795',['help-circle']='rbxassetid://10723406988',hexagon='rbxassetid://10723407092',
+highlighter='rbxassetid://10723407192',history='rbxassetid://10723407335',home='rbxassetid://10723407389',hourglass=
+'rbxassetid://10723407498',['ice-cream']='rbxassetid://10723414308',image='rbxassetid://10723415040',['image-minus']=
+'rbxassetid://10723414487',['image-off']='rbxassetid://10723414677',['image-plus']='rbxassetid://10723414827',import=
+'rbxassetid://10723415205',inbox='rbxassetid://10723415335',indent='rbxassetid://10723415494',['indian-rupee']=
+'rbxassetid://10723415642',infinity='rbxassetid://10723415766',info='rbxassetid://10723415903',inspect=
+'rbxassetid://10723416057',italic='rbxassetid://10723416195',['japanese-yen']='rbxassetid://10723416363',joystick=
+'rbxassetid://10723416527',key='rbxassetid://10723416652',keyboard='rbxassetid://10723416765',lamp=
+'rbxassetid://10723417513',['lamp-ceiling']='rbxassetid://10723416922',['lamp-desk']='rbxassetid://10723417016',[
+'lamp-floor']='rbxassetid://10723417131',['lamp-wall-down']='rbxassetid://10723417240',['lamp-wall-up']=
+'rbxassetid://10723417356',landmark='rbxassetid://10723417608',languages='rbxassetid://10723417703',laptop=
+'rbxassetid://10723423881',['laptop-2']='rbxassetid://10723417797',lasso='rbxassetid://10723424235',['lasso-select']=
+'rbxassetid://10723424058',laugh='rbxassetid://10723424372',layers='rbxassetid://10723424505',layout=
+'rbxassetid://10723425376',['layout-dashboard']='rbxassetid://10723424646',['layout-grid']='rbxassetid://10723424838',[
+'layout-list']='rbxassetid://10723424963',['layout-template']='rbxassetid://10723425187',leaf='rbxassetid://10723425539'
+,library='rbxassetid://10723425615',['life-buoy']='rbxassetid://10723425685',lightbulb='rbxassetid://10723425852',[
+'lightbulb-off']='rbxassetid://10723425762',['line-chart']='rbxassetid://10723426393',link='rbxassetid://10723426722',[
+'link-2']='rbxassetid://10723426595',['link-2-off']='rbxassetid://10723426513',list='rbxassetid://10723433811',[
+'list-checks']='rbxassetid://10734884548',['list-end']='rbxassetid://10723426886',['list-minus']=
+'rbxassetid://10723426986',['list-music']='rbxassetid://10723427081',['list-ordered']='rbxassetid://10723427199',[
+'list-plus']='rbxassetid://10723427334',['list-start']='rbxassetid://10723427494',['list-video']=
+'rbxassetid://10723427619',['list-x']='rbxassetid://10723433655',loader='rbxassetid://10723434070',['loader-2']=
+'rbxassetid://10723433935',locate='rbxassetid://10723434557',['locate-fixed']='rbxassetid://10723434236',['locate-off']=
+'rbxassetid://10723434379',lock='rbxassetid://10723434711',['log-in']='rbxassetid://10723434830',['log-out']=
+'rbxassetid://10723434906',luggage='rbxassetid://10723434993',magnet='rbxassetid://10723435069',mail=
+'rbxassetid://10734885430',['mail-check']='rbxassetid://10723435182',['mail-minus']='rbxassetid://10723435261',[
+'mail-open']='rbxassetid://10723435342',['mail-plus']='rbxassetid://10723435443',['mail-question']=
+'rbxassetid://10723435515',['mail-search']='rbxassetid://10734884739',['mail-warning']='rbxassetid://10734885015',[
+'mail-x']='rbxassetid://10734885247',mails='rbxassetid://10734885614',map='rbxassetid://10734886202',['map-pin']=
+'rbxassetid://10734886004',['map-pin-off']='rbxassetid://10734885803',maximize='rbxassetid://10734886735',['maximize-2']
+='rbxassetid://10734886496',medal='rbxassetid://10734887072',megaphone='rbxassetid://10734887454',['megaphone-off']=
+'rbxassetid://10734887311',meh='rbxassetid://10734887603',menu='rbxassetid://10734887784',['message-circle']=
+'rbxassetid://10734888000',['message-square']='rbxassetid://10734888228',mic='rbxassetid://10734888864',['mic-2']=
+'rbxassetid://10734888430',['mic-off']='rbxassetid://10734888646',microscope='rbxassetid://10734889106',microwave=
+'rbxassetid://10734895076',milestone='rbxassetid://10734895310',minimize='rbxassetid://10734895698',['minimize-2']=
+'rbxassetid://10734895530',minus='rbxassetid://10734896206',['minus-circle']='rbxassetid://10734895856',['minus-square']
+='rbxassetid://10734896029',monitor='rbxassetid://10734896881',['monitor-off']='rbxassetid://10734896360',[
+'monitor-speaker']='rbxassetid://10734896512',moon='rbxassetid://10734897102',['more-horizontal']=
+'rbxassetid://10734897250',['more-vertical']='rbxassetid://10734897387',mountain='rbxassetid://10734897956',[
+'mountain-snow']='rbxassetid://10734897665',mouse='rbxassetid://10734898592',['mouse-pointer']=
+'rbxassetid://10734898476',['mouse-pointer-2']='rbxassetid://10734898194',['mouse-pointer-click']=
+'rbxassetid://10734898355',move='rbxassetid://10734900011',['move-3d']='rbxassetid://10734898756',['move-diagonal']=
+'rbxassetid://10734899164',['move-diagonal-2']='rbxassetid://10734898934',['move-horizontal']='rbxassetid://10734899414'
+,['move-vertical']='rbxassetid://10734899821',music='rbxassetid://10734905958',['music-2']='rbxassetid://10734900215',[
+'music-3']='rbxassetid://10734905665',['music-4']='rbxassetid://10734905823',navigation='rbxassetid://10734906744',[
+'navigation-2']='rbxassetid://10734906332',['navigation-2-off']='rbxassetid://10734906144',['navigation-off']=
+'rbxassetid://10734906580',network='rbxassetid://10734906975',newspaper='rbxassetid://10734907168',octagon=
+'rbxassetid://10734907361',option='rbxassetid://10734907649',outdent='rbxassetid://10734907933',package=
+'rbxassetid://10734909540',['package-2']='rbxassetid://10734908151',['package-check']='rbxassetid://10734908384',[
+'package-minus']='rbxassetid://10734908626',['package-open']='rbxassetid://10734908793',['package-plus']=
+'rbxassetid://10734909016',['package-search']='rbxassetid://10734909196',['package-x']='rbxassetid://10734909375',[
+'paint-bucket']='rbxassetid://10734909847',paintbrush='rbxassetid://10734910187',['paintbrush-2']=
+'rbxassetid://10734910030',palette='rbxassetid://10734910430',palmtree='rbxassetid://10734910680',paperclip=
+'rbxassetid://10734910927',['party-popper']='rbxassetid://10734918735',pause='rbxassetid://10734919336',['pause-circle']
+='rbxassetid://10735024209',['pause-octagon']='rbxassetid://10734919143',['pen-tool']='rbxassetid://10734919503',pencil=
+'rbxassetid://10734919691',percent='rbxassetid://10734919919',['person-standing']='rbxassetid://10734920149',phone=
+'rbxassetid://10734921524',['phone-call']='rbxassetid://10734920305',['phone-forwarded']='rbxassetid://10734920508',[
+'phone-incoming']='rbxassetid://10734920694',['phone-missed']='rbxassetid://10734920845',['phone-off']=
+'rbxassetid://10734921077',['phone-outgoing']='rbxassetid://10734921288',['pie-chart']='rbxassetid://10734921727',[
+'piggy-bank']='rbxassetid://10734921935',pin='rbxassetid://10734922324',['pin-off']='rbxassetid://10734922180',pipette=
+'rbxassetid://10734922497',pizza='rbxassetid://10734922774',plane='rbxassetid://10734922971',play=
+'rbxassetid://10734923549',['play-circle']='rbxassetid://10734923214',plus='rbxassetid://10734924532',['plus-circle']=
+'rbxassetid://10734923868',['plus-square']='rbxassetid://10734924219',podcast='rbxassetid://10734929553',pointer=
+'rbxassetid://10734929723',['pound-sterling']='rbxassetid://10734929981',power='rbxassetid://10734930466',['power-off']=
+'rbxassetid://10734930257',printer='rbxassetid://10734930632',puzzle='rbxassetid://10734930886',quote=
+'rbxassetid://10734931234',radio='rbxassetid://10734931596',['radio-receiver']='rbxassetid://10734931402',[
+'rectangle-horizontal']='rbxassetid://10734931777',['rectangle-vertical']='rbxassetid://10734932081',recycle=
+'rbxassetid://10734932295',redo='rbxassetid://10734932822',['redo-2']='rbxassetid://10734932586',['refresh-ccw']=
+'rbxassetid://10734933056',['refresh-cw']='rbxassetid://10734933222',refrigerator='rbxassetid://10734933465',regex=
+'rbxassetid://10734933655',['repeat']='rbxassetid://10734933966',['repeat-1']='rbxassetid://10734933826',reply=
+'rbxassetid://10734934252',['reply-all']='rbxassetid://10734934132',rewind='rbxassetid://10734934347',rocket=
+'rbxassetid://10734934585',['rocking-chair']='rbxassetid://10734939942',['rotate-3d']='rbxassetid://10734940107',[
+'rotate-ccw']='rbxassetid://10734940376',['rotate-cw']='rbxassetid://10734940654',rss='rbxassetid://10734940825',ruler=
+'rbxassetid://10734941018',['russian-ruble']='rbxassetid://10734941199',sailboat='rbxassetid://10734941354',save=
+'rbxassetid://10734941499',scale='rbxassetid://10734941912',['scale-3d']='rbxassetid://10734941739',scaling=
+'rbxassetid://10734942072',scan='rbxassetid://10734942565',['scan-face']='rbxassetid://10734942198',['scan-line']=
+'rbxassetid://10734942351',scissors='rbxassetid://10734942778',['screen-share']='rbxassetid://10734943193',[
+'screen-share-off']='rbxassetid://10734942967',scroll='rbxassetid://10734943448',search='rbxassetid://10734943674',send=
+'rbxassetid://10734943902',['separator-horizontal']='rbxassetid://10734944115',['separator-vertical']=
+'rbxassetid://10734944326',server='rbxassetid://10734949856',['server-cog']='rbxassetid://10734944444',['server-crash']=
+'rbxassetid://10734944554',['server-off']='rbxassetid://10734944668',settings='rbxassetid://10734950309',['settings-2']=
+'rbxassetid://10734950020',share='rbxassetid://10734950813',['share-2']='rbxassetid://10734950553',sheet=
+'rbxassetid://10734951038',shield='rbxassetid://10734951847',['shield-alert']='rbxassetid://10734951173',['shield-check'
+]='rbxassetid://10734951367',['shield-close']='rbxassetid://10734951535',['shield-off']='rbxassetid://10734951684',shirt
+='rbxassetid://10734952036',['shopping-bag']='rbxassetid://10734952273',['shopping-cart']='rbxassetid://10734952479',
+shovel='rbxassetid://10734952773',['shower-head']='rbxassetid://10734952942',shrink='rbxassetid://10734953073',shrub=
+'rbxassetid://10734953241',shuffle='rbxassetid://10734953451',sidebar='rbxassetid://10734954301',['sidebar-close']=
+'rbxassetid://10734953715',['sidebar-open']='rbxassetid://10734954000',sigma='rbxassetid://10734954538',signal=
+'rbxassetid://10734961133',['signal-high']='rbxassetid://10734954807',['signal-low']='rbxassetid://10734955080',[
+'signal-medium']='rbxassetid://10734955336',['signal-zero']='rbxassetid://10734960878',siren='rbxassetid://10734961284',
+['skip-back']='rbxassetid://10734961526',['skip-forward']='rbxassetid://10734961809',skull='rbxassetid://10734962068',
+slack='rbxassetid://10734962339',slash='rbxassetid://10734962600',slice='rbxassetid://10734963024',sliders=
+'rbxassetid://10734963400',['sliders-horizontal']='rbxassetid://10734963191',smartphone='rbxassetid://10734963940',[
+'smartphone-charging']='rbxassetid://10734963671',smile='rbxassetid://10734964441',['smile-plus']=
+'rbxassetid://10734964188',snowflake='rbxassetid://10734964600',sofa='rbxassetid://10734964852',['sort-asc']=
+'rbxassetid://10734965115',['sort-desc']='rbxassetid://10734965287',speaker='rbxassetid://10734965419',sprout=
+'rbxassetid://10734965572',square='rbxassetid://10734965702',star='rbxassetid://10734966248',['star-half']=
+'rbxassetid://10734965897',['star-off']='rbxassetid://10734966097',stethoscope='rbxassetid://10734966384',sticker=
+'rbxassetid://10734972234',['sticky-note']='rbxassetid://10734972463',['stop-circle']='rbxassetid://10734972621',[
+'stretch-horizontal']='rbxassetid://10734972862',['stretch-vertical']='rbxassetid://10734973130',strikethrough=
+'rbxassetid://10734973290',subscript='rbxassetid://10734973457',sun='rbxassetid://10734974297',['sun-dim']=
+'rbxassetid://10734973645',['sun-medium']='rbxassetid://10734973778',['sun-moon']='rbxassetid://10734973999',['sun-snow'
+]='rbxassetid://10734974130',sunrise='rbxassetid://10734974522',sunset='rbxassetid://10734974689',superscript=
+'rbxassetid://10734974850',['swiss-franc']='rbxassetid://10734975024',['switch-camera']='rbxassetid://10734975214',sword
+='rbxassetid://10734975486',swords='rbxassetid://10734975692',syringe='rbxassetid://10734975932',table=
+'rbxassetid://10734976230',['table-2']='rbxassetid://10734976097',tablet='rbxassetid://10734976394',tag=
+'rbxassetid://10734976528',tags='rbxassetid://10734976739',target='rbxassetid://10734977012',tent=
+'rbxassetid://10734981750',terminal='rbxassetid://10734982144',['terminal-square']='rbxassetid://10734981995',[
+'text-cursor']='rbxassetid://10734982395',['text-cursor-input']='rbxassetid://10734982297',thermometer=
+'rbxassetid://10734983134',['thermometer-snowflake']='rbxassetid://10734982571',['thermometer-sun']=
+'rbxassetid://10734982771',['thumbs-down']='rbxassetid://10734983359',['thumbs-up']='rbxassetid://10734983629',ticket=
+'rbxassetid://10734983868',timer='rbxassetid://10734984606',['timer-off']='rbxassetid://10734984138',['timer-reset']=
+'rbxassetid://10734984355',['toggle-left']='rbxassetid://10734984834',['toggle-right']='rbxassetid://10734985040',
+tornado='rbxassetid://10734985247',['toy-brick']='rbxassetid://10747361919',train='rbxassetid://10747362105',trash=
+'rbxassetid://10747362393',['trash-2']='rbxassetid://10747362241',['tree-deciduous']='rbxassetid://10747362534',[
+'tree-pine']='rbxassetid://10747362748',trees='rbxassetid://10747363016',['trending-down']='rbxassetid://10747363205',[
+'trending-up']='rbxassetid://10747363465',triangle='rbxassetid://10747363621',trophy='rbxassetid://10747363809',truck=
+'rbxassetid://10747364031',tv='rbxassetid://10747364593',['tv-2']='rbxassetid://10747364302',type=
+'rbxassetid://10747364761',umbrella='rbxassetid://10747364971',underline='rbxassetid://10747365191',undo=
+'rbxassetid://10747365484',['undo-2']='rbxassetid://10747365359',unlink='rbxassetid://10747365771',['unlink-2']=
+'rbxassetid://10747397871',unlock='rbxassetid://10747366027',upload='rbxassetid://10747366434',['upload-cloud']=
+'rbxassetid://10747366266',usb='rbxassetid://10747366606',user='rbxassetid://10747373176',['user-check']=
+'rbxassetid://10747371901',['user-cog']='rbxassetid://10747372167',['user-minus']='rbxassetid://10747372346',[
+'user-plus']='rbxassetid://10747372702',['user-x']='rbxassetid://10747372992',users='rbxassetid://10747373426',utensils=
+'rbxassetid://10747373821',['utensils-crossed']='rbxassetid://10747373629',['venetian-mask']='rbxassetid://10747374003',
+verified='rbxassetid://10747374131',vibrate='rbxassetid://10747374489',['vibrate-off']='rbxassetid://10747374269',video=
+'rbxassetid://10747374938',['video-off']='rbxassetid://10747374721',view='rbxassetid://10747375132',voicemail=
+'rbxassetid://10747375281',volume='rbxassetid://10747376008',['volume-1']='rbxassetid://10747375450',['volume-2']=
+'rbxassetid://10747375679',['volume-x']='rbxassetid://10747375880',wallet='rbxassetid://10747376205',wand=
+'rbxassetid://10747376565',['wand-2']='rbxassetid://10747376349',watch='rbxassetid://10747376722',waves=
+'rbxassetid://10747376931',webcam='rbxassetid://10747381992',wifi='rbxassetid://10747382504',['wifi-off']=
+'rbxassetid://10747382268',wind='rbxassetid://10747382750',['wrap-text']='rbxassetid://10747383065',wrench=
+'rbxassetid://10747383470',x='rbxassetid://10747384394',['x-circle']='rbxassetid://10747383819',['x-octagon']=
+'rbxassetid://10747384037',['x-square']='rbxassetid://10747384217',['zoom-in']='rbxassetid://10747384552',['zoom-out']=
+'rbxassetid://10747384679'}return f end)()end,[60]=function()local b,c,d=a(60)local e return(function(...)local f=d(c.
+Parent.Parent.utilities.customFunctions)local g,h=f.cloneref,{}h=setmetatable(h,{__index=function(i,j)return g(game:
+GetService(j))end})return h end)()end,[61]=function()local b,c,d=a(61)local e return(function(...)local f,g,h={},d(c.
+Parent.Fusion),d(c.default)local i,j,k,l,m=g.Value,g.Observer,d(c.Parent.Parent.utilities.get),d(c.Parent.Parent.
+utilities.animate),{}local n=i{}j(n):onChange(function()for o,p in ipairs(m)do task.spawn(p)end end)local o={}table.
+foreach(h,function(p,q)table.insert(o,p)end)function f.create(p)for q,t in o do if p[t]==nil then p[t]=h[t]end if
+typeof(p[t])~='Color3'then error(t.." isn't type Color3")end end for u,v in p do if not table.find(o,u)then warn(
+'Incorrect value removed "'..tostring(u)..'"')p[u]=nil end end n:set(p)end function f.get(p:string)local t=k(n)if t[p]
+then return t[p]else error(p.." isn't a theme element")end end for p,t in o do f[t]=l(function()return k(n)[t]end,40,1)
+end n:set(h)function f.onChange(u)table.insert(m,u)end return f end)()end,[62]=function()local b,c,d=a(62)local e return
+(function(...)return{background=Color3.fromHex'#2C2F33',background2=Color3.fromHex'#222427',text=Color3.fromHex'#DCE1E5'
+,text2=Color3.fromHex'#737C8A',selectedTab=Color3.fromHex'#1A1A1B',notificationButton=Color3.fromHex'#222427',
+mobileButtonBackground=Color3.fromHex'#DCE1E5',mobileButtonText=Color3.fromHex'#2C2F33',mobileButtonImage=Color3.fromHex
+'#2C2F33',disabledBackground=Color3.fromHex'#2A2C31',disabledText=Color3.fromHex'#D6DCE0',toggled=Color3.fromHex
+'#DCE1E5',red=Color3.fromRGB(255,105,97),orange=Color3.fromHex'#ff9b61'}end)()end,[64]=function()local b,c,d=a(64)local
+e return(function(...)local f=c.Parent.Parent return function(g)local h=d(f.Bundles)local i,j,k,l=h.data,h.themeSystem,h
+.icons,h.Fusion local m,n,o,p,t,u,v=l.New,l.Children,l.Value,l.Observer,l.OnEvent,l.Computed,d(f.utilities)local E,F,G,H
+,I=v.get,v.animate,v.typecheck,v.customFont,d(f.simpleElements)local J,K,L,M=I.UIPadding,I.UICorner,G(g,{Name='',
+DisabledText='',IsEnabled=false,Callback=function()end},{g.IsEnabled and''or'IsEnabled',g.DisabledText and''or
+'DisabledText'})assert(L,table.concat(M,'\n'))local N,O,P,Q,R,S,T,U=i.find'selectedTab',i.find'searchText',i.add(g),g.
+Parent,g.Name,g.Callback,g.IsEnabled or o(true),g.DisabledText or o'Component Disabled'local V=o(E(N.string)==E(P.tab).
+uid)p(N.string):onChange(function()V:set(E(N.string)==E(P.tab).uid)end)local W=F(function()return E(V)and 0 or 1 end,40,
+1)m'TextButton'{Interactable=u(function()if not E(T)then return false end return E(V)end),Visible=u(function()if E(O.
+string)~=''and not string.find(E(R):lower(),E(O.string):lower())then return false end return true end),Parent=Q,Size=
+UDim2.new(1,0,0,36),BackgroundColor3=j.background2,BackgroundTransparency=W,[t'Activated']=function()if not E(T)then
+return end task.spawn(E(S))end,[n]={K(6),m'Frame'{ZIndex=2,Visible=u(function()if not E(T)then return true end return
+false end),BackgroundTransparency=F(function()return E(V)and 0.2 or 1 end,40,1),BackgroundColor3=j.disabledBackground,
+Size=UDim2.fromScale(1,1),[n]={K(6),m'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0,0.5),Position=
+UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image=k.lock,ImageColor3=j.disabledText,ImageTransparency=W},m'TextLabel'{
+FontFace=H('Montserrat',Enum.FontWeight.Bold),BackgroundTransparency=1,Size=UDim2.new(1,-24,0,18),TextColor3=j.
+disabledText,TextTransparency=W,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,29,0.5,0),Text=U,
+TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[n]={J(0,5)}}}},m'Frame'{Size=UDim2.fromScale(1,1),
+BackgroundTransparency=1,[n]={J(0,8),m'TextLabel'{FontFace=H('Montserrat',Enum.FontWeight.Bold),Size=UDim2.new(1,-39,0,
+18),BackgroundTransparency=1,TextColor3=j.text,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5
+,0),Text=R,TextTransparency=W,TextXAlignment=Enum.TextXAlignment.Left,RichText=true},m'ImageLabel'{Size=UDim2.
+fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,0),BackgroundTransparency=1,Image=k.
+fingerprint,ImageColor3=j.text2,ImageTransparency=W}}}}}local X={}function X.SetName(Y,Z)local _,aa=G({SetName=Z},{
+SetName=''})assert(_,table.concat(aa,'\n'))R:set(Z)end function X.SetCallback(aa,Y)local Z,_=G({SetCallback=Y},{
+SetCallback=function()end})assert(Z,table.concat(_,'\n'))S:set(Y)end function X.Fire(aa)task.spawn(E(S))end function X.
+Enable(aa)T:set(true)end function X.Disable(aa)T:set(false)end return X end end)()end,[65]=function()local aa,b,c=a(65)
+local d return(function(...)local e=b.Parent.Parent return function(f)local g=c(e.Bundles)local h,i,j=g.data,g.
+themeSystem,g.Fusion local k,l,m,n,o=j.New,j.Children,j.Value,j.Observer,c(e.utilities)local p,t,u,v,E=o.get,o.animate,h
+.find'selectedTab',h.add(f),f.Parent local F=m(p(u.string)==p(v.tab).uid)n(u.string):onChange(function()F:set(p(u.string
+)==p(v.tab).uid)end)local G=t(function()return p(F)and 0 or 1 end,40,1)k'Frame'{Parent=E,Size=UDim2.new(1,0,0,16),
+BackgroundTransparency=1,[l]={k'Frame'{Size=UDim2.new(1,0,0,2),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.
+fromScale(0.5,0.5),BackgroundColor3=i.text2,BackgroundTransparency=G}}}end end)()end,[66]=function()local aa,b,c=a(66)
+local d return(function(...)local e=b.Parent.Parent return function(f)local g=c(e.Bundles)local h,i,j,k=g.data,g.
+themeSystem,g.icons,g.Fusion local l,m,n,o,p,t,u,v=k.New,k.Children,k.Value,k.Observer,k.OnEvent,k.Computed,k.Ref,c(e.
+utilities)local E,F,G,H,I=v.get,v.animate,v.typecheck,v.customFont,c(e.simpleElements)local J,K,L,M,N,O,P,Q,R=I.
+UIListLayout,I.UIPadding,I.UICorner,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,G(
+f,{Name='',DisabledText='',FLAG='',IsEnabled=false,Callback=function()end,Items={},Multiselect=true,Regex=function()end}
+,{f.DisabledText and''or'DisabledText',f.FLAG and''or'FLAG',f.IsEnabled and''or'IsEnabled',f.Multiselect and''or
+'Multiselect',f.Regex and''or'Regex'})assert(Q,table.concat(R,'\n'))Q,R=G(f,{Default=f.Multiselect and{}or''},{f.Default
+and''or'Default'})assert(Q,table.concat(R,'\n'))if f.Regex then assert(typeof(f.Regex'')=='string',
+'The Regex function must always return a string')end local S,T,U,V,W,X,Y,Z,_,ab,ac,ad,ae,af,ag,ah,ai=h.find'selectedTab'
+,h.find'useConfig',h.find'flags',h.find'configLoaded',h.find'searchText',h.add(f),f.Parent,f.Name,f.Callback,n{},f.
+Default or n{},f.IsEnabled or n(true),f.DisabledText or n'Component Disabled',f.Regex or n(function(S)return S end),f.
+Multiselect or n(false),f.FLAG or n'',false if E(ah)~=''then local aj=E(U.names)assert(not table.find(aj,E(ah)),(
+'FLAG "%s" already exists'):format(E(ah)))table.insert(aj,E(ah))U:update('names',aj)ai=true local ak=E(U.specialCase)ak[
+E(ah)]={Multiselect=E(ag)}U:update('specialCase',ak)end local aj,ak,al,am,an,ao,ap=n(),n(),n(false),n(E(ag)and{}or''),n{
+},n{},n(false)o(an):onChange(function()if typeof(E(an))~='table'then an:set{E(an)}return end if#E(an)==#E(ab)then ap:
+set(true)else ap:set(false)end if E(ag)then local aq={}for ar,as in E(an)do table.insert(aq,E(af)(as))end task.spawn(E(_
+),aq)am:set(E(an))else if#E(an)<1 then return end task.spawn(E(_),E(af)(E(an)[1]))am:set(E(af)(E(an)[1]))end end)o(ab):
+onChange(function()if#E(an)==#E(ab)then ap:set(true)else ap:set(false)end end)local aq=n(E(S.string)==E(X.tab).uid)o(S.
+string):onChange(function()aq:set(E(S.string)==E(X.tab).uid)end)local ar=F(function()return E(aq)and 0 or 1 end,40,1)
+local function as()if E(V.boolean)then local at=E(U.list)[E(ah)]local au=G({[E(ah)]=at},{[E(ah)]={}})if at and au then
+an:set(at)end if not at then task.wait()an:set(E(ac))end end end l'Frame'{Parent=Y,Visible=t(function()if E(W.string)~=
+''and not string.find(E(Z):lower(),E(W.string):lower())then return false end return true end),Size=F(function()if E(al)
+and E(aj)then local at,au=E(aj),3 for av,aw in at:GetChildren()do if aw:IsA'UIListLayout'or aw:IsA'UICorner'or not aw.
+Visible then continue end au+=(4+aw.Size.Y.Offset)end return UDim2.new(1,0,0,au)end return UDim2.new(1,0,0,36)end,40,1),
+BackgroundColor3=i.background2,BackgroundTransparency=ar,ClipsDescendants=true,[u]=aj,[m]={L(6),J(M.LayoutOrder,N.
+Vertical,O.Center,P.Top,UDim.new(0,4)),l'TextButton'{Interactable=t(function()if not E(ad)then return false end return
 E(aq)end),Size=UDim2.new(1,0,0,36),BackgroundTransparency=1,[p'Activated']=function()al:set(not E(al))end,[m]={l'Frame'{
 ZIndex=2,Visible=t(function()if not E(ad)then return true end return false end),BackgroundTransparency=F(function()
 return E(aq)and 0.2 or 1 end,40,1),BackgroundColor3=i.disabledBackground,Size=UDim2.fromScale(1,1),[m]={L(6),l
@@ -593,46 +889,45 @@ Size=UDim2.fromOffset(18,18),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1
 =ay,ImageTransparency=ar,ImageColor3=i.text2},l'TextLabel'{FontFace=H('Montserrat',Enum.FontWeight.Bold),Size=t(function
 ()return E(ag)and UDim2.new(1,-48,0,16)or UDim2.new(1,-24,0,16)end),BackgroundTransparency=1,TextColor3=i.text,
 TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5,0),Text=ax,TextTransparency=ar,TextXAlignment=
-Enum.TextXAlignment.Left,RichText=true}}}table.insert(at,aA)end ao:set(at)end)ab:set(E(f.Items))if E(T.boolean)and ai
-then if not E(V.boolean)then o(V.boolean):onChange(as)else as()end else an:set(E(ac))end local at={}function at.SetName(
-au,av)local aw,ax=G({SetName=av},{SetName=''})assert(aw,table.concat(ax,'\n'))Z:set(av)end function at.SetItems(au,av)
-local aw,ax=G({SetItems=av},{SetItems={}})assert(aw,table.concat(ax,'\n'))an:set{}ab:set(av)local ay,az={},false for aA,
-aB in E(ab)do local aC if typeof(aB)=='table'then aC=aB.Value else aC=aB end local aD=E(af)(aC)if E(ag)then if typeof(E(
-am))=='table'and table.find(E(am),aD)then table.insert(ay,aD)az=true end else if E(am)==aD then az=true task.spawn(E(_),
-aD)break end end end if az then if E(ag)then an:set(ay)end end end function at.SelectItem(au,av)assert(not E(ag),
-':SelectItem requires Multiselect to be false')local aw,ax=G({SelectItem=av},{SelectItem=''})assert(aw,table.concat(ax,
-'\n'))local ay=false for az,aA in E(ab)do local aB=aA if typeof(aA)=='table'then aB=aA.Value end local aC=E(af)(av)if E(
-af)(aB)==aC then ay=true break end end assert(ay,":SelectItem couldn't find "..av)an:set{av}end function at.SelectItems(
-au,av)assert(E(ag),':SelectItems requires Multiselect to be true')local aw,ax=G({SelectItems=av},{SelectItems={}})
-assert(aw,table.concat(ax,'\n'))for ay,az in av do local aA=false for aB,aC in E(ab)do local aD=typeof(aC)=='table'and
-E(af)(aC.Value)or E(af)(aC)if az==aD then aA=true break end end if aA then av[ay]=E(af)(az)else warn(
-":SelectItems couldn't find",az,'in Items. Removing it.')av[ay]=nil end end an:set(av)end function at.Enable(au)ad:set(
-true)end function at.Disable(au)ad:set(false)end return at end end)()end,[67]=function()local aa,ab,ac=a(67)local ad
-return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.
-themeSystem,ag.icons,ag.services local al,am=ak.UserInputService,ag.Fusion local an,ao,ap,aq,ar,as,at,au=am.New,am.
-Children,am.Value,am.Observer,am.OnEvent,am.Computed,am.Ref,ac(ae.utilities)local av,aw,ax,ay,az,aA,aB,aC=au.get,au.
-animate,au.typecheck,au.connections,au.customFont,au.references,au.drag,ac(ae.simpleElements)local aD,b,c,d,e,f,g,h,i,j,
-k=aC.UIPadding,aC.UICorner,aC.UITextSizeConstraint,aC.UIListLayout,Enum.SortOrder,Enum.FillDirection,Enum.
-HorizontalAlignment,Enum.VerticalAlignment,ac(ab.Parent.warn),ax(af,{Name='',DisabledText='',FLAG='',IsEnabled=false,
-Callback=function()end,Bind=Enum.KeyCode.Q},{af.DisabledText and''or'DisabledText',af.FLAG and''or'FLAG',af.IsEnabled
-and''or'IsEnabled',af.Bind and''or'Bind'})assert(j,table.concat(k,'\n'))local l,m,n,o,p,t,u,v,E,F,G,H,I,J,K,L,M=ah.find
-'selectedTab',ah.find'currentBinds',ah.find'useConfig',ah.find'flags',ah.find'configLoaded',ah.find'searchText',ah.find
-'isMobile',ah.find'instanceName',ah.find'isListening',ah.add(af),af.Parent,af.Name,af.Callback,af.IsEnabled or ap(true),
-af.DisabledText or ap'Component Disabled',ap(),false local function N(O:EnumItem,P:string)local Q=av(m.binds)if table.
-find(Q,O)then i(('Key %s is already in use. %s'):format(O.Name,P))else table.insert(Q,O)if av(L)then table.remove(Q,
-table.find(Q,av(L)))end m:update('binds',Q)L:set(O)M=true end end if af.Bind then if not av(n.boolean)then N(av(af.Bind)
-,'At property set')end end local O,P=af.FLAG or ap'',false if av(O)~=''then local Q=av(o.names)assert(not table.find(Q,
-av(O)),('FLAG "%s" already exists'):format(av(O)))table.insert(Q,av(O))o:update('names',Q)P=true local R=av(o.
-specialCase)R[av(O)]={isKeybind=true}o:update('specialCase',R)end local Q=ap(av(l.string)==av(F.tab).uid)aq(l.string):
-onChange(function()Q:set(av(l.string)==av(F.tab).uid)end)local R,S=aw(function()return av(Q)and 0 or 1 end,40,1),ap(
-false)local T=al.InputBegan:Connect(function(T,U)if av(u.boolean)then return end if av(S)then if T.KeyCode and T.KeyCode
-~=Enum.KeyCode.Unknown then N(T.KeyCode,'From input box')end S:set(false)task.wait()E:update('boolean',false)else if T.
-KeyCode and T.KeyCode==av(L)and not U and not av(E.boolean)and av(J)then task.spawn(av(I))end end end)ay.add(T)local U,V
-=ap(false),ap(Vector2.new(0,0))local function W()if P then if av(p.boolean)then local X=av(o.list)[av(O)]local Y=ax({[
-av(O)]=X},{[av(O)]={}})if X and Y then N(Enum.KeyCode[X.keycode],'From configLoad has FLAG')end aq(L):onChange(function(
-)local Z=av(o.list)Z[av(O)]=Z[av(O)]or{}Z[av(O)].keycode=av(L).Name o:update('list',Z)end)aq(V):onChange(function()local
-Z=av(o.list)Z[av(O)]=Z[av(O)]or{}Z[av(O)].coordinate=tostring(av(V))o:update('list',Z)end)if not X then task.wait()N(av(
-af.Bind),'From configLoad no FLAG')end end else if av(p.boolean)and not M then task.wait()N(av(af.Bind),
+Enum.TextXAlignment.Left,RichText=true}}}table.insert(at,aA)end ao:set(at)end)ab:set(E(f.Items))o(an):onChange(function(
+)if typeof(E(an))~='table'then return end local at=E(U.list)at[E(ah)]=E(an)U:update('list',at)end)if E(T.boolean)and ai
+then if not E(V.boolean)then o(V.boolean):onChange(as)else as()end else task.spawn(function()task.wait()an:set(E(ac))end
+)end local at={}function at.SetName(au,av)local aw,ax=G({SetName=av},{SetName=''})assert(aw,table.concat(ax,'\n'))Z:set(
+av)end function at.SetItems(au,av)local aw,ax=G({SetItems=av},{SetItems={}})assert(aw,table.concat(ax,'\n'))an:set{}ab:
+set(av)local ay,az={},false for aA,aB in E(ab)do local aC if typeof(aB)=='table'then aC=aB.Value else aC=aB end local aD
+=E(af)(aC)if E(ag)then if typeof(E(am))=='table'and table.find(E(am),aD)then table.insert(ay,aD)az=true end else if E(am
+)==aD then az=true task.spawn(E(_),aD)break end end end if az then if E(ag)then an:set(ay)end end end function at.
+SelectItem(au,av)assert(not E(ag),':SelectItem requires Multiselect to be false')local aw,ax=G({SelectItem=av},{
+SelectItem=''})assert(aw,table.concat(ax,'\n'))local ay=false for az,aA in E(ab)do local aB=aA if typeof(aA)=='table'
+then aB=aA.Value end local aC=E(af)(av)if E(af)(aB)==aC then ay=true break end end assert(ay,
+":SelectItem couldn't find "..av)an:set{av}end function at.SelectItems(au,av)assert(E(ag),
+':SelectItems requires Multiselect to be true')local aw,ax=G({SelectItems=av},{SelectItems={}})assert(aw,table.concat(ax
+,'\n'))for ay,az in av do local aA=false for aB,aC in E(ab)do local aD=typeof(aC)=='table'and E(af)(aC.Value)or E(af)(aC
+)if az==aD then aA=true break end end if aA then av[ay]=E(af)(az)else warn(":SelectItems couldn't find",az,
+'in Items. Removing it.')av[ay]=nil end end an:set(av)end function at.Enable(au)ad:set(true)end function at.Disable(au)
+ad:set(false)end return at end end)()end,[67]=function()local aa,ab,ac=a(67)local ad return(function(...)local ae=ab.
+Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.services
+local al,am=ak.UserInputService,ag.Fusion local an,ao,ap,aq,ar,as,at,au=am.New,am.Children,am.Value,am.Observer,am.
+OnEvent,am.Computed,am.Ref,ac(ae.utilities)local av,aw,ax,ay,az,aA,aB,aC=au.get,au.animate,au.typecheck,au.connections,
+au.customFont,au.references,au.drag,ac(ae.simpleElements)local aD,b,c,d,e,f,g,h,i,j,k=aC.UIPadding,aC.UICorner,aC.
+UITextSizeConstraint,aC.UIListLayout,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,
+ac(ab.Parent.warn),ax(af,{Name='',DisabledText='',FLAG='',IsEnabled=false,Callback=function()end,Bind=Enum.KeyCode.Q},{
+af.DisabledText and''or'DisabledText',af.FLAG and''or'FLAG',af.IsEnabled and''or'IsEnabled',af.Bind and''or'Bind'})
+assert(j,table.concat(k,'\n'))local l,m,n,o,p,t,u,v,E,F,G,H,I,J,K,L,M=ah.find'selectedTab',ah.find'currentBinds',ah.find
+'useConfig',ah.find'flags',ah.find'configLoaded',ah.find'searchText',ah.find'isMobile',ah.find'instanceName',ah.find
+'isListening',ah.add(af),af.Parent,af.Name,af.Callback,af.IsEnabled or ap(true),af.DisabledText or ap
+'Component Disabled',ap(),false local function N(O:EnumItem,P:string)local Q=av(m.binds)if table.find(Q,O)then i((
+'Key %s is already in use. %s'):format(O.Name,P))else table.insert(Q,O)if av(L)then table.remove(Q,table.find(Q,av(L)))
+end m:update('binds',Q)L:set(O)M=true end end local O,P=af.FLAG or ap'',false if av(O)~=''then local Q=av(o.names)
+assert(not table.find(Q,av(O)),('FLAG "%s" already exists'):format(av(O)))table.insert(Q,av(O))o:update('names',Q)P=true
+local R=av(o.specialCase)R[av(O)]={isKeybind=true}o:update('specialCase',R)end local Q=ap(av(l.string)==av(F.tab).uid)
+aq(l.string):onChange(function()Q:set(av(l.string)==av(F.tab).uid)end)local R,S=aw(function()return av(Q)and 0 or 1 end,
+40,1),ap(false)local T=al.InputBegan:Connect(function(T,U)if av(u.boolean)then return end if av(S)then if T.KeyCode and
+T.KeyCode~=Enum.KeyCode.Unknown then N(T.KeyCode,'From input box')end S:set(false)task.wait()E:update('boolean',false)
+else if T.KeyCode and T.KeyCode==av(L)and not U and not av(E.boolean)and av(J)then task.spawn(av(I))end end end)ay.add(T
+)local U,V=ap(false),ap(Vector2.new(0,0))local function W()if P then if av(p.boolean)then local X=av(o.list)[av(O)]local
+Y=ax({[av(O)]=X},{[av(O)]={}})if X and Y then N(Enum.KeyCode[X.keycode],'From configLoad has FLAG')end if not X then
+task.wait()N(av(af.Bind),'From configLoad no FLAG')end end else if av(p.boolean)and not M then task.wait()N(av(af.Bind),
 'From configLoad no FLAG')end end end local X,Y Y=an'TextButton'{Visible=as(function()if not av(J)then return av(J)end
 return av(U)end),Parent=aA.get(av(v.name)),Size=UDim2.fromOffset(60,60),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.
 fromScale(0.5,0.5),TextScaled=true,Text=av(H),FontFace=az('Montserrat',Enum.FontWeight.Bold),TextColor3=ai.
@@ -669,105 +964,107 @@ ImageTransparency=R}}},an'Frame'{Size=as(function()return UDim2.new(0.775,av(U)a
 ),d(e.LayoutOrder,f.Horizontal,g.Left,h.Center,UDim.new(0,10)),an'TextLabel'{FontFace=az('Montserrat',Enum.FontWeight.
 Bold),Size=UDim2.new(1,-24,0,18),BackgroundTransparency=1,TextColor3=ai.text,TextScaled=true,AnchorPoint=Vector2.new(0,
 0.5),Position=UDim2.new(0,0,0.5,0),Text=H,TextTransparency=R,TextXAlignment=Enum.TextXAlignment.Left,RichText=true}}}}}}
-}}}if av(n.boolean)then if av(p.boolean)then W()else aq(p.boolean):onChange(W)end end local Z={}function Z.SetName(_,aE)
-local aF,aG=ax({SetName=aE},{SetName=''})assert(aF,table.concat(aG,'\n'))H:set(aE)end function Z.SetBind(aE,aF:EnumItem)
-local aG,_=ax({SetBind=aF},{SetBind=Enum.keyCode.C})assert(aG,table.concat(_,'\n'))N(aF,'At :SetBind')end function Z.
-Enable(aE)J:set(true)end function Z.Disable(aE)J:set(false)end return Z end end)()end,[68]=function()local aa,ab,ac=a(68
-)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj=ag.data
-,ag.themeSystem,ag.Fusion local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.Value,aj.Computed,aj.Observer,ac(ae.
-simpleElements)local aq,ar,as=ap.UICorner,ap.UIPadding,ac(ae.utilities)local at,au,av,aw=as.get,as.typecheck,as.animate,
-as.customFont local ax,ay=au(af,{Text=''})assert(ax,table.concat(ay,'\n'))local az,aA,aB,aC,aD=ah.find'selectedTab',ah.
-find'searchText',ah.add(af),af.Parent,af.Text local aE=am(at(az.string)==at(aB.tab).uid)ao(az.string):onChange(function(
-)aE:set(at(az.string)==at(aB.tab).uid)end)local aF=av(function()return at(aE)and 0 or 1 end,40,1)ak'Frame'{Visible=an(
-function()if at(aA.string)~=''and not string.find(at(aD):lower(),at(aA.string):lower())then return false end return true
-end),Size=UDim2.new(1,0,0,36),Parent=aC,BackgroundTransparency=aF,BackgroundColor3=ai.background2,[al]={aq(6),ar(0,8),ak
-'TextLabel'{FontFace=aw('Montserrat',Enum.FontWeight.Bold),RichText=true,TextScaled=true,BackgroundTransparency=1,
-TextTransparency=aF,Size=UDim2.new(1,0,0,18),Position=UDim2.new(0,0,0.5,0),AnchorPoint=Vector2.new(0,0.5),TextXAlignment
-=Enum.TextXAlignment.Left,TextColor3=ai.text,Text=an(function()return at(aD)end),[al]={ak'UITextSizeConstraint'{
-MinTextSize=1,MaxTextSize=18}}}}}local aG={}function aG.SetText(b,c)local d,e=au({SetText=c},{SetText=''})assert(d,table
-.concat(e,'\n'))aD:set(c)end return aG end end)()end,[69]=function()local aa,ab,ac=a(69)local ad return(function(...)
-local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai=ag.themeSystem,ag.Fusion local aj,ak,al,
-am,an,ao=ai.New,ai.OnEvent,ai.Children,ai.Value,ai.Computed,ac(ae.utilities)local ap,aq,ar,as,at,au=ao.get,ao.animate,ao
-.getStringBounds,ao.customFont,ao.typecheck,ac(ae.simpleElements)local av,aw,ax,ay,az,aA,aB,aC,aD=au.UICorner,au.
-UIPadding,au.UIListLayout,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,at(af,{Title
-='',Body='',Duration=1,Image='',ImageColor=Color3.fromRGB(0,0,0),Buttons={}},{af.Image and''or'Image',af.ImageColor and
-''or'ImageColor',af.Buttons and''or'Buttons'})assert(aC,table.concat(aD,'\n'))local aE,aF,aG,b,c,d,e,f,g,h,i=am(af.Title
-),am(af.Body),am(af.Duration),am(af.Image or''),af.ImageColor and am(af.ImageColor)or ah.text,am(af.Buttons or{}),am(
-false),am(false),am(false),am'',am(250)local j=am(ar(ap(aF),{Size=14,Font=as('Montserrat',Enum.FontWeight.Medium),Width=
-ap(i)-8-(b and 32 or 0)}))local k=am(20+math.clamp(ap(j).Y+4+10+(#ap(d)>0 and 26 or 0),#ap(d)>0 and 56 or 30,9e9))
-local function l(m,n)local o=1 for p=1,m do o=o*10 end local p=tostring(math.round(n*o)/o)local t=string.split(p,'.')if#
-t==1 then local u=''for v=1,m do u=u..'0'end p=p..'.'..u end return p end local m,n={}for o,p in ap(d)do local t,u=at({
-Button=p},{Button={}})assert(t,table.concat(u,'\n'))t,u=at(p,{Name='',Callback=function()end})assert(t,table.concat(u,
-'\n'))local v,E=p.Name,p.Callback local F=aj'TextButton'{Size=UDim2.new(1/#ap(d),-2,1,-4),TextSize=14,Text=v,FontFace=
-as('Montserrat',Enum.FontWeight.Bold),BackgroundColor3=ah.notificationButton,TextColor3=ah.text,[ak'Activated']=function
-()task.spawn(E)f:set(false)task.wait(0.4)e:set(false)task.delay(0.3,function()g:set(true)end)task.wait(2)n:Destroy()end,
-[al]={av(4)}}table.insert(m,F)end n=aj'Frame'{Parent=af.Parent,BackgroundTransparency=1,Size=aq(function()return UDim2.
-fromOffset(ap(i),ap(e)and ap(k)+5 or 0)end,30,1),ClipsDescendants=true,[al]={aj'TextButton'{Visible=an(function()return
-not ap(g)end),Interactable=f,AnchorPoint=Vector2.new(0,1),Position=UDim2.fromScale(0,1),BackgroundTransparency=1,Size=
-UDim2.fromOffset(ap(i),ap(k)),[ak'Activated']=function()f:set(false)task.wait(0.4)e:set(false)task.delay(0.3,function()g
-:set(true)end)task.wait(2)n:Destroy()end},aj'Frame'{AnchorPoint=Vector2.new(0,1),BackgroundColor3=ah.background,Size=
-UDim2.fromOffset(ap(i),ap(k)),Position=aq(function()return UDim2.fromScale(ap(f)and 0 or 1.2,1)end,30,1),[al]={aw(0,4),
-ax(ay.LayoutOrder,az.Horizontal,aA.Left,aB.Center,UDim.new(0,4)),av(4),aj'Frame'{Visible=ap(b)~=''and true or false,Size
-=UDim2.new(0,24,1,0),BackgroundTransparency=1,[al]={aj'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(
-0.5,0.5),Position=UDim2.fromScale(0.5,0.5),BackgroundTransparency=1,Image=b,ImageColor3=c}}},aj'Frame'{Size=UDim2.new(1,
-ap(b)~=''and-28 or 0,1,0),BackgroundTransparency=1,[al]={aw(2,0),ax(ay.LayoutOrder,az.Vertical,aA.Left,aB.Top),aj
-'TextLabel'{Size=UDim2.new(1,0,0,16),BackgroundTransparency=1,FontFace=as('Montserrat',Enum.FontWeight.Bold),
-TextXAlignment=Enum.TextXAlignment.Left,TextSize=16,RichText=true,TextColor3=ah.text,Text=aE},aj'TextLabel'{Size=UDim2.
-new(1,0,0,1),AutomaticSize=Enum.AutomaticSize.Y,Position=UDim2.fromOffset(8,25),BackgroundTransparency=1,FontFace=as(
-'Montserrat',Enum.FontWeight.Medium),TextSize=14,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.
-TextYAlignment.Top,TextWrapped=true,RichText=true,TextColor3=ah.text2,Text=aF},aj'Frame'{Visible=an(function()return#ap(
-d)>0 and true or false end),Size=UDim2.new(1,0,0,26),BackgroundTransparency=1,[al]={ax(ay.LayoutOrder,az.Horizontal,aA.
-Center,aB.Center,UDim.new(0,2)),m}},aj'TextLabel'{Size=UDim2.new(1,0,0,10),FontFace=as('Montserrat',Enum.FontWeight.
-Medium),Text=h,TextColor3=ah.text,TextSize=10,BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Right}}}}}}}
-task.delay(0.4,function()f:set(true)end)task.spawn(function()repeat task.wait()until ap(f)local t,u=(tick())repeat u=
-tick()-t h:set(l(1,math.clamp(u,0,ap(aG))))task.wait()until u>ap(aG)end)task.spawn(function()e:set(true)repeat task.
-wait()until ap(f)task.wait(ap(aG))task.wait(0.2)f:set(false)task.wait(0.4)e:set(false)task.delay(0.3,function()g:set(
-true)end)task.wait(2)n:Destroy()end)end end)()end,[70]=function()local aa,ab,ac=a(70)local ad return(function(...)local
-ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion local ak,
-al,am,an,ao,ap=aj.New,aj.Children,aj.Value,aj.Computed,aj.Observer,ac(ae.simpleElements)local aq,ar,as,at=ap.UICorner,ap
-.UIPadding,ap.UITextSizeConstraint,ac(ae.utilities)local au,av,aw,ax,ay=at.get,at.animate,at.getStringBounds,at.
-customFont,at.typecheck local az,aA=ay(af,{Title='',Body=''})assert(az,table.concat(aA,'\n'))local aB,aC,aD,aE,aF,aG=ah.
-find'selectedTab',ah.find'searchText',ah.add(af),af.Parent,af.Title,af.Body local b=am(au(aB.string)==au(aD.tab).uid)ao(
-aB.string):onChange(function()b:set(au(aB.string)==au(aD.tab).uid)end)local c,d=av(function()return au(b)and 0 or 1 end,
-40,1),am(0)task.spawn(function()d:set(aw(au(aG),{Font=ax('Montserrat',Enum.FontWeight.Medium),Size=12,Width=math.round(
-au(aE).AbsoluteSize.X)}).Y)end)au(aE).Changed:Connect(function(e)if e:lower()=='absolutesize'then d:set(aw(au(aG),{Font=
-ax('Montserrat',Enum.FontWeight.Medium),Size=12,Width=math.round(au(aE).AbsoluteSize.X)}).Y)end end)ao(aG):onChange(
-function()d:set(aw(au(aG),{Font=ax('Montserrat',Enum.FontWeight.Bold),Size=12,Width=math.round(au(aE).AbsoluteSize.X)}).
-Y)end)ak'Frame'{Visible=an(function()if au(aC.string)~=''and not string.find(au(aF):lower(),au(aC.string):lower())and
-not string.find(au(aG):lower(),au(aC.string):lower())then return false end return true end),BackgroundColor3=ai.
-background2,Parent=aE,BackgroundTransparency=c,Size=an(function()return UDim2.new(1,0,0,36+au(d))end),AutomaticSize=Enum
-.AutomaticSize.Y,[al]={aq(6),ar(6),ak'TextLabel'{Name='Title',RichText=true,Size=UDim2.new(1,0,0,18),
-BackgroundTransparency=1,TextTransparency=c,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.
-Top,TextScaled=true,TextSize=18,FontFace=ax('Montserrat',Enum.FontWeight.Bold),TextColor3=ai.text,Text=aF,[al]={as(1,18)
-}},ak'TextLabel'{Name='Body',TextWrapped=true,RichText=true,Position=UDim2.fromOffset(4,20),BackgroundTransparency=1,
-TextTransparency=c,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,TextSize=12,FontFace=
-ax('Montserrat',Enum.FontWeight.Medium),TextColor3=ai.text2,Text=aG,Size=an(function()return UDim2.new(1,-4,0,au(d))end)
-}}}local e={}function e.SetBody(f,g)local h,i=ay({SetBody=g},{SetBody=''})assert(h,table.concat(i,'\n'))aG:set(g)end
-function e.SetTitle(f,g)local h,i=ay({SetTitle=g},{SetTitle=''})assert(h,table.concat(i,'\n'))aF:set(g)end return e end
-end)()end,[71]=function()local aa,ab,ac=a(71)local ad return(function(...)local ae=ab.Parent.Parent return function(af)
-local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.services local al,am,an=ak.UserInputService,
-ak.RunService,ag.Fusion local ao,ap,aq,ar,as,at,au,av=an.New,an.Children,an.Value,an.Observer,an.OnEvent,an.Computed,an.
-Ref,ac(ae.utilities)local aw,ax,ay,az,aA=av.get,av.animate,av.typecheck,av.customFont,ac(ae.simpleElements)local aB,aC,
-aD,aE,aF,aG,b,c,d=aA.UIListLayout,aA.UIPadding,aA.UICorner,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,
-Enum.VerticalAlignment,ay(af,{Name='',DisabledText='',FLAG='',IsEnabled=false,Default=0,Callback=function()end,Min=0,Max
-=0,DisplayAsPercent=false,DecimalPlace=0},{af.DisabledText and''or'DisabledText',af.FLAG and''or'FLAG',af.IsEnabled and
-''or'IsEnabled',af.Default and''or'Default',af.Min and''or'Min',af.Max and''or'Max',af.DisplayAsPercent and''or
-'DisplayAsPercent',af.DecimalPlace and''or'DecimalPlace'})assert(c,table.concat(d,'\n'))local e,f,g,h,i,j,k,l,m,n,o,p,t,
-u,v=ah.find'selectedTab',ah.find'useConfig',ah.find'flags',ah.find'configLoaded',ah.find'searchText',ah.add(af),af.
-Parent,af.Name,af.Callback,af.Max,af.Min,af.DisplayAsPercent or aq(false),af.DecimalPlace or aq(0),af.IsEnabled or aq(
-true),af.DisabledText or aq'Component Disabled'local E,F,G=af.Default and aq(math.clamp(aw(af.Default),aw(o),aw(n)))or
-aq(aw(o)),af.FLAG or aq'',false if aw(F)~=''then local H=aw(g.names)assert(not table.find(H,aw(F)),(
-'FLAG "%s" already exists'):format(aw(F)))table.insert(H,aw(F))g:update('names',H)G=true end local H=aq(aw(e.string)==
-aw(j.tab).uid)ar(e.string):onChange(function()H:set(aw(e.string)==aw(j.tab).uid)end)local I=ax(function()return aw(H)and
-0 or 1 end,40,1)local function J(K,L,M,N,O)return(1-((K-L)/(M-L)))*N+((K-L)/(M-L))*O end local function K(L)if aw(t)==0
-then return math.floor(L)end return tonumber(string.format('%.'..aw(t)..'f',L))end local L,M=aq(0),aq(aw(o))ar(M):
-onChange(function()L:set(J(aw(M),aw(o),aw(n),0,1))if not aw(u)then return end task.spawn(aw(m),aw(M))end)local N,O,P,Q=
-aq(),aq(10),aq(),aq(false)al.InputEnded:Connect(function(R)if(R.UserInputType==Enum.UserInputType.MouseButton1 or R.
-UserInputType==Enum.UserInputType.Touch)and aw(Q)then Q:set(false)end end)local function R()if G then if aw(h.boolean)
-then local S=aw(g.list)[aw(F)]local T=ay({[aw(F)]=S},{[aw(F)]=0})if S and T then M:set(math.clamp(S,aw(o),aw(n)))end ar(
-M):onChange(function()local U=aw(g.list)U[aw(F)]=aw(M)g:update('list',U)end)if not S then task.wait()M:set(aw(E))end end
-else if aw(h.boolean)then task.wait()M:set(aw(E))end end end ao'Frame'{Parent=k,Visible=at(function()if aw(i.string)~=''
-and not string.find(aw(l):lower(),aw(i.string):lower())then return false end return true end),Size=UDim2.new(1,0,0,36),
+}}}aq(L):onChange(function()local Z=av(o.list)Z[av(O)]=Z[av(O)]or{}Z[av(O)].keycode=av(L).Name o:update('list',Z)end)aq(
+V):onChange(function()local Z=av(o.list)Z[av(O)]=Z[av(O)]or{}Z[av(O)].coordinate=tostring(av(V))o:update('list',Z)end)if
+av(n.boolean)then if av(p.boolean)then W()else aq(p.boolean):onChange(W)end else task.spawn(function()task.wait()if af.
+Bind then N(av(af.Bind),'At property set')end end)end local Z={}function Z.SetName(_,aE)local aF,aG=ax({SetName=aE},{
+SetName=''})assert(aF,table.concat(aG,'\n'))H:set(aE)end function Z.SetBind(aE,aF:EnumItem)local aG,_=ax({SetBind=aF},{
+SetBind=Enum.keyCode.C})assert(aG,table.concat(_,'\n'))N(aF,'At :SetBind')end function Z.Enable(aE)J:set(true)end
+function Z.Disable(aE)J:set(false)end return Z end end)()end,[68]=function()local aa,ab,ac=a(68)local ad return(function
+(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion
+local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.Value,aj.Computed,aj.Observer,ac(ae.simpleElements)local aq,ar,as=ap.
+UICorner,ap.UIPadding,ac(ae.utilities)local at,au,av,aw=as.get,as.typecheck,as.animate,as.customFont local ax,ay=au(af,{
+Text=''})assert(ax,table.concat(ay,'\n'))local az,aA,aB,aC,aD=ah.find'selectedTab',ah.find'searchText',ah.add(af),af.
+Parent,af.Text local aE=am(at(az.string)==at(aB.tab).uid)ao(az.string):onChange(function()aE:set(at(az.string)==at(aB.
+tab).uid)end)local aF=av(function()return at(aE)and 0 or 1 end,40,1)ak'Frame'{Visible=an(function()if at(aA.string)~=''
+and not string.find(at(aD):lower(),at(aA.string):lower())then return false end return true end),Size=UDim2.new(1,0,0,36)
+,Parent=aC,BackgroundTransparency=aF,BackgroundColor3=ai.background2,[al]={aq(6),ar(0,8),ak'TextLabel'{FontFace=aw(
+'Montserrat',Enum.FontWeight.Bold),RichText=true,TextScaled=true,BackgroundTransparency=1,TextTransparency=aF,Size=UDim2
+.new(1,0,0,18),Position=UDim2.new(0,0,0.5,0),AnchorPoint=Vector2.new(0,0.5),TextXAlignment=Enum.TextXAlignment.Left,
+TextColor3=ai.text,Text=an(function()return at(aD)end),[al]={ak'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=18}}}}}
+local aG={}function aG.SetText(b,c)local d,e=au({SetText=c},{SetText=''})assert(d,table.concat(e,'\n'))aD:set(c)end
+return aG end end)()end,[69]=function()local aa,ab,ac=a(69)local ad return(function(...)local ae=ab.Parent.Parent return
+function(af)local ag=ac(ae.Bundles)local ah,ai=ag.themeSystem,ag.Fusion local aj,ak,al,am,an,ao=ai.New,ai.OnEvent,ai.
+Children,ai.Value,ai.Computed,ac(ae.utilities)local ap,aq,ar,as,at,au=ao.get,ao.animate,ao.getStringBounds,ao.customFont
+,ao.typecheck,ac(ae.simpleElements)local av,aw,ax,ay,az,aA,aB,aC,aD=au.UICorner,au.UIPadding,au.UIListLayout,Enum.
+SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,at(af,{Title='',Body='',Duration=1,Image=''
+,ImageColor=Color3.fromRGB(0,0,0),Buttons={}},{af.Image and''or'Image',af.ImageColor and''or'ImageColor',af.Buttons and
+''or'Buttons'})assert(aC,table.concat(aD,'\n'))local aE,aF,aG,b,c,d,e,f,g,h,i=am(af.Title),am(af.Body),am(af.Duration),
+am(af.Image or''),af.ImageColor and am(af.ImageColor)or ah.text,am(af.Buttons or{}),am(false),am(false),am(false),am'',
+am(250)local j=am(ar(ap(aF),{Size=14,Font=as('Montserrat',Enum.FontWeight.Medium),Width=ap(i)-8-(b and 32 or 0)}))local
+k=am(20+math.clamp(ap(j).Y+4+10+(#ap(d)>0 and 26 or 0),#ap(d)>0 and 56 or 30,9e9))local function l(m,n)local o=1 for p=1
+,m do o=o*10 end local p=tostring(math.round(n*o)/o)local t=string.split(p,'.')if#t==1 then local u=''for v=1,m do u=u..
+'0'end p=p..'.'..u end return p end local m,n={}for o,p in ap(d)do local t,u=at({Button=p},{Button={}})assert(t,table.
+concat(u,'\n'))t,u=at(p,{Name='',Callback=function()end})assert(t,table.concat(u,'\n'))local v,E=p.Name,p.Callback local
+F=aj'TextButton'{Size=UDim2.new(1/#ap(d),-2,1,-4),TextSize=14,Text=v,FontFace=as('Montserrat',Enum.FontWeight.Bold),
+BackgroundColor3=ah.notificationButton,TextColor3=ah.text,[ak'Activated']=function()task.spawn(E)f:set(false)task.wait(
+0.4)e:set(false)task.delay(0.3,function()g:set(true)end)task.wait(2)n:Destroy()end,[al]={av(4)}}table.insert(m,F)end n=
+aj'Frame'{Parent=af.Parent,BackgroundTransparency=1,Size=aq(function()return UDim2.fromOffset(ap(i),ap(e)and ap(k)+5 or
+0)end,30,1),ClipsDescendants=true,[al]={aj'TextButton'{Visible=an(function()return not ap(g)end),Interactable=f,
+AnchorPoint=Vector2.new(0,1),Position=UDim2.fromScale(0,1),BackgroundTransparency=1,Size=UDim2.fromOffset(ap(i),ap(k)),[
+ak'Activated']=function()f:set(false)task.wait(0.4)e:set(false)task.delay(0.3,function()g:set(true)end)task.wait(2)n:
+Destroy()end},aj'Frame'{AnchorPoint=Vector2.new(0,1),BackgroundColor3=ah.background,Size=UDim2.fromOffset(ap(i),ap(k)),
+Position=aq(function()return UDim2.fromScale(ap(f)and 0 or 1.2,1)end,30,1),[al]={aw(0,4),ax(ay.LayoutOrder,az.Horizontal
+,aA.Left,aB.Center,UDim.new(0,4)),av(4),aj'Frame'{Visible=ap(b)~=''and true or false,Size=UDim2.new(0,24,1,0),
+BackgroundTransparency=1,[al]={aj'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0.5,0.5),Position=
+UDim2.fromScale(0.5,0.5),BackgroundTransparency=1,Image=b,ImageColor3=c}}},aj'Frame'{Size=UDim2.new(1,ap(b)~=''and-28 or
+0,1,0),BackgroundTransparency=1,[al]={aw(2,0),ax(ay.LayoutOrder,az.Vertical,aA.Left,aB.Top),aj'TextLabel'{Size=UDim2.
+new(1,0,0,16),BackgroundTransparency=1,FontFace=as('Montserrat',Enum.FontWeight.Bold),TextXAlignment=Enum.TextXAlignment
+.Left,TextSize=16,RichText=true,TextColor3=ah.text,Text=aE},aj'TextLabel'{Size=UDim2.new(1,0,0,1),AutomaticSize=Enum.
+AutomaticSize.Y,Position=UDim2.fromOffset(8,25),BackgroundTransparency=1,FontFace=as('Montserrat',Enum.FontWeight.Medium
+),TextSize=14,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,TextWrapped=true,RichText=
+true,TextColor3=ah.text2,Text=aF},aj'Frame'{Visible=an(function()return#ap(d)>0 and true or false end),Size=UDim2.new(1,
+0,0,26),BackgroundTransparency=1,[al]={ax(ay.LayoutOrder,az.Horizontal,aA.Center,aB.Center,UDim.new(0,2)),m}},aj
+'TextLabel'{Size=UDim2.new(1,0,0,10),FontFace=as('Montserrat',Enum.FontWeight.Medium),Text=h,TextColor3=ah.text,TextSize
+=10,BackgroundTransparency=1,TextXAlignment=Enum.TextXAlignment.Right}}}}}}}task.delay(0.4,function()f:set(true)end)task
+.spawn(function()repeat task.wait()until ap(f)local t,u=(tick())repeat u=tick()-t h:set(l(1,math.clamp(u,0,ap(aG))))task
+.wait()until u>ap(aG)end)task.spawn(function()e:set(true)repeat task.wait()until ap(f)task.wait(ap(aG))task.wait(0.2)f:
+set(false)task.wait(0.4)e:set(false)task.delay(0.3,function()g:set(true)end)task.wait(2)n:Destroy()end)end end)()end,[70
+]=function()local aa,ab,ac=a(70)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae
+.Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.Value,aj.Computed
+,aj.Observer,ac(ae.simpleElements)local aq,ar,as,at=ap.UICorner,ap.UIPadding,ap.UITextSizeConstraint,ac(ae.utilities)
+local au,av,aw,ax,ay=at.get,at.animate,at.getStringBounds,at.customFont,at.typecheck local az,aA=ay(af,{Title='',Body=''
+})assert(az,table.concat(aA,'\n'))local aB,aC,aD,aE,aF,aG=ah.find'selectedTab',ah.find'searchText',ah.add(af),af.Parent,
+af.Title,af.Body local b=am(au(aB.string)==au(aD.tab).uid)ao(aB.string):onChange(function()b:set(au(aB.string)==au(aD.
+tab).uid)end)local c,d=av(function()return au(b)and 0 or 1 end,40,1),am(0)task.spawn(function()d:set(aw(au(aG),{Font=ax(
+'Montserrat',Enum.FontWeight.Medium),Size=12,Width=math.round(au(aE).AbsoluteSize.X)}).Y)end)au(aE).Changed:Connect(
+function(e)if e:lower()=='absolutesize'then d:set(aw(au(aG),{Font=ax('Montserrat',Enum.FontWeight.Medium),Size=12,Width=
+math.round(au(aE).AbsoluteSize.X)}).Y)end end)ao(aG):onChange(function()d:set(aw(au(aG),{Font=ax('Montserrat',Enum.
+FontWeight.Bold),Size=12,Width=math.round(au(aE).AbsoluteSize.X)}).Y)end)ak'Frame'{Visible=an(function()if au(aC.string)
+~=''and not string.find(au(aF):lower(),au(aC.string):lower())and not string.find(au(aG):lower(),au(aC.string):lower())
+then return false end return true end),BackgroundColor3=ai.background2,Parent=aE,BackgroundTransparency=c,Size=an(
+function()return UDim2.new(1,0,0,36+au(d))end),AutomaticSize=Enum.AutomaticSize.Y,[al]={aq(6),ar(6),ak'TextLabel'{Name=
+'Title',RichText=true,Size=UDim2.new(1,0,0,18),BackgroundTransparency=1,TextTransparency=c,TextXAlignment=Enum.
+TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,TextScaled=true,TextSize=18,FontFace=ax('Montserrat',Enum.
+FontWeight.Bold),TextColor3=ai.text,Text=aF,[al]={as(1,18)}},ak'TextLabel'{Name='Body',TextWrapped=true,RichText=true,
+Position=UDim2.fromOffset(4,20),BackgroundTransparency=1,TextTransparency=c,TextXAlignment=Enum.TextXAlignment.Left,
+TextYAlignment=Enum.TextYAlignment.Top,TextSize=12,FontFace=ax('Montserrat',Enum.FontWeight.Medium),TextColor3=ai.text2,
+Text=aG,Size=an(function()return UDim2.new(1,-4,0,au(d))end)}}}local e={}function e.SetBody(f,g)local h,i=ay({SetBody=g}
+,{SetBody=''})assert(h,table.concat(i,'\n'))aG:set(g)end function e.SetTitle(f,g)local h,i=ay({SetTitle=g},{SetTitle=''}
+)assert(h,table.concat(i,'\n'))aF:set(g)end return e end end)()end,[71]=function()local aa,ab,ac=a(71)local ad return(
+function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.
+themeSystem,ag.icons,ag.services local al,am,an=ak.UserInputService,ak.RunService,ag.Fusion local ao,ap,aq,ar,as,at,au,
+av=an.New,an.Children,an.Value,an.Observer,an.OnEvent,an.Computed,an.Ref,ac(ae.utilities)local aw,ax,ay,az,aA=av.get,av.
+animate,av.typecheck,av.customFont,ac(ae.simpleElements)local aB,aC,aD,aE,aF,aG,b,c,d=aA.UIListLayout,aA.UIPadding,aA.
+UICorner,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,ay(af,{Name='',DisabledText=
+'',FLAG='',IsEnabled=false,Default=0,Callback=function()end,Min=0,Max=0,DisplayAsPercent=false,DecimalPlace=0},{af.
+DisabledText and''or'DisabledText',af.FLAG and''or'FLAG',af.IsEnabled and''or'IsEnabled',af.Default and''or'Default',af.
+Min and''or'Min',af.Max and''or'Max',af.DisplayAsPercent and''or'DisplayAsPercent',af.DecimalPlace and''or'DecimalPlace'
+})assert(c,table.concat(d,'\n'))local e,f,g,h,i,j,k,l,m,n,o,p,t,u,v=ah.find'selectedTab',ah.find'useConfig',ah.find
+'flags',ah.find'configLoaded',ah.find'searchText',ah.add(af),af.Parent,af.Name,af.Callback,af.Max,af.Min,af.
+DisplayAsPercent or aq(false),af.DecimalPlace or aq(0),af.IsEnabled or aq(true),af.DisabledText or aq
+'Component Disabled'local E,F,G=af.Default and aq(math.clamp(aw(af.Default),aw(o),aw(n)))or aq(aw(o)),af.FLAG or aq'',
+false if aw(F)~=''then local H=aw(g.names)assert(not table.find(H,aw(F)),('FLAG "%s" already exists'):format(aw(F)))
+table.insert(H,aw(F))g:update('names',H)G=true end local H=aq(aw(e.string)==aw(j.tab).uid)ar(e.string):onChange(function
+()H:set(aw(e.string)==aw(j.tab).uid)end)local I=ax(function()return aw(H)and 0 or 1 end,40,1)local function J(K,L,M,N,O)
+return(1-((K-L)/(M-L)))*N+((K-L)/(M-L))*O end local function K(L)if aw(t)==0 then return math.floor(L)end return
+tonumber(string.format('%.'..aw(t)..'f',L))end local L,M=aq(0),aq(aw(o))ar(M):onChange(function()L:set(J(aw(M),aw(o),aw(
+n),0,1))if not aw(u)then return end task.spawn(aw(m),aw(M))end)local N,O,P,Q=aq(),aq(10),aq(),aq(false)al.InputEnded:
+Connect(function(R)if(R.UserInputType==Enum.UserInputType.MouseButton1 or R.UserInputType==Enum.UserInputType.Touch)and
+aw(Q)then Q:set(false)end end)local function R()if G then if aw(h.boolean)then local S=aw(g.list)[aw(F)]local T=ay({[aw(
+F)]=S},{[aw(F)]=0})if S and T then M:set(math.clamp(S,aw(o),aw(n)))end if not S then task.wait()M:set(aw(E))end end else
+if aw(h.boolean)then task.wait()M:set(aw(E))end end end ao'Frame'{Parent=k,Visible=at(function()if aw(i.string)~=''and
+not string.find(aw(l):lower(),aw(i.string):lower())then return false end return true end),Size=UDim2.new(1,0,0,36),
 BackgroundColor3=ai.background2,BackgroundTransparency=ax(function()if aw(H)then return 0 end return 1 end,40,1),[ap]={
 aD(6),ao'Frame'{ZIndex=2,Visible=at(function()if not aw(u)then return true end return false end),BackgroundTransparency=
 ax(function()return aw(H)and 0.2 or 1 end,40,1),BackgroundColor3=ai.disabledBackground,Size=UDim2.fromScale(1,1),[ap]={
@@ -801,14 +1098,15 @@ fromScale(0,0.5),Size=UDim2.new(1,0,0,4),BackgroundColor3=ai.background,Backgrou
 BackgroundTransparency=1,ImageColor3=ai.selectedTab,ImageTransparency=I,Size=UDim2.fromOffset(18,18),Position=UDim2.new(
 1,0,0.5,0),AnchorPoint=Vector2.new(0.5,0.5),[ap]={ao'Frame'{Position=UDim2.new(0.5,0,0.5,0),AnchorPoint=Vector2.new(0.5,
 0.5),Size=UDim2.fromOffset(2,8),BackgroundColor3=ai.text,BackgroundTransparency=ax(function()if aw(H)then return 0.8 end
-return 1 end,40,1)}}}}}}}}}}}}}if aw(f.boolean)then if aw(h.boolean)then R()else ar(h.boolean):onChange(R)end else M:
-set(aw(E))end local S={}function S.SetName(T,U)local V,W=ay({SetName=U},{SetName=''})assert(V,table.concat(W,'\n'))l:
-set(U)end function S.SetValue(T,U)local V,W=ay({SetValue=U},{SetValue=0})assert(V,table.concat(W,'\n'))M:set(math.clamp(
-U,aw(o),aw(n)))end function S.Enable(T)u:set(true)end function S.Disable(T)u:set(false)end return S end end)()end,[72]=
-function()local aa,ab,ac=a(72)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.
-Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.Value,aj.Observer,
-aj.OnEvent,ac(ae.utilities)local aq,ar,as,at,au=ap.get,ap.animate,ap.typecheck,ap.customFont,ac(ae.simpleElements)local
-av,aw,ax,ay,az,aA,aB,aC,aD=au.UIListLayout,au.UIPadding,au.UICorner,Enum.SortOrder,Enum.FillDirection,Enum.
+return 1 end,40,1)}}}}}}}}}}}}}ar(M):onChange(function()local S=aw(g.list)S[aw(F)]=aw(M)g:update('list',S)end)if aw(f.
+boolean)then if aw(h.boolean)then R()else ar(h.boolean):onChange(R)end else task.spawn(function()task.wait()M:set(aw(E))
+end)end local S={}function S.SetName(T,U)local V,W=ay({SetName=U},{SetName=''})assert(V,table.concat(W,'\n'))l:set(U)end
+function S.SetValue(T,U)local V,W=ay({SetValue=U},{SetValue=0})assert(V,table.concat(W,'\n'))M:set(math.clamp(U,aw(o),
+aw(n)))end function S.Enable(T)u:set(true)end function S.Disable(T)u:set(false)end return S end end)()end,[72]=function(
+)local aa,ab,ac=a(72)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)
+local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.Value,aj.Observer,aj.
+OnEvent,ac(ae.utilities)local aq,ar,as,at,au=ap.get,ap.animate,ap.typecheck,ap.customFont,ac(ae.simpleElements)local av,
+aw,ax,ay,az,aA,aB,aC,aD=au.UIListLayout,au.UIPadding,au.UICorner,Enum.SortOrder,Enum.FillDirection,Enum.
 HorizontalAlignment,Enum.VerticalAlignment,as(af,{Name='',Image=''},{af.Image and''or'Image'})assert(aC,table.concat(aD,
 '\n'))local aE,aF,aG,b,c,d,e=ah.find'selectedTab',ah.find'isFirst',ah.add(af),af.Parent,af.Name,(am(false))if af.Image
 then e=af.Image d:set(true)end local f=am(false)an(aE.string):onChange(function()local g=aq(aE.string)f:set(g==aG.uid)
@@ -848,89 +1146,86 @@ at(I)then task.spawn(at(k),at(I))L:set(at(I))end else if at(L)==at(I)then return
 end end)ap(J):onChange(function()if at(p)and not at(J)then if at(n)then if(tonumber(at(I))or at(I)=='')and at(L)~=at(I)
 then task.spawn(at(k),at(I))L:set(at(I))end else if at(L)==at(I)then return end task.spawn(at(k),at(I))L:set(at(I))end
 end end)local function M()if E then if at(f.boolean)then local N=at(e.list)[at(v)]local O=aw({[at(v)]=N},{[at(v)]=''})if
-N and O then if at(p)then J:set(true)end I:set(N)if at(p)then J:set(false)end end ap(K):onChange(function()local P=at(e.
-list)P[at(v)]=at(K)e:update('list',P)end)if not N then task.wait()if at(o)~=''then if at(p)then J:set(true)end I:set(at(
-o))if at(p)then J:set(false)end end end end else if at(f.boolean)then task.wait()if at(o)~=''then if at(p)then J:set(
-true)end I:set(at(o))if at(p)then J:set(false)end end end end end al'Frame'{Parent=i,Visible=ao(function()if at(g.string
-)~=''and not string.find(at(j):lower(),at(g.string):lower())then return false end return true end),
-BackgroundTransparency=1,Size=UDim2.new(1,0,0,36),[am]={al'Frame'{ZIndex=2,Visible=ao(function()if not at(l)then return
-true end return false end),BackgroundTransparency=au(function()return at(F)and 0.2 or 1 end,40,1),BackgroundColor3=ai.
-disabledBackground,Size=UDim2.fromScale(1,1),[am]={az(6),al'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2
-.new(0,0.5),Position=UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image=aj.lock,ImageColor3=ai.disabledText,
-ImageTransparency=G},al'TextLabel'{FontFace=av('Montserrat',Enum.FontWeight.Bold),BackgroundTransparency=1,Size=UDim2.
-new(1,-24,0,18),TextColor3=ai.disabledText,TextTransparency=G,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=
-UDim2.new(0,29,0.5,0),Text=ao(function()return at(m)end),TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[am]={ay(
-0,5)}}}},al'Frame'{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[am]={aB(aC.LayoutOrder,aF.Horizontal,aE.Left,aD.
-Center,UDim.new(0,3)),al'Frame'{Size=UDim2.new(0.65,-3,1,0),BackgroundColor3=ai.background2,BackgroundTransparency=G,[am
-]={az(6),ay(0,6),al'TextLabel'{FontFace=av('Montserrat',Enum.FontWeight.Bold),Size=UDim2.new(1,0,0,18),
-BackgroundTransparency=1,TextColor3=ai.text,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5,0)
-,Text=j,TextTransparency=G,TextXAlignment=Enum.TextXAlignment.Left,RichText=true}}},al'TextButton'{Interactable=ao(
-function()if not at(l)then return false end return at(F)end),Size=UDim2.fromScale(0.35,1),BackgroundColor3=ai.
-background2,BackgroundTransparency=G,[ar'Activated']=function()local N=at(H)if N then N:CaptureFocus()end end,[am]={az(6
-),ay(0,6),aB(aC.LayoutOrder,aF.Horizontal,aE.Left,aD.Center,UDim.new(0,5)),al'ImageLabel'{ZIndex=0,Size=UDim2.
-fromOffset(20,20),BackgroundTransparency=1,Image=aj.input,ImageColor3=ai.text2,ImageTransparency=G},al'TextBox'{
-Interactable=ao(function()if not at(l)then return false end return at(F)end),Size=UDim2.new(1,-25,1,0),
-BackgroundTransparency=1,PlaceholderText=u,PlaceholderColor3=ai.text2,TextColor3=ai.text,TextXAlignment=Enum.
-TextXAlignment.Left,TextScaled=true,FontFace=av('Montserrat',Enum.FontWeight.Bold),Text=K,TextTransparency=G,
+N and O then if at(p)then J:set(true)end I:set(N)if at(p)then J:set(false)end end if not N then task.wait()if at(o)~=''
+then if at(p)then J:set(true)end I:set(at(o))if at(p)then J:set(false)end end end end else if at(f.boolean)then task.
+wait()if at(o)~=''then if at(p)then J:set(true)end I:set(at(o))if at(p)then J:set(false)end end end end end al'Frame'{
+Parent=i,Visible=ao(function()if at(g.string)~=''and not string.find(at(j):lower(),at(g.string):lower())then return
+false end return true end),BackgroundTransparency=1,Size=UDim2.new(1,0,0,36),[am]={al'Frame'{ZIndex=2,Visible=ao(
+function()if not at(l)then return true end return false end),BackgroundTransparency=au(function()return at(F)and 0.2 or
+1 end,40,1),BackgroundColor3=ai.disabledBackground,Size=UDim2.fromScale(1,1),[am]={az(6),al'ImageLabel'{Size=UDim2.
+fromOffset(24,24),AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image=aj.lock,
+ImageColor3=ai.disabledText,ImageTransparency=G},al'TextLabel'{FontFace=av('Montserrat',Enum.FontWeight.Bold),
+BackgroundTransparency=1,Size=UDim2.new(1,-24,0,18),TextColor3=ai.disabledText,TextTransparency=G,TextScaled=true,
+AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,29,0.5,0),Text=ao(function()return at(m)end),TextXAlignment=Enum.
+TextXAlignment.Left,RichText=true,[am]={ay(0,5)}}}},al'Frame'{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[am]={
+aB(aC.LayoutOrder,aF.Horizontal,aE.Left,aD.Center,UDim.new(0,3)),al'Frame'{Size=UDim2.new(0.65,-3,1,0),BackgroundColor3=
+ai.background2,BackgroundTransparency=G,[am]={az(6),ay(0,6),al'TextLabel'{FontFace=av('Montserrat',Enum.FontWeight.Bold)
+,Size=UDim2.new(1,0,0,18),BackgroundTransparency=1,TextColor3=ai.text,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),
+Position=UDim2.new(0,0,0.5,0),Text=j,TextTransparency=G,TextXAlignment=Enum.TextXAlignment.Left,RichText=true}}},al
+'TextButton'{Interactable=ao(function()if not at(l)then return false end return at(F)end),Size=UDim2.fromScale(0.35,1),
+BackgroundColor3=ai.background2,BackgroundTransparency=G,[ar'Activated']=function()local N=at(H)if N then N:
+CaptureFocus()end end,[am]={az(6),ay(0,6),aB(aC.LayoutOrder,aF.Horizontal,aE.Left,aD.Center,UDim.new(0,5)),al
+'ImageLabel'{ZIndex=0,Size=UDim2.fromOffset(20,20),BackgroundTransparency=1,Image=aj.input,ImageColor3=ai.text2,
+ImageTransparency=G},al'TextBox'{Interactable=ao(function()if not at(l)then return false end return at(F)end),Size=UDim2
+.new(1,-25,1,0),BackgroundTransparency=1,PlaceholderText=u,PlaceholderColor3=ai.text2,TextColor3=ai.text,TextXAlignment=
+Enum.TextXAlignment.Left,TextScaled=true,FontFace=av('Montserrat',Enum.FontWeight.Bold),Text=K,TextTransparency=G,
 ClearTextOnFocus=t,[aq]=H,[ar'Changed']=function(N)local O=at(H)if O and O.Text and N=='Text'then I:set(O.Text)end end,[
-ar'Focused']=function()J:set(true)end,[ar'FocusLost']=function()J:set(false)end,[am]={aA(1,16)}}}}}}}}if at(d.boolean)
-then if at(f.boolean)then M()else ap(f.boolean):onChange(M)end else if at(o)~=''then if at(p)then J:set(true)end I:set(
-at(o))if at(p)then J:set(false)end end end local N={}function N.SetName(O,P)local Q,R=aw({SetName=P},{SetName=''})
-assert(Q,table.concat(R,'\n'))j:set(P)end function N.SetInput(O,P)local Q,R=aw({SetInput=P},{SetInput=at(n)and 1 or''})
-assert(Q,table.concat(R,'\n'))I:set(P)end function N.Enable(O)l:set(true)end function N.Disable(O)l:set(false)end return
-N end end)()end,[75]=function()local aa,ab,ac=a(75)local ad return(function(...)local ae=ab.Parent.Parent return
-function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.services local al,am=ak.
-UserInputService,ag.Fusion local an,ao,ap,aq,ar,as,at=am.New,am.Children,am.Value,am.Observer,am.OnEvent,am.Computed,ac(
-ae.utilities)local au,av,aw,ax,ay,az,aA,aB=at.get,at.animate,at.typecheck,at.connections,at.customFont,at.references,at.
-drag,ac(ae.simpleElements)local aC,aD,aE,aF,aG,b,c,d,e,f,g=aB.UIPadding,aB.UICorner,aB.UITextSizeConstraint,aB.
-UIListLayout,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,ac(ab.Parent.warn),aw(af,
-{Name='',DisabledText='',FLAG='',IsEnabled=false,Default=false,Callback=function()end,LinkKeybind=true},{af.DisabledText
-and''or'DisabledText',af.FLAG and''or'FLAG',af.IsEnabled and''or'IsEnabled',af.Default and''or'Default',af.LinkKeybind
-and''or'LinkKeybind'})assert(f,table.concat(g,'\n'))f,g=aw(af,{Bind=Enum.KeyCode.E},{af.LinkKeybind and af.Bind and''or
-'Bind'})assert(f,table.concat(g,'\n'))local h,i,j,k,l,m,n,o,p,t,u,v,E,F,G,H,I,J,K=ah.find'selectedTab',ah.find
-'currentBinds',ah.find'useConfig',ah.find'flags',ah.find'configLoaded',ah.find'searchText',ah.find'instanceName',ah.find
-'isMobile',ah.find'isListening',ah.add(af),af.Parent,af.Name,af.Callback,af.Default or ap(false),af.IsEnabled or ap(true
-),af.DisabledText or ap'Component Disabled',af.LinkKeybind or ap(false),ap(),false local function L(M:EnumItem,N:string)
-local O=au(i.binds)if table.find(O,M)then e(('Key %s is already in use. %s'):format(M.Name,N))else table.insert(O,M)if
-au(J)then table.remove(O,table.find(O,au(J)))end i:update('binds',O)J:set(M)K=true end end if au(I)and au(af.Bind)then
-if not au(j.boolean)then L(au(af.Bind),'At property set')end end local M,N=af.FLAG or ap'',false if au(M)~=''then local
-O=au(k.names)assert(not table.find(O,au(M)),('FLAG "%s" already exists'):format(au(M)))table.insert(O,au(M))k:update(
-'names',O)N=true local P=au(k.specialCase)P[au(M)]={isToggle=true}k:update('specialCase',P)end local O=ap(au(h.string)==
-au(t.tab).uid)aq(h.string):onChange(function()O:set(au(h.string)==au(t.tab).uid)end)local P,Q=av(function()return au(O)
-and 0 or 1 end,40,1),ap(false)aq(Q):onChange(function()if au(G)then task.spawn(au(E),au(Q))end end)local R=ap(false)
-local S=al.InputBegan:Connect(function(S,T)if au(o.boolean)then return end if au(R)then if S.KeyCode and S.KeyCode~=Enum
-.KeyCode.Unknown then L(S.KeyCode,'From input box')end R:set(false)task.wait()p:update('boolean',false)else if S.KeyCode
-and S.KeyCode==au(J)and not T and not au(p.boolean)and au(G)then Q:set(not au(Q))end end end)ax.add(S)local T=ap(false)
-local function U()if N then if au(l.boolean)then local V=au(k.list)[au(M)]local W=aw({[au(M)]=V},{[au(M)]={}})if V and W
-and V.boolean then if V.keycode and au(I)then L(Enum.KeyCode[V.keycode],'From configLoad FLAG')end Q:set(V.boolean)end
-aq(Q):onChange(function()local X=au(k.list)X[au(M)]=X[au(M)]or{}X[au(M)].boolean=au(Q)k:update('list',X)end)aq(J):
-onChange(function()local X=au(k.list)X[au(M)]=X[au(M)]or{}X[au(M)].keycode=au(J).Name k:update('list',X)end)if not V
-then task.wait()if au(I)then L(au(af.Bind),'From configLoad no FLAG')end Q:set(au(F))end end else if au(l.boolean)and
-not K then task.wait()if au(I)then L(au(af.Bind),'From configLoad no FLAG')end Q:set(au(F))end end end local V local W=
-an'TextButton'{Visible=as(function()if not au(G)then return au(G)end return au(T)end),Parent=az.get(au(n.name)),Size=
-UDim2.fromOffset(60,60),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),TextScaled=true,Text=au(v),
-FontFace=ay('Montserrat',Enum.FontWeight.Bold),TextColor3=ai.mobileButtonText,BackgroundColor3=ai.mobileButtonBackground
-,BackgroundTransparency=0.6,TextTransparency=0.1,[ar'Activated']=function()if V then V:Disconnect()V=nil else Q:set(not
-au(Q))end end,[ao]={aC(4),aD(16),aE(0,16),an'ImageLabel'{ZIndex=0,AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.
-fromScale(0.5,0.5),Size=UDim2.fromOffset(32,32),BackgroundTransparency=1,Image=au(o.boolean)and aj.finger or aj.command,
-ImageColor3=ai.mobileButtonImage,ImageTransparency=0.8}}}an'Frame'{Parent=u,Visible=as(function()if au(m.string)~=''and
-not string.find(au(v):lower(),au(m.string):lower())then return false end return true end),Size=UDim2.new(1,0,0,36),
-BackgroundTransparency=1,[ao]={an'Frame'{ZIndex=2,Visible=as(function()if not au(G)then return true end return false end
-),BackgroundTransparency=av(function()return au(O)and 0.2 or 1 end,40,1),BackgroundColor3=ai.disabledBackground,Size=
-UDim2.fromScale(1,1),[ao]={aD(6),an'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0,0.5),Position=
-UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image=aj.lock,ImageColor3=ai.disabledText,ImageTransparency=P},an
-'TextLabel'{FontFace=ay('Montserrat',Enum.FontWeight.Bold),BackgroundTransparency=1,Size=UDim2.new(1,-24,0,18),
-TextColor3=ai.disabledText,TextTransparency=P,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,29,0.5
-,0),Text=as(function()return au(H)end),TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[ao]={aC(0,5)}}}},an'Frame'
-{BackgroundTransparency=1,Size=UDim2.fromScale(1,1),[ao]={aF(aG.LayoutOrder,b.Horizontal,c.Left,d.Center,UDim.new(0,3)),
-an'TextButton'{Interactable=as(function()if not au(G)then return false end return au(O)end),Size=as(function()return au(
-I)and UDim2.new(0.775,au(T)and-42 or-3,0,36)or UDim2.new(1,0,0,36)end),BackgroundColor3=ai.background2,
-BackgroundTransparency=P,[ar'Activated']=function()if not au(G)then return end Q:set(not au(Q))end,[ao]={aD(6),an'Frame'
-{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[ao]={aC(8),aF(aG.LayoutOrder,b.Horizontal,c.Left,d.Center,UDim.new(
-0,10)),an'Frame'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,0),
-BackgroundTransparency=P,BackgroundColor3=av(function()return au(Q)and ai.get'toggled'or ai.get'selectedTab'end,40,1),[
-ao]={aD(6),an'ImageLabel'{Size=UDim2.fromScale(0.65,0.65),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,0.5,
-0),BackgroundTransparency=1,Image=aj.check,ImageTransparency=av(function()if not au(O)then return 1 end if au(Q)then
+ar'Focused']=function()J:set(true)end,[ar'FocusLost']=function()J:set(false)end,[am]={aA(1,16)}}}}}}}}ap(K):onChange(
+function()local N=at(e.list)N[at(v)]=at(K)e:update('list',N)end)if at(d.boolean)then if at(f.boolean)then M()else ap(f.
+boolean):onChange(M)end else task.spawn(function()task.wait()if at(o)~=''then if at(p)then J:set(true)end I:set(at(o))if
+at(p)then J:set(false)end end end)end local N={}function N.SetName(O,P)local Q,R=aw({SetName=P},{SetName=''})assert(Q,
+table.concat(R,'\n'))j:set(P)end function N.SetInput(O,P)local Q,R=aw({SetInput=P},{SetInput=at(n)and 1 or''})assert(Q,
+table.concat(R,'\n'))I:set(P)end function N.Enable(O)l:set(true)end function N.Disable(O)l:set(false)end return N end
+end)()end,[75]=function()local aa,ab,ac=a(75)local ad return(function(...)local ae=ab.Parent.Parent return function(af)
+local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.services local al,am=ak.UserInputService,ag.
+Fusion local an,ao,ap,aq,ar,as,at=am.New,am.Children,am.Value,am.Observer,am.OnEvent,am.Computed,ac(ae.utilities)local
+au,av,aw,ax,ay,az,aA,aB=at.get,at.animate,at.typecheck,at.connections,at.customFont,at.references,at.drag,ac(ae.
+simpleElements)local aC,aD,aE,aF,aG,b,c,d,e,f,g=aB.UIPadding,aB.UICorner,aB.UITextSizeConstraint,aB.UIListLayout,Enum.
+SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,ac(ab.Parent.warn),aw(af,{Name='',
+DisabledText='',FLAG='',IsEnabled=false,Default=false,Callback=function()end,LinkKeybind=true},{af.DisabledText and''or
+'DisabledText',af.FLAG and''or'FLAG',af.IsEnabled and''or'IsEnabled',af.Default and''or'Default',af.LinkKeybind and''or
+'LinkKeybind'})assert(f,table.concat(g,'\n'))f,g=aw(af,{Bind=Enum.KeyCode.E},{af.LinkKeybind and af.Bind and''or'Bind'})
+assert(f,table.concat(g,'\n'))local h,i,j,k,l,m,n,o,p,t,u,v,E,F,G,H,I,J,K=ah.find'selectedTab',ah.find'currentBinds',ah.
+find'useConfig',ah.find'flags',ah.find'configLoaded',ah.find'searchText',ah.find'instanceName',ah.find'isMobile',ah.find
+'isListening',ah.add(af),af.Parent,af.Name,af.Callback,af.Default or ap(false),af.IsEnabled or ap(true),af.DisabledText
+or ap'Component Disabled',af.LinkKeybind or ap(false),ap(),false local function L(M:EnumItem,N:string)local O=au(i.binds
+)if table.find(O,M)then e(('Key %s is already in use. %s'):format(M.Name,N))else table.insert(O,M)if au(J)then table.
+remove(O,table.find(O,au(J)))end i:update('binds',O)J:set(M)K=true end end local M,N=af.FLAG or ap'',false if au(M)~=''
+then local O=au(k.names)assert(not table.find(O,au(M)),('FLAG "%s" already exists'):format(au(M)))table.insert(O,au(M))k
+:update('names',O)N=true local P=au(k.specialCase)P[au(M)]={isToggle=true}k:update('specialCase',P)end local O=ap(au(h.
+string)==au(t.tab).uid)aq(h.string):onChange(function()O:set(au(h.string)==au(t.tab).uid)end)local P,Q=av(function()
+return au(O)and 0 or 1 end,40,1),ap(false)aq(Q):onChange(function()if au(G)then task.spawn(au(E),au(Q))end end)local R=
+ap(false)local S=al.InputBegan:Connect(function(S,T)if au(o.boolean)then return end if au(R)then if S.KeyCode and S.
+KeyCode~=Enum.KeyCode.Unknown then L(S.KeyCode,'From input box')end R:set(false)task.wait()p:update('boolean',false)else
+if S.KeyCode and S.KeyCode==au(J)and not T and not au(p.boolean)and au(G)then Q:set(not au(Q))end end end)ax.add(S)local
+T=ap(false)local function U()if N then if au(l.boolean)then local V=au(k.list)[au(M)]local W=aw({[au(M)]=V},{[au(M)]={}}
+)if V and W and V.boolean then if V.keycode and au(I)then L(Enum.KeyCode[V.keycode],'From configLoad FLAG')end Q:set(V.
+boolean)end if not V then task.wait()if au(I)then L(au(af.Bind),'From configLoad no FLAG A')end Q:set(au(F))end end else
+if au(l.boolean)and not K then task.wait()if au(I)then L(au(af.Bind),'From configLoad no FLAG B')end Q:set(au(F))end end
+end local V local W=an'TextButton'{Visible=as(function()if not au(G)then return au(G)end return au(T)end),Parent=az.get(
+au(n.name)),Size=UDim2.fromOffset(60,60),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.fromScale(0.5,0.5),TextScaled=
+true,Text=au(v),FontFace=ay('Montserrat',Enum.FontWeight.Bold),TextColor3=ai.mobileButtonText,BackgroundColor3=ai.
+mobileButtonBackground,BackgroundTransparency=0.6,TextTransparency=0.1,[ar'Activated']=function()if V then V:Disconnect(
+)V=nil else Q:set(not au(Q))end end,[ao]={aC(4),aD(16),aE(0,16),an'ImageLabel'{ZIndex=0,AnchorPoint=Vector2.new(0.5,0.5)
+,Position=UDim2.fromScale(0.5,0.5),Size=UDim2.fromOffset(32,32),BackgroundTransparency=1,Image=au(o.boolean)and aj.
+finger or aj.command,ImageColor3=ai.mobileButtonImage,ImageTransparency=0.8}}}an'Frame'{Parent=u,Visible=as(function()if
+au(m.string)~=''and not string.find(au(v):lower(),au(m.string):lower())then return false end return true end),Size=UDim2
+.new(1,0,0,36),BackgroundTransparency=1,[ao]={an'Frame'{ZIndex=2,Visible=as(function()if not au(G)then return true end
+return false end),BackgroundTransparency=av(function()return au(O)and 0.2 or 1 end,40,1),BackgroundColor3=ai.
+disabledBackground,Size=UDim2.fromScale(1,1),[ao]={aD(6),an'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2
+.new(0,0.5),Position=UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image=aj.lock,ImageColor3=ai.disabledText,
+ImageTransparency=P},an'TextLabel'{FontFace=ay('Montserrat',Enum.FontWeight.Bold),BackgroundTransparency=1,Size=UDim2.
+new(1,-24,0,18),TextColor3=ai.disabledText,TextTransparency=P,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=
+UDim2.new(0,29,0.5,0),Text=as(function()return au(H)end),TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[ao]={aC(
+0,5)}}}},an'Frame'{BackgroundTransparency=1,Size=UDim2.fromScale(1,1),[ao]={aF(aG.LayoutOrder,b.Horizontal,c.Left,d.
+Center,UDim.new(0,3)),an'TextButton'{Interactable=as(function()if not au(G)then return false end return au(O)end),Size=
+as(function()return au(I)and UDim2.new(0.775,au(T)and-42 or-3,0,36)or UDim2.new(1,0,0,36)end),BackgroundColor3=ai.
+background2,BackgroundTransparency=P,[ar'Activated']=function()if not au(G)then return end Q:set(not au(Q))end,[ao]={aD(
+6),an'Frame'{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[ao]={aC(8),aF(aG.LayoutOrder,b.Horizontal,c.Left,d.
+Center,UDim.new(0,10)),an'Frame'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,
+0),BackgroundTransparency=P,BackgroundColor3=av(function()return au(Q)and ai.get'toggled'or ai.get'selectedTab'end,40,1)
+,[ao]={aD(6),an'ImageLabel'{Size=UDim2.fromScale(0.65,0.65),AnchorPoint=Vector2.new(0.5,0.5),Position=UDim2.new(0.5,0,
+0.5,0),BackgroundTransparency=1,Image=aj.check,ImageTransparency=av(function()if not au(O)then return 1 end if au(Q)then
 return 0 end return 1 end,40,1),ImageColor3=ai.selectedTab}}},an'TextLabel'{FontFace=ay('Montserrat',Enum.FontWeight.
 Bold),Size=UDim2.new(1,-24,0,18),BackgroundTransparency=1,TextColor3=ai.text,TextScaled=true,AnchorPoint=Vector2.new(0,
 0.5),Position=UDim2.new(0,0,0.5,0),Text=v,TextTransparency=P,TextXAlignment=Enum.TextXAlignment.Left,RichText=true}}}}},
@@ -948,29 +1243,66 @@ FontWeight.Bold),TextScaled=true,TextXAlignment=Enum.TextXAlignment.Center,TextC
 as(function()return au(R)and'Listening'or au(J)and au(J).Name or'Waiting'end)},an'TextLabel'{Visible=au(o.boolean),Size=
 UDim2.new(1,-25,0,16),BackgroundTransparency=1,FontFace=ay('Montserrat',Enum.FontWeight.Bold),TextScaled=true,
 TextXAlignment=Enum.TextXAlignment.Center,TextColor3=ai.text2,Text=as(function()return au(T)and'Move Bind'or'Place Bind'
-end),TextTransparency=P}}}}}}}if au(j.boolean)then if au(l.boolean)then U()else aq(l.boolean):onChange(U)end else Q:set(
-au(F))end local X={}function X.SetName(Y,Z)local _,aH=aw({SetName=Z},{SetName=''})assert(_,table.concat(aH,'\n'))v:set(Z
-)end function X.SetValue(aH,Y:boolean)local Z,_=aw({SetValue=Y},{SetValue=false})assert(Z,table.concat(_,'\n'))Q:set(Y)
-end function X.SetBind(aH,Y:EnumItem)assert(au(I),'Requires LinkKeybind')local Z,_=aw({SetBind=Y},{SetBind=Enum.keyCode.
-C})assert(Z,table.concat(_,'\n'))L(Y,'At :SetBind')end function X.Enable(aH)G:set(true)end function X.Disable(aH)G:set(
-false)end return X end end)()end,[76]=function()local aa,ab,ac=a(76)local ad return(function(...)local ae=ab.Parent.
-Parent return function(af)local ag,ah,ai=ac(ae.Bundles),ac(ab.Parent.notification),ac(ae.utilities).references local aj,
-ak=ag.icons,ag.themeSystem ah{Parent=ai.get'notificationList',Title='Darius Interface',Body=af,Duration=3,Image=aj.alert
-,ImageColor=ak.get'red'}end end)()end,[77]=function()local aa,ab,ac=a(77)local ad return(function(...)end)()end,[79]=
-function()local aa,ab,ac=a(79)local ad return(function(...)local ae=ab.Parent.Parent return function(af,ag)local ah=ac(
-ae.Bundles)local ai=ah.services local aj,ak,al,am,an=ai.UserInputService,ah.themeSystem,ah.icons,ah.data,ah.Fusion local
-ao,ap,aq,ar,as,at,au,av=an.New,an.Children,an.Value,an.Ref,an.Computed,an.Observer,an.OnEvent,ac(ae.simpleElements)local
-aw,ax,ay,az,aA,aB,aC,aD,aE=av.UIListLayout,av.UICorner,av.UITextSizeConstraint,av.UIPadding,Enum.SortOrder,Enum.
-FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,ac(ae.utilities)local aF,aG,aH,b,c,d,e,f,g,h,i,j,k=aE.get,
-aE.references,aE.drag,aE.customFont,aE.animate,aE.connections,ac(ab.Parent.Parent.components.warn),aq(),aq(),aq(),aq(),
-aq(),aq()aG.add(j,i,h,g,f,k)local l,m,n,o,p,t,u,v,E,F,G,H,I,J=am.find'absoluteOffset',am.find'instanceName',am.find
-'selectedTab',am.find'searchText',am.find'currentBinds',am.find'isVisible',am.find'isMobile',am.find'isListening',aq(750
-),aq(500),aq(false),aq(false),aq(false),aq(false)at(G):onChange(function()if aF(G)then H:set(not aF(H))task.wait(0.3)I:
-set(not aF(I))task.wait(0.3)J:set(not aF(J))else J:set(not aF(J))task.wait(0.3)I:set(not aF(I))task.wait(0.3)H:set(not
-aF(H))end end)at(I):onChange(function()E:set(aF(I)and 212 or 750)end)at(J):onChange(function()F:set(aF(J)and 74 or 500)
-end)local K,L,M=aq(false),aq(),aq(false)local function N(O:EnumItem,P:string)local Q=aF(p.binds)if table.find(Q,O)then
-e(('Key %s is already in use. %s'):format(O.Name,P))else table.insert(Q,O)if aF(L)then table.remove(Q,table.find(Q,aF(L)
-))end p:update('binds',Q)L:set(O)M:set(true)end end if not aF(u.boolean)then N(af.HideBind,'init')end local O=aq''at(n.
+end),TextTransparency=P}}}}}}}aq(Q):onChange(function()local X=au(k.list)X[au(M)]=X[au(M)]or{}X[au(M)].boolean=au(Q)k:
+update('list',X)end)aq(J):onChange(function()local X=au(k.list)X[au(M)]=X[au(M)]or{}X[au(M)].keycode=au(J).Name k:
+update('list',X)end)if au(j.boolean)then if au(l.boolean)then U()else aq(l.boolean):onChange(U)end else task.spawn(
+function()task.wait()if au(I)then L(au(af.Bind),'From configLoad no FLAG')end Q:set(au(F))end)end local X={}function X.
+SetName(Y,Z)local _,aH=aw({SetName=Z},{SetName=''})assert(_,table.concat(aH,'\n'))v:set(Z)end function X.SetValue(aH,Y:
+boolean)local Z,_=aw({SetValue=Y},{SetValue=false})assert(Z,table.concat(_,'\n'))Q:set(Y)end function X.SetBind(aH,Y:
+EnumItem)assert(au(I),'Requires LinkKeybind')local Z,_=aw({SetBind=Y},{SetBind=Enum.keyCode.C})assert(Z,table.concat(_,
+'\n'))L(Y,'At :SetBind')end function X.Enable(aH)G:set(true)end function X.Disable(aH)G:set(false)end return X end end)(
+)end,[76]=function()local aa,ab,ac=a(76)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local
+ag,ah,ai=ac(ae.Bundles),ac(ab.Parent.notification),ac(ae.utilities).references local aj,ak=ag.icons,ag.themeSystem ah{
+Parent=ai.get'notificationList',Title='Darius Interface',Body=af,Duration=3,Image=aj.alert,ImageColor=ak.get'red'}end
+end)()end,[77]=function()local aa,ab,ac=a(77)local ad return(function(...)local ae,af,ag,ah,ai,aj=ac(ab.Parent),ac(ab.
+Parent.utilities).randomString,ac(ab.Parent.Bundles.lucide),ac(ab.Parent.Bundles).services.HttpService,ac(ab.Parent.
+utilities).customFunctions,{dropdown={'apple'},dropdown_m={'apple','carrot','banana'},keybind={keycode=Enum.KeyCode.Q.
+Name,coordinate='0,0'},toggle_lk={boolean=true,keycode=Enum.KeyCode.E.Name},toggle={boolean=true},slider=50,textbox=
+'heyy',textbox_n='1121212'}ai.makefolder'darius-configs'ai.makefolder'darius-configs/test'local ak={}for al,am in ag do
+table.insert(ak,am)end local function an():string return ak[math.floor(math.random(1,#ak))]end return function(ao)local
+ap=ae:Window{Title='Darius',Description="What the sigma this isn't Quantum UI",HideBind=Enum.KeyCode.T,Config='test',
+IsMobile=false,Theme={background=Color3.fromHex'#D6DCE0',text=Color3.fromHex'#2A2C31',text2=Color3.fromHex'#7D8694',
+background2=Color3.fromHex'#E7E9EF',selectedTab=Color3.fromHex'#FAFFFF',notificationButton=Color3.fromHex'#E7E9EF',
+mobileButtonBackground=Color3.fromHex'#2A2C31',mobileButtonText=Color3.fromHex'#E7E9EF',mobileButtonImage=Color3.fromHex
+'#7D8694',disabledBackground=Color3.fromHex'#2A2C31',disabledText=Color3.fromHex'#D6DCE0',toggled=Color3.fromHex
+'#2A2C31'},noOffset=true,Parent=ao}print'UseConfig=false\n\tNo LoadConfig\n\tall defaults'for aq,ar in aj do ae.flags[aq
+].OnChange:Connect(function(as)print(`{aq}: "{as}"`)end)end local as,at=ap:Tab{Name='Autofarm'},ap:Tab{Name=af(16),Image
+=an()}for au=1,10 do ap:Tab{Name=af(6),Image=an()}end as:Button{Name='Button',DisabledText='heyy',Callback=function()end
+}local au=function(au:string):string cleanedItem=au:match'<font color="rgb%(.-%)">(.-)</font>'if cleanedItem then
+cleanedItem=cleanedItem:match'^%s*(.-)%s*$'end return cleanedItem or au end as:Dropdown{Name='Multiselect Dropdown',
+Items={{Value='<font color="rgb(255,0,0)">apple</font>',Image=an()},'banana','carrot','dingleberry','egg plant','frank',
+'grape','helicopter'},Multiselect=true,Regex=au,FLAG='dropdown_m',Default={'apple'},Callback=function(av)end}as:Dropdown
+{Name='Dropdown',Items={{Value='<font color="rgb(255,0,0)">apple</font>',Image=an()},'banana','carrot','dingleberry',
+'egg plant','frank','grape','helicopter'},Multiselect=false,FLAG='dropdown',Regex=au,Default='apple',Callback=function(
+av)end}local av,aw=(as:Toggle{Name='Toggle',Default=true,LinkKeybind=true,Bind=Enum.KeyCode.E,FLAG='toggle_lk',Callback=
+function(av)end})aw=as:Toggle{Name='Disable first toggle',Default=true,FLAG='toggle',Callback=function(ax)if ax then av:
+Disable()aw:SetName'Enable first toggle'else av:Enable()aw:SetName'Disable first toggle'end end}as:Keybind{Name=
+'Keybind',FLAG='keybind',Bind=Enum.KeyCode.O,Callback=function()end}as:Slider{Name='Slider',Min=0,Max=100,Default=10,
+FLAG='slider',Callback=function(ax)end}as:TextBox{Name='TextBox Numbers',Placeholder='Only Numbers',ClearTextOnFocus=
+false,OnlyNumbers=true,OnLeave=true,Default='12121212',FLAG='textbox_n',Callback=function(ax)end}as:TextBox{Name=
+'TextBox',Placeholder='ANYTHING',OnLeave=false,OnlyNumbers=false,ClearTextOnFocus=true,Default='alkdjflasdf',FLAG=
+'textbox',Callback=function(ax)end}as:Label'Label'as:Paragraph{Title='Paragraph',Body=
+[[Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.]]
+}as:Divider()local ax,ay,az=0,'',''at:TextBox{Name='Title',Placeholder='Placeholder Text!',OnLeave=true,Default='Title',
+Callback=function(aA)ay=aA end}at:TextBox{Name='Body',Placeholder='Placeholder Text!',OnLeave=true,Default=
+'Body BODY body',Callback=function(aA)az=aA end}at:Slider{Name='Duration',Min=0,Max=100,Callback=function(aA)ax=aA end}
+at:Button{Name='Send notification',Callback=function()ae:Notify{Title=ay,Body=az,Image=an(),Duration=ax,Buttons={{Name=
+'Button',Callback=function()print'Button 1'end},{Name='Button',Callback=function()print'Button 2'end},{Name='Button',
+Callback=function()print'Button 3'end}}}end}return function()ae:Destroy()end end end)()end,[79]=function()local aa,ab,ac
+=a(79)local ad return(function(...)local ae=ab.Parent.Parent return function(af,ag)local ah=ac(ae.Bundles)local ai=ah.
+services local aj,ak,al,am,an=ai.UserInputService,ah.themeSystem,ah.icons,ah.data,ah.Fusion local ao,ap,aq,ar,as,at,au,
+av=an.New,an.Children,an.Value,an.Ref,an.Computed,an.Observer,an.OnEvent,ac(ae.simpleElements)local aw,ax,ay,az,aA,aB,aC
+,aD,aE=av.UIListLayout,av.UICorner,av.UITextSizeConstraint,av.UIPadding,Enum.SortOrder,Enum.FillDirection,Enum.
+HorizontalAlignment,Enum.VerticalAlignment,ac(ae.utilities)local aF,aG,aH,b,c,d,e,f,g,h,i,j,k=aE.get,aE.references,aE.
+drag,aE.customFont,aE.animate,aE.connections,ac(ab.Parent.Parent.components.warn),aq(),aq(),aq(),aq(),aq(),aq()aG.add(j,
+i,h,g,f,k)local l,m,n,o,p,t,u,v,E,F,G,H,I,J=am.find'absoluteOffset',am.find'instanceName',am.find'selectedTab',am.find
+'searchText',am.find'currentBinds',am.find'isVisible',am.find'isMobile',am.find'isListening',aq(750),aq(500),aq(false),
+aq(false),aq(false),aq(false)at(G):onChange(function()if aF(G)then H:set(not aF(H))task.wait(0.3)I:set(not aF(I))task.
+wait(0.3)J:set(not aF(J))else J:set(not aF(J))task.wait(0.3)I:set(not aF(I))task.wait(0.3)H:set(not aF(H))end end)at(I):
+onChange(function()E:set(aF(I)and 212 or 750)end)at(J):onChange(function()F:set(aF(J)and 74 or 500)end)local K,L,M=aq(
+false),aq(),aq(false)local function N(O:EnumItem,P:string)local Q=aF(p.binds)if table.find(Q,O)then e((
+'Key %s is already in use. %s'):format(O.Name,P))else table.insert(Q,O)if aF(L)then table.remove(Q,table.find(Q,aF(L)))
+end p:update('binds',Q)L:set(O)M:set(true)end end if not aF(u.boolean)then N(af.HideBind,'init')end local O=aq''at(n.
 string):onChange(function()local P=aF(n.string)local Q=am.find(P)O:set(aF(Q.Name):upper())end)local P,Q ao'ScreenGui'{
 Name=aF(m.name),Parent=af.Parent or ai.CoreGui,ResetOnSpawn=false,IgnoreGuiInset=true,[ar]=j,[ap]={ao'Frame'{Name=
 'container',Visible=t.boolean,AnchorPoint=Vector2.new(0.5,0.5),Position=as(function()return UDim2.new(0.5,0,0.5,aF(l.
@@ -1108,62 +1440,62 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[97]=function()local aa,ab,ac=a(97)local ad return(function(...)return function(ae:table,
 af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(not ae[aj]or typeof(ae[aj])~=typeof(ak))and
 not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah
-,ai end end)()end},{{1,2,{'Darius'},{{63,1,{'components'},{{70,2,{'paragraph'}},{65,2,{'divider'}},{76,2,{'warn'}},{67,2
-,{'keybind'}},{68,2,{'label'}},{73,2,{'tabFrame'}},{64,2,{'button'}},{69,2,{'notification'}},{75,2,{'toggle'}},{72,2,{
-'tabButton'}},{74,2,{'textbox'}},{66,2,{'dropdown'}},{71,2,{'slider'}}}},{86,2,{'utilities'},{{92,2,{'get'}},{97,2,{
-'typecheck'}},{87,2,{'animate'}},{96,2,{'tween'}},{88,2,{'connections'}},{89,2,{'customFont'}},{90,2,{'customFunctions'}
-},{94,2,{'randomString'}},{91,2,{'drag'}},{93,2,{'getStringBounds'}},{95,2,{'references'}}}},{2,2,{'Bundles'},{{3,2,{
-'Fusion'},{{48,2,{'Types'}},{39,2,{'PubTypes'}},{49,1,{'Utility'},{{52,2,{'doNothing'}},{53,2,{'isSimilar'}},{50,2,{
-'None'}},{51,2,{'cleanup'}},{56,2,{'xtypeof'}},{54,2,{'needsDestruction'}},{55,2,{'restrictRead'}}}},{22,1,{'Instances'}
-,{{28,2,{'OnEvent'}},{29,2,{'Out'}},{23,2,{'Children'}},{26,2,{'New'}},{25,2,{'Hydrate'}},{27,2,{'OnChange'}},{32,2,{
-'defaultProps'}},{31,2,{'applyInstanceProps'}},{24,2,{'Cleanup'}},{30,2,{'Ref'}}}},{40,1,{'State'},{{42,2,{'ForKeys'}},{
-44,2,{'ForValues'}},{41,2,{'Computed'}},{45,2,{'Observer'}},{43,2,{'ForPairs'}},{47,2,{'unwrap'}},{46,2,{'Value'}}}},{4,
-1,{'Animation'},{{7,2,{'Tween'}},{8,2,{'TweenScheduler'}},{5,2,{'Spring'}},{10,2,{'lerpType'}},{13,2,{'unpackType'}},{12
-,2,{'springCoefficients'}},{6,2,{'SpringScheduler'}},{11,2,{'packType'}},{9,2,{'getTweenRatio'}}}},{33,1,{'Logging'},{{
-36,2,{'logWarn'}},{34,2,{'logError'}},{38,2,{'parseError'}},{37,2,{'messages'}},{35,2,{'logErrorNonFatal'}}}},{16,1,{
-'Dependencies'},{{21,2,{'useDependency'}},{18,2,{'initDependency'}},{17,2,{'captureDependencies'}},{19,2,{'sharedState'}
-},{20,2,{'updateAll'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}}}},{60,2,{'services'}},{58,2,{'icons'}},{57,2,{'data'}},{59
-,2,{'lucide'}},{61,2,{'themeSystem'},{{62,2,{'default'}}}}}},{80,2,{'simpleElements'},{{84,2,{'UIPadding'}},{81,2,{
-'UIAspectRatioConstraint'}},{83,2,{'UIListLayout'}},{82,2,{'UICorner'}},{85,2,{'UITextSizeConstraint'}}}},{77,2,{
-'darius.story'}},{78,1,{'layouts'},{{79,2,{'main'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,
-unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay,az,aA=aj.insert,aj.remove,aj.
-freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)=='Lune'then local aB,aC=ap(ao
-,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,aG,aH,b,c,d=aB or function(aC,
-...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{},
-{}local e,f={GetFullName={{},function(e)local f,g=e.Name,e.Parent while g do f=g.Name..'.'..f g=g.Parent end return f
-end},GetChildren={{},function(e)local f={}for g in ai,d[e]do au(f,g)end return f end},GetDescendants={{},function(e)
-local f={}for g in ai,d[e]do au(f,g)for h,i in ai,g:GetDescendants()do au(f,i)end end return f end},FindFirstChild={{
-'string','boolean?'},function(e,f,g)local h=d[e]for i in ai,h do if i.Name==f then return i end end if g then for j in
-ai,h do return j:FindFirstChild(f,true)end end end},FindFirstAncestor={{'string'},function(e,f)local g=e.Parent while g
-do if g.Name==f then return g end g=g.Parent end end},WaitForChild={{'string','number?'},function(e,f)return e:
-FindFirstChild(f)end}},{}for g,h in ai,e do local i,j,k=h[1],h[2],{}for l,m in ai,i do local n,o=az(m,'^([^%?]+)(%??)')k
-[l]={n,o}end f[g]=function(n,...)if not d[n]then ah("Expected ':' not '.' calling member function "..g,2)end local o={
-...}for p,t in ai,k do local u=o[p]local v,E,F=an(u),t[1],t[2]if u==nil and not F then ah('Argument '..u..
-' missing or nil',3)end if E~='any'and v~=E and not(v=='nil'and F)then ah('Argument '..p..' expects type "'..E..
-'", got "'..v..'"',2)end end return j(n,...)end end local function i(j,k,l)local m,n=(ag({},{__mode='k'}))local function
-o(p)ah(p..' is not a valid (virtual) member of '..j..' "'..k..'"',3)end local function p(t)ah(
-'Unable to assign (virtual) property '..t..'. Property is read only',3)end local t,u={},{}u.__metatable=false u.__index=
-function(v,E)if E=='ClassName'then return j elseif E=='Name'then return k elseif E=='Parent'then return l elseif j==
-'StringValue'and E=='Value'then return n else local F=f[E]if F then return F end end for F in ai,m do if F.Name==E then
-return F end end o(E)end u.__newindex=function(v,E,F)if E=='ClassName'then p(E)elseif E=='Name'then k=F elseif E==
-'Parent'then if F==t then return end if l~=nil then d[l][t]=nil end l=F if F~=nil then d[F][t]=true end elseif j==
-'StringValue'and E=='Value'then n=F else o(E)end end u.__tostring=function()return k end ag(t,u)d[t]=m if l~=nil then d[
-l][t]=true end return t end local function j(k,l)local m,n,o,p=k[1],k[2],k[3],k[4]local t=aD[n]local u=o and av(o,1)or t
-local v=i(t,u,l)aE[m]=v if o then for E,F in ai,o do v[E]=F end end if p then for E,F in ai,p do j(F,v)end end return v
-end local k=i('Folder','['..ad..']')for l,m in ai,ab do j(m,k)end for n,o in ai,aa do local p=aE[n]aF[p]=o aG[p]=n local
-t=p.ClassName if t=='LocalScript'or t=='Script'then au(b,p)end end local function p(t)local u,v=t.ClassName,aH[t]if v
-and u=='ModuleScript'then return ak(v)end local E=aF[t]local function F(G)G=aq(G)local H,I,J=t:GetFullName(),az(G,
-'[^:]+:(%d+): (.+)')if not I or not at then return H..':*: '..(J or G)end I=ar(I)local K=aG[t]local L=at[K]local M=I-L+1
-if M<0 then M='?'end return H..':'..M..': '..J end if u=='LocalScript'or u=='Script'then local G,H=ap(E)if not G then
-ah(F(H),0)end else local G={ap(E)}local H=av(G,1)if not H then local I=av(G,1)ah(F(I),0)end aH[t]=G return ak(G)end end
-function a(t)local u=aE[t]local function v(E,...)local F={ap(E,...)}local G=av(F,1)if not G then ah(F[1],3)end return
-ak(F)end local E=aw(ag({},{__index=c,__newindex=function(E,F,G)c[F]=G end,__len=function()return#c end,__iter=function()
-return ai,c end}))local F,G=aw{version=ac,envname=ad,shared=E,script=am,require=ao},u local function H(I,...)local J,K,L
-=an(I),'Attempted to call require with a non-ModuleScript','Attempted to call require with self'if J=='table'and d[I]
-then if I.ClassName~='ModuleScript'then ah(K,2)elseif I==u then ah(L,2)end return p(I)elseif J=='string'and ay(I,1,1)~=
-'@'then if#I==0 then ah('Attempted to call require with empty string',2)end local M=u if ay(I,1,1)=='/'then M=k elseif
-ay(I,1,2)=='./'then I=ay(I,3)end local N for O in aA(I,'([^/]*)/?')do local P=O if O=='..'then P='Parent'end if P~=''
-then local Q=M:FindFirstChild(P)if not Q then local R=M.Parent if R then Q=R:FindFirstChild(P)end end if Q then M=Q
-elseif O~=N and O~='init'and O~='init.server'and O~='init.client'then ah('Virtual script path "'..I..'" not found',2)end
-end N=O end if M.ClassName~='ModuleScript'then ah(K,2)elseif M==u then ah(L,2)end return p(M)end return v(ao,I,...)end
-return F,G,H end for t,u in ai,b do aC(p,u)end return p(k:GetChildren()[1])
+,ai end end)()end},{{1,2,{'Darius'},{{2,2,{'Bundles'},{{58,2,{'icons'}},{61,2,{'themeSystem'},{{62,2,{'default'}}}},{59,
+2,{'lucide'}},{60,2,{'services'}},{3,2,{'Fusion'},{{33,1,{'Logging'},{{35,2,{'logErrorNonFatal'}},{37,2,{'messages'}},{
+38,2,{'parseError'}},{36,2,{'logWarn'}},{34,2,{'logError'}}}},{48,2,{'Types'}},{16,1,{'Dependencies'},{{18,2,{
+'initDependency'}},{20,2,{'updateAll'}},{19,2,{'sharedState'}},{17,2,{'captureDependencies'}},{21,2,{'useDependency'}}}}
+,{49,1,{'Utility'},{{51,2,{'cleanup'}},{55,2,{'restrictRead'}},{53,2,{'isSimilar'}},{52,2,{'doNothing'}},{56,2,{
+'xtypeof'}},{54,2,{'needsDestruction'}},{50,2,{'None'}}}},{40,1,{'State'},{{47,2,{'unwrap'}},{41,2,{'Computed'}},{43,2,{
+'ForPairs'}},{45,2,{'Observer'}},{46,2,{'Value'}},{42,2,{'ForKeys'}},{44,2,{'ForValues'}}}},{39,2,{'PubTypes'}},{14,1,{
+'Colour'},{{15,2,{'Oklab'}}}},{4,1,{'Animation'},{{12,2,{'springCoefficients'}},{5,2,{'Spring'}},{13,2,{'unpackType'}},{
+11,2,{'packType'}},{6,2,{'SpringScheduler'}},{10,2,{'lerpType'}},{9,2,{'getTweenRatio'}},{7,2,{'Tween'}},{8,2,{
+'TweenScheduler'}}}},{22,1,{'Instances'},{{26,2,{'New'}},{27,2,{'OnChange'}},{31,2,{'applyInstanceProps'}},{25,2,{
+'Hydrate'}},{28,2,{'OnEvent'}},{32,2,{'defaultProps'}},{23,2,{'Children'}},{29,2,{'Out'}},{30,2,{'Ref'}},{24,2,{
+'Cleanup'}}}}}},{57,2,{'data'}}}},{63,1,{'components'},{{74,2,{'textbox'}},{76,2,{'warn'}},{69,2,{'notification'}},{68,2
+,{'label'}},{71,2,{'slider'}},{75,2,{'toggle'}},{72,2,{'tabButton'}},{66,2,{'dropdown'}},{70,2,{'paragraph'}},{73,2,{
+'tabFrame'}},{67,2,{'keybind'}},{65,2,{'divider'}},{64,2,{'button'}}}},{80,2,{'simpleElements'},{{84,2,{'UIPadding'}},{
+83,2,{'UIListLayout'}},{81,2,{'UIAspectRatioConstraint'}},{85,2,{'UITextSizeConstraint'}},{82,2,{'UICorner'}}}},{78,1,{
+'layouts'},{{79,2,{'main'}}}},{86,2,{'utilities'},{{90,2,{'customFunctions'}},{89,2,{'customFont'}},{93,2,{
+'getStringBounds'}},{95,2,{'references'}},{88,2,{'connections'}},{87,2,{'animate'}},{94,2,{'randomString'}},{96,2,{
+'tween'}},{97,2,{'typecheck'}},{92,2,{'get'}},{91,2,{'drag'}}}},{77,2,{'darius.story'}}}}},'0.4.1','WaxRuntime',string,
+task,setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,
+ax,ay,az,aA=aj.insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as
+,1,4)=='Lune'then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE
+,aF,aG,aH,b,c,d=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]
+='StringValue'},{},{},{},{},{},{},{}local e,f={GetFullName={{},function(e)local f,g=e.Name,e.Parent while g do f=g.Name
+..'.'..f g=g.Parent end return f end},GetChildren={{},function(e)local f={}for g in ai,d[e]do au(f,g)end return f end},
+GetDescendants={{},function(e)local f={}for g in ai,d[e]do au(f,g)for h,i in ai,g:GetDescendants()do au(f,i)end end
+return f end},FindFirstChild={{'string','boolean?'},function(e,f,g)local h=d[e]for i in ai,h do if i.Name==f then return
+i end end if g then for j in ai,h do return j:FindFirstChild(f,true)end end end},FindFirstAncestor={{'string'},function(
+e,f)local g=e.Parent while g do if g.Name==f then return g end g=g.Parent end end},WaitForChild={{'string','number?'},
+function(e,f)return e:FindFirstChild(f)end}},{}for g,h in ai,e do local i,j,k=h[1],h[2],{}for l,m in ai,i do local n,o=
+az(m,'^([^%?]+)(%??)')k[l]={n,o}end f[g]=function(n,...)if not d[n]then ah(
+"Expected ':' not '.' calling member function "..g,2)end local o={...}for p,t in ai,k do local u=o[p]local v,E,F=an(u),t
+[1],t[2]if u==nil and not F then ah('Argument '..u..' missing or nil',3)end if E~='any'and v~=E and not(v=='nil'and F)
+then ah('Argument '..p..' expects type "'..E..'", got "'..v..'"',2)end end return j(n,...)end end local function i(j,k,l
+)local m,n=(ag({},{__mode='k'}))local function o(p)ah(p..' is not a valid (virtual) member of '..j..' "'..k..'"',3)end
+local function p(t)ah('Unable to assign (virtual) property '..t..'. Property is read only',3)end local t,u={},{}u.
+__metatable=false u.__index=function(v,E)if E=='ClassName'then return j elseif E=='Name'then return k elseif E=='Parent'
+then return l elseif j=='StringValue'and E=='Value'then return n else local F=f[E]if F then return F end end for F in ai
+,m do if F.Name==E then return F end end o(E)end u.__newindex=function(v,E,F)if E=='ClassName'then p(E)elseif E=='Name'
+then k=F elseif E=='Parent'then if F==t then return end if l~=nil then d[l][t]=nil end l=F if F~=nil then d[F][t]=true
+end elseif j=='StringValue'and E=='Value'then n=F else o(E)end end u.__tostring=function()return k end ag(t,u)d[t]=m if
+l~=nil then d[l][t]=true end return t end local function j(k,l)local m,n,o,p=k[1],k[2],k[3],k[4]local t=aD[n]local u=o
+and av(o,1)or t local v=i(t,u,l)aE[m]=v if o then for E,F in ai,o do v[E]=F end end if p then for E,F in ai,p do j(F,v)
+end end return v end local k=i('Folder','['..ad..']')for l,m in ai,ab do j(m,k)end for n,o in ai,aa do local p=aE[n]aF[p
+]=o aG[p]=n local t=p.ClassName if t=='LocalScript'or t=='Script'then au(b,p)end end local function p(t)local u,v=t.
+ClassName,aH[t]if v and u=='ModuleScript'then return ak(v)end local E=aF[t]local function F(G)G=aq(G)local H,I,J=t:
+GetFullName(),az(G,'[^:]+:(%d+): (.+)')if not I or not at then return H..':*: '..(J or G)end I=ar(I)local K=aG[t]local L
+=at[K]local M=I-L+1 if M<0 then M='?'end return H..':'..M..': '..J end if u=='LocalScript'or u=='Script'then local G,H=
+ap(E)if not G then ah(F(H),0)end else local G={ap(E)}local H=av(G,1)if not H then local I=av(G,1)ah(F(I),0)end aH[t]=G
+return ak(G)end end function a(t)local u=aE[t]local function v(E,...)local F={ap(E,...)}local G=av(F,1)if not G then ah(
+F[1],3)end return ak(F)end local E=aw(ag({},{__index=c,__newindex=function(E,F,G)c[F]=G end,__len=function()return#c end
+,__iter=function()return ai,c end}))local F,G=aw{version=ac,envname=ad,shared=E,script=am,require=ao},u local function H
+(I,...)local J,K,L=an(I),'Attempted to call require with a non-ModuleScript','Attempted to call require with self'if J==
+'table'and d[I]then if I.ClassName~='ModuleScript'then ah(K,2)elseif I==u then ah(L,2)end return p(I)elseif J=='string'
+and ay(I,1,1)~='@'then if#I==0 then ah('Attempted to call require with empty string',2)end local M=u if ay(I,1,1)=='/'
+then M=k elseif ay(I,1,2)=='./'then I=ay(I,3)end local N for O in aA(I,'([^/]*)/?')do local P=O if O=='..'then P=
+'Parent'end if P~=''then local Q=M:FindFirstChild(P)if not Q then local R=M.Parent if R then Q=R:FindFirstChild(P)end
+end if Q then M=Q elseif O~=N and O~='init'and O~='init.server'and O~='init.client'then ah('Virtual script path "'..I..
+'" not found',2)end end N=O end if M.ClassName~='ModuleScript'then ah(K,2)elseif M==u then ah(L,2)end return p(M)end
+return v(ao,I,...)end return F,G,H end for t,u in ai,b do aC(p,u)end return p(k:GetChildren()[1])

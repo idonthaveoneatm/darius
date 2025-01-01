@@ -1,4 +1,4 @@
---[[
+--[[]]
 local darius = require(script.Parent)
 local randomString = require(script.Parent.utilities).randomString
 local lucide = require(script.Parent.Bundles.lucide)
@@ -32,7 +32,7 @@ return function(target)
         Title = "Darius",
         Description = "What the sigma this isn't Quantum UI",
         HideBind = Enum.KeyCode.T,
-        UseConfig = true,
+        --UseConfig = true,
         Config = "test",
         IsMobile = false,
         Theme = {
@@ -58,6 +58,7 @@ return function(target)
         Parent = target
     })
 
+    print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
     for i,v in fakeData do
         darius.flags[i].OnChange:Connect(function(value)
             print(`{i}: "{value}"`)
@@ -144,7 +145,7 @@ return function(target)
 
     local a = tab:Toggle({
         Name = "Toggle",
-        Default = false,
+        Default = true,
         LinkKeybind = true,
         Bind = Enum.KeyCode.E,
         FLAG = "toggle_lk",
@@ -155,7 +156,7 @@ return function(target)
     local b
     b = tab:Toggle({
         Name = "Disable first toggle",
-        Default = false,
+        Default = true,
         FLAG = "toggle",
         Callback = function(v)
             if v then
@@ -171,6 +172,7 @@ return function(target)
     tab:Keybind({
         Name = "Keybind",
         FLAG = "keybind",
+        Bind = Enum.KeyCode.O,
         Callback = function()
             --print("Keybind ran")
         end
@@ -180,7 +182,7 @@ return function(target)
         Name = "Slider",
         Min = 0,
         Max = 100,
-        --Default = 10,
+        Default = 10,
         FLAG = "slider",
         Callback = function(value)
             --print(`Slider: {value}`)
@@ -193,7 +195,7 @@ return function(target)
         ClearTextOnFocus = false,
         OnlyNumbers = true,
         OnLeave = true,
-        Default = "",
+        Default = "12121212",
         FLAG = "textbox_n",
         Callback = function(value)
             --print(`TextBox Numbers: {value}`)
@@ -205,13 +207,12 @@ return function(target)
         OnLeave = false,
         OnlyNumbers = false,
         ClearTextOnFocus = true,
-        Default = "",
+        Default = "alkdjflasdf",
         FLAG = "textbox",
         Callback = function(value)
             --print(`TextBox: {value}`)
         end
     })
-    print(darius.Folder, darius.File)
 
     tab:Label("Label")
     tab:Paragraph({
@@ -282,9 +283,8 @@ return function(target)
             })
         end
     })
-    darius:LoadConfig()
+    --darius:LoadConfig()
     return function()
         darius:Destroy()
     end
 end
-]]
