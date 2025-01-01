@@ -17,6 +17,17 @@ local function randomString(length)
     end
 end
 
+local fakeData = {
+	['dropdown'] = {"apple"},
+	['dropdown_m'] = {"apple", "carrot", "banana"},
+	['keybind'] = {keycode = Enum.KeyCode.Q.Name, coordinate = "0,0"},
+	['toggle_lk'] = {boolean = true, keycode = Enum.KeyCode.E.Name},
+	['toggle'] = {boolean = true},
+	['slider'] = 50,
+	['textbox'] = "heyy",
+	['textbox_n'] = "1121212"
+}
+
 local lucide = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/example/lucide.luau"))()
 local randomIcons = {}
 for _,v in lucide do
@@ -26,17 +37,23 @@ local function randomIcon():string
     return randomIcons[math.floor(math.random(1,#randomIcons))]
 end
 
-local format = "bundled"
-local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/{format}.luau`))()
+local format = "minified"
+local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/beta/{format}.luau`))()
 
 local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
     HideBind = Enum.KeyCode.T,
-    UseConfig = true,
+    --UseConfig = true,
     Config = "dariusTestScript",
     IsMobile = false
 })
+print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
+for i,v in fakeData do
+    darius.flags[i].OnChange:Connect(function(value)
+        print(`{i}: "{value}"`)
+    end)
+end
 
 local tab = window:Tab({
     Name = randomString(6),
