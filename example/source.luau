@@ -3,6 +3,7 @@
 Made by griffin
 Discord: @griffindoescooking
 Github: https://github.com/idonthaveoneatm
+loadstring(game:HttpGet("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/beta/example/source.luau"))()
 
 ]]--
 
@@ -38,7 +39,8 @@ local function randomIcon():string
 end
 
 local format = "minified"
-local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/beta/{format}.luau`))()
+local branch = "beta"
+local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/{branch}/{format}.luau`))()
 
 local window = darius:Window({
     Title = "Darius",

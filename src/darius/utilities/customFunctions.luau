@@ -76,7 +76,7 @@ function functions.writefile(string:string, content:string)
         for _,v in string:split("/") do
             if typeof(currentPath[v]) == "table" then
                 currentPath = currentPath[v]
-            elseif not currentPath[v] then
+            elseif (typeof(currentPath[v]) == "string" or typeof(currentPath[v]) == "nil")then
                 currentPath[v] = content
             end
         end

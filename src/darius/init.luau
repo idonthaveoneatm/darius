@@ -16,6 +16,8 @@ local typecheck = utilities.typecheck
 
 local mainLayout = require(script.layouts.main)
 
+local flagCreator = require(script.Bundles.flags)
+
 local function addComponent(name, parent, properties)
 	properties.Parent = parent
 	return require(script.components[name])(properties)
@@ -79,7 +81,7 @@ function darius:Window(windowProperty)
 	data.add({boolean = true}, "isVisible")
 	local isMobile = data.add({boolean = windowProperty.IsMobile}, "isMobile")
 	data.add({boolean = false}, "isListening")
-	local flags = data.add({list = {}, names = {}, specialCase = {}}, "flags")
+	local flags = data.find("flags")
 	local configLoaded = data.add({boolean = false}, "configLoaded")
 	local useConfig = data.add({boolean = false}, "useConfig")
 	local windowData = data.add({data = windowProperty})
@@ -110,36 +112,13 @@ function darius:Window(windowProperty)
 	darius.flags = {}
 	setmetatable(darius.flags, {
 		__index = function(tbl, flag)
-			local flagEvent = fusion.New "BindableEvent" {}
-			local lastFired = get(flags.list)[flag] or nil
-			local flagTable = {
-				OnChange = flagEvent.Event,
-				Value = lastFired
-			}
-			connections.add(observe(flags.list):onChange(function()
-				local _list = get(flags.list)
-
-				local specialCase = get(flags.specialCase)[flag]
-				if _list[flag] then
-					local newValue = _list[flag]
-					if specialCase then
-						if specialCase.Multiselect ~= nil and not specialCase.Multiselect then
-							newValue = newValue[1]
-						elseif specialCase.isToggle ~= nil and specialCase.isToggle then
-							newValue = newValue.boolean
-						elseif specialCase.isKeybind then
-							newValue = get(isMobile.boolean) and newValue.coordinate or newValue.keycode
-						end
-					end
-					if newValue ~= lastFired then
-						lastFired = newValue
-						flagTable.Value = newValue
-						flagEvent:Fire(flagTable.Value)
-					end
-				end
-			end))
-			tbl[flag] = flagTable
-			return flagTable
+			local _list = get(flags.list)
+			if _list[flag] then
+				return _list[flag].user
+			else
+				return flagCreator.preregister(flag).user
+			end
+			return nil
 		end
 	})
 
@@ -212,10 +191,8 @@ function darius:Window(windowProperty)
 		if not windowProperty.UseConfig then
 			return
 		end
-		flags:update("list", HttpService:JSONDecode(customFunctions.readfile(config)))
-		connections.add(observe(flags.list):onChange(function()
-			customFunctions.writefile(config, HttpService:JSONEncode(get(flags.list)))
-		end))
+		flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
+		flagCreator.config:set(config)
 		configLoaded:update("boolean", true)
 	end
 	function darius:SetTheme(newTheme)

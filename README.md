@@ -94,7 +94,7 @@ Place this at the **END** of your implementation of the user interface. See [her
 darius:LoadConfig()
 ```
 ### Flags
-This is how you can access the callback'd values with flags.
+This is how you can access the callback'd values with flags. You can place these anywhere in your script after the Darius loadstring and if they are before they are considered 'preregistered' in that the OnChange won't be fired when the flag is registered normally but they will for default/config. `darius.flags.FLAGNAME.Value`, however, does change from nil to the default/config.
 ```lua
 darius.flags.FLAGNAME.Value --> Will be the last set value of the flag
 darius.flags.FLAGNAME.OnChange:Connect(function(value): any -- Is fired every time the value of a flag is changed

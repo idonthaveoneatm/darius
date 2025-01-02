@@ -6,18 +6,18 @@ local HttpService = require(script.Parent.Bundles).services.HttpService
 local customFunctions = require(script.Parent.utilities).customFunctions
 
 local fakeData = {
-	['dropdown'] = {"apple"},
+	['dropdown'] = "apple",
 	['dropdown_m'] = {"apple", "carrot", "banana"},
 	['keybind'] = {keycode = Enum.KeyCode.Q.Name, coordinate = "0,0"},
-	['toggle_lk'] = {boolean = true, keycode = Enum.KeyCode.E.Name},
-	['toggle'] = {boolean = true},
+	['toggle_lk'] = {boolean = true, keycode = Enum.KeyCode.R.Name},
+	['toggle'] = {keycode = "E"},
 	['slider'] = 50,
 	['textbox'] = "heyy",
 	['textbox_n'] = "1121212"
 }
-customFunctions.makefolder("darius-configs")
-customFunctions.makefolder("darius-configs/test")
---customFunctions.writefile("darius-configs/test/config.json", HttpService:JSONEncode(fakeData))
+customFunctions.makefolder("darius")
+customFunctions.makefolder("darius/test")
+customFunctions.writefile("darius/test/config.json", HttpService:JSONEncode(fakeData))
 
 local randomIcons = {}
 for _,v in lucide do
@@ -32,7 +32,7 @@ return function(target)
         Title = "Darius",
         Description = "What the sigma this isn't Quantum UI",
         HideBind = Enum.KeyCode.T,
-        --UseConfig = true,
+        UseConfig = true,
         Config = "test",
         IsMobile = false,
         Theme = {
@@ -58,10 +58,10 @@ return function(target)
         Parent = target
     })
 
-    print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
+    --print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
     for i,v in fakeData do
         darius.flags[i].OnChange:Connect(function(value)
-            print(`{i}: "{value}"`)
+            print(`OnChange {i}: "{value}"`, value)
         end)
     end
 
@@ -115,8 +115,9 @@ return function(target)
         Multiselect = true,
         Regex = ExtractItem,
         FLAG = "dropdown_m",
-        Default = {"apple"},
+        Default = {"apple","banana"},
         Callback = function(value)
+            print(value)
         end
     })
     tab:Dropdown({
@@ -135,17 +136,17 @@ return function(target)
             'helicopter'
         },
         Multiselect = false,
-        FLAG = "dropdown",
+        --FLAG = "dropdown",
         Regex = ExtractItem,
-        Default = "apple",
+        Default = "banana",
         Callback = function(value)
-            --print(value)
+            print(value)
         end
     })
 
     local a = tab:Toggle({
         Name = "Toggle",
-        Default = true,
+        --Default = true,
         LinkKeybind = true,
         Bind = Enum.KeyCode.E,
         FLAG = "toggle_lk",
@@ -155,17 +156,11 @@ return function(target)
     })
     local b
     b = tab:Toggle({
-        Name = "Disable first toggle",
+        Name = "the toggle",
         Default = true,
         FLAG = "toggle",
         Callback = function(v)
-            if v then
-                a:Disable()
-                b:SetName("Enable first toggle")
-            else
-                a:Enable()
-                b:SetName("Disable first toggle")
-            end
+            print(v)
         end
     })
 
@@ -174,7 +169,7 @@ return function(target)
         FLAG = "keybind",
         Bind = Enum.KeyCode.O,
         Callback = function()
-            --print("Keybind ran")
+            print("Keybind ran")
         end
     })
 
@@ -198,7 +193,7 @@ return function(target)
         Default = "12121212",
         FLAG = "textbox_n",
         Callback = function(value)
-            --print(`TextBox Numbers: {value}`)
+            print(`TextBox Numbers: {value}`)
         end
     })
     tab:TextBox({
@@ -213,7 +208,7 @@ return function(target)
             --print(`TextBox: {value}`)
         end
     })
-
+--[[
     tab:Label("Label")
     tab:Paragraph({
         Title = "Paragraph",
@@ -282,8 +277,8 @@ return function(target)
                 }
             })
         end
-    })
-    --darius:LoadConfig()
+    })]]
+    darius:LoadConfig()
     return function()
         darius:Destroy()
     end

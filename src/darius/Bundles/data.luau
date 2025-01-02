@@ -47,9 +47,12 @@ function dataFunctions.delete(uid:string)
     data = newData
     newData =  nil
 end
-function dataFunctions.add(newData:table, tag:string):table
-    for i,v in newData do
-        newData[i] = value(v)
+function dataFunctions.add(newData:table, tag:string, exclude:boolean):table
+    exclude = exclude or false
+    if not exclude then
+        for i,v in newData do
+            newData[i] = value(v)
+        end
     end
     newData.__tag = tag or nil
     newData.uid = randomString(16)
