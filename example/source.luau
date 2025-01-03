@@ -3,7 +3,7 @@
 Made by griffin
 Discord: @griffindoescooking
 Github: https://github.com/idonthaveoneatm
-loadstring(game:HttpGet("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/beta/example/source.luau"))()
+loadstring(game:HttpGet("http://127.0.0.1:5500/example/source.luau"))()
 
 ]]--
 
@@ -40,20 +40,21 @@ end
 
 local format = "minified"
 local branch = "beta"
-local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/{branch}/{format}.luau`))()
-
+--local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/{branch}/{format}.luau`))()
+local darius = loadstring(game:HttpGetAsync(`http://127.0.0.1:5500/{format}.luau`))()
 local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
     HideBind = Enum.KeyCode.T,
     IsMobile = false
 })
+--[[
 print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
 for i,v in fakeData do
     darius.flags[i].OnChange:Connect(function(value)
         print(`{i}: "{value}"`)
     end)
-end
+end]]
 
 local tab = window:Tab({
     Name = randomString(6),
@@ -104,7 +105,9 @@ tab:Dropdown({
     Regex = ExtractItem,
     FLAG = "dropdown_m",
     Callback = function(value)
-        print(value)
+        for i,v in darius.flags.dropdown_m.Value do
+            print(i,v)
+        end
     end
 })
 tab:Dropdown({
@@ -126,7 +129,7 @@ tab:Dropdown({
     FLAG = "dropdown",
     Regex = ExtractItem,
     Callback = function(value)
-        print(value)
+        print(darius.flags.dropdown.Value)
     end
 })
 
@@ -137,7 +140,7 @@ local a = tab:Toggle({
     Bind = Enum.KeyCode.E,
     FLAG = "toggle_lk",
     Callback = function(value)
-        print(`Toggle: {value}`)
+        print(darius.flags.toggle_lk.Value)
     end
 })
 local b
@@ -146,6 +149,7 @@ b = tab:Toggle({
     Default = false,
     FLAG = "toggle",
     Callback = function(v)
+        print(darius.flags.toggle.Value)
         if v then
             a:Disable()
             b:SetName("Enable first toggle")
@@ -170,7 +174,7 @@ tab:Slider({
     Max = 100,
     FLAG = "slider",
     Callback = function(value)
-        print(`Slider: {value}`)
+        print(darius.flags.slider.Value)
     end
 })
 
@@ -183,7 +187,7 @@ tab:TextBox({
     Default = "",
     FLAG = "textbox_n",
     Callback = function(value)
-        print(`TextBox Numbers: {value}`)
+        print(darius.flags.textbox_n.Value)
     end
 })
 tab:TextBox({
@@ -195,7 +199,7 @@ tab:TextBox({
     Default = "",
     FLAG = "textbox",
     Callback = function(value)
-        print(`TextBox: {value}`)
+        print(darius.flags.textbox.Value)
     end
 })
 

@@ -14,54 +14,59 @@ local names = {}
 local preregistered = {}
 
 local types = {
-    ['toggle'] = function(status, flagEvent, private)
-        local boolean = status.boolean
+    ['toggle'] = function(flag)
+        local boolean = flag.status.boolean
         connections.add(observe(boolean):onChange(function()
-            if not private then
+            if not flag.private then
                 task.spawn(funcs.export)
             end
             local cValue = get(boolean)
-            flagEvent:Fire(cValue)
+            flag.user.Value = cValue
+            flag.bindableEvent:Fire(cValue)
         end))
     end,
-    ['dropdown'] = function(status, flagEvent, private)
-        local observable = status.multiselect and status.items or status.item
+    ['dropdown'] = function(flag)
+        local observable = flag.status.multiselect and flag.status.items or flag.status.item
         connections.add(observe(observable):onChange(function()
-            if not private then
+            if not flag.private then
                 task.spawn(funcs.export)
             end
             local cValue = get(observable)
-            flagEvent:Fire(cValue)
+            flag.user.Value = cValue
+            flag.bindableEvent:Fire(cValue)
         end))
     end,
-    ['keybind'] = function(status, flagEvent, private)
-        local observable = status.mobile and status.coordinate or status.keycode
+    ['keybind'] = function(flag)
+        local observable = flag.status.mobile and flag.status.coordinate or flag.status.keycode
         connections.add(observe(observable):onChange(function()
-            if not private then
+            if not flag.private then
                 task.spawn(funcs.export)
             end
             local cValue = get(observable)
-            flagEvent:Fire(cValue)
+            flag.user.Value = cValue
+            flag.bindableEvent:Fire(cValue)
         end))
     end,
-    ['slider'] = function(status, flagEvent, private)
-        local percentageOf = status.percentageOf
+    ['slider'] = function(flag)
+        local percentageOf = flag.status.percentageOf
         connections.add(observe(percentageOf):onChange(function()
-            if not private then
+            if not flag.private then
                 task.spawn(funcs.export)
             end
             local cValue = get(percentageOf)
-            flagEvent:Fire(cValue)
+            flag.user.Value = cValue
+            flag.bindableEvent:Fire(cValue)
         end))
     end,
-    ['textbox'] = function(status, flagEvent, private)
-        local correctText = status.correctText
+    ['textbox'] = function(flag)
+        local correctText = flag.status.correctText
         connections.add(observe(correctText):onChange(function()
-            if not private then
+            if not flag.private then
                 task.spawn(funcs.export)
             end
             local cValue = get(correctText)
-            flagEvent:Fire(cValue)
+            flag.user.Value = cValue
+            flag.bindableEvent:Fire(cValue)
         end))
     end
 }
@@ -108,7 +113,6 @@ function funcs.preregister(name)
     _flag = {
         name = name,
         status = {},
-        old = value(nil),
         type = "unknown",
         preregistered = true,
         bindableEvent = flagEvent,
@@ -144,7 +148,6 @@ function funcs.register(name, default, type, private)
         _flag = {
             name = name,
             status = default,
-            old = value(nil),
             type = type,
             private = private,
             preregistered = false,
@@ -159,7 +162,7 @@ function funcs.register(name, default, type, private)
                 })
             }
         }
-        types[_flag.type](_flag.status, _flag.bindableEvent, _flag.private)
+        types[_flag.type](_flag)
 
         local _list = get(flags.list)
         _list[_flag.name] = _flag
@@ -170,7 +173,7 @@ function funcs.register(name, default, type, private)
         _flag.preregistered = false
         _flag.status = default
         _flag.private = private
-        types[_flag.type](_flag.status, _flag.bindableEvent, _flag.private)
+        types[_flag.type](_flag)
         preregistered[_flag.name] = nil
     end
     return _flag

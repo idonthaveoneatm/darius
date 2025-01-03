@@ -471,30 +471,31 @@ end,delete=function()j.delete(k.uid)end}})table.insert(i,k)return j.find(k.uid)e
 local b,c,d=a(58)local e return(function(...)local f,g,h=d(c.Parent).data,d(c.Parent.Parent.utilities).get,d(c.Parent).
 services local i,j=h.HttpService,d(c.Parent).Fusion local k,l,m,n,o,p,q,t=j.Observer,j.Value,d(c.Parent.Parent.utilities
 ).connections,d(c.Parent.Parent.utilities).customFunctions,{},f.add({list={}},'flags'),{},{}local u,v={toggle=function(u
-,v,E)local F=u.boolean m.add(k(F):onChange(function()if not E then task.spawn(o.export)end local G=g(F)v:Fire(G)end))end
-,dropdown=function(u,v,E)local F=u.multiselect and u.items or u.item m.add(k(F):onChange(function()if not E then task.
-spawn(o.export)end local G=g(F)v:Fire(G)end))end,keybind=function(u,v,E)local F=u.mobile and u.coordinate or u.keycode m
-.add(k(F):onChange(function()if not E then task.spawn(o.export)end local G=g(F)v:Fire(G)end))end,slider=function(u,v,E)
-local F=u.percentageOf m.add(k(F):onChange(function()if not E then task.spawn(o.export)end local G=g(F)v:Fire(G)end))end
-,textbox=function(u,v,E)local F=u.correctText m.add(k(F):onChange(function()if not E then task.spawn(o.export)end local
-G=g(F)v:Fire(G)end))end},{toggle=function(u)local v={}if u.boolean then v.boolean=g(u.boolean)end if u.keycode then v.
-keycode=g(u.keycode)end return v end,dropdown=function(u)return u.multiselect and g(u.items)or g(u.item)end,keybind=
-function(u)local v={}if u.keycode then v.keycode=g(u.keycode)end if u.coordinate then v.coordinate=g(u.coordinate)end
-return v end,slider=function(u)return g(u.percentageOf)end,textbox=function(u)return g(u.correctText)end}function o.
-preregister(E)local F,G=j.New'BindableEvent'{},{}function G.Connect(H,I)assert(typeof(I)=='function',
-'Connect only takes functions')m.add(F.Event:Connect(I))end local H H={name=E,status={},old=l(nil),type='unknown',
-preregistered=true,bindableEvent=F,file=l{},user={Value=nil,OnChange=setmetatable(G,{__newindex=function(I,J,K)return
-nil end})}}t[E]=H local I=g(p.list)I[H.name]=H p:update('list',I)return H end function o.register(E,F,G,H)assert(not
-table.find(q,E),'Flags must all be unique!')table.insert(q,E)local I,J=j.New'BindableEvent'{},{}function J.Connect(K,L)
-assert(typeof(L)=='function','Connect')m.add(I.Event:Connect(L))end local K if not t[E]then K={name=E,status=F,old=l(nil
-),type=G,private=H,preregistered=false,bindableEvent=I,file=l{},user={Value=nil,OnChange=setmetatable(J,{__newindex=
-function()return nil end})}}u[K.type](K.status,K.bindableEvent,K.private)local L=g(p.list)L[K.name]=K p:update('list',L)
-else K=t[E]K.type=G K.preregistered=false K.status=F K.private=H u[K.type](K.status,K.bindableEvent,K.private)t[K.name]=
-nil end return K end o.config=l''function o.export()local E,F={},g(p.list)for G,H in F do if H.private then continue end
-if H.type=='unknown'then continue end E[H.name]=v[H.type](H.status)end if g(o.config)~=''then n.writefile(g(o.config),i:
-JSONEncode(E))end end function o.load(E)for F,G in E do local H=g(p.list)[F]if not H then continue end H.file:set(G)end
-end return o end)()end,[59]=function()local b,c,d=a(59)local e return(function(...)return{lock=
-'rbxassetid://10723434711',maximize='rbxassetid://15556636376',minimize='rbxassetid://15556637715',close=
+)local v=u.status.boolean m.add(k(v):onChange(function()if not u.private then task.spawn(o.export)end local E=g(v)u.user
+.Value=E u.bindableEvent:Fire(E)end))end,dropdown=function(u)local v=u.status.multiselect and u.status.items or u.status
+.item m.add(k(v):onChange(function()if not u.private then task.spawn(o.export)end local E=g(v)u.user.Value=E u.
+bindableEvent:Fire(E)end))end,keybind=function(u)local v=u.status.mobile and u.status.coordinate or u.status.keycode m.
+add(k(v):onChange(function()if not u.private then task.spawn(o.export)end local E=g(v)u.user.Value=E u.bindableEvent:
+Fire(E)end))end,slider=function(u)local v=u.status.percentageOf m.add(k(v):onChange(function()if not u.private then task
+.spawn(o.export)end local E=g(v)u.user.Value=E u.bindableEvent:Fire(E)end))end,textbox=function(u)local v=u.status.
+correctText m.add(k(v):onChange(function()if not u.private then task.spawn(o.export)end local E=g(v)u.user.Value=E u.
+bindableEvent:Fire(E)end))end},{toggle=function(u)local v={}if u.boolean then v.boolean=g(u.boolean)end if u.keycode
+then v.keycode=g(u.keycode)end return v end,dropdown=function(u)return u.multiselect and g(u.items)or g(u.item)end,
+keybind=function(u)local v={}if u.keycode then v.keycode=g(u.keycode)end if u.coordinate then v.coordinate=g(u.
+coordinate)end return v end,slider=function(u)return g(u.percentageOf)end,textbox=function(u)return g(u.correctText)end}
+function o.preregister(E)local F,G=j.New'BindableEvent'{},{}function G.Connect(H,I)assert(typeof(I)=='function',
+'Connect only takes functions')m.add(F.Event:Connect(I))end local H H={name=E,status={},type='unknown',preregistered=
+true,bindableEvent=F,file=l{},user={Value=nil,OnChange=setmetatable(G,{__newindex=function(I,J,K)return nil end})}}t[E]=
+H local I=g(p.list)I[H.name]=H p:update('list',I)return H end function o.register(E,F,G,H)assert(not table.find(q,E),
+'Flags must all be unique!')table.insert(q,E)local I,J=j.New'BindableEvent'{},{}function J.Connect(K,L)assert(typeof(L)
+=='function','Connect')m.add(I.Event:Connect(L))end local K if not t[E]then K={name=E,status=F,type=G,private=H,
+preregistered=false,bindableEvent=I,file=l{},user={Value=nil,OnChange=setmetatable(J,{__newindex=function()return nil
+end})}}u[K.type](K)local L=g(p.list)L[K.name]=K p:update('list',L)else K=t[E]K.type=G K.preregistered=false K.status=F K
+.private=H u[K.type](K)t[K.name]=nil end return K end o.config=l''function o.export()local E,F={},g(p.list)for G,H in F
+do if H.private then continue end if H.type=='unknown'then continue end E[H.name]=v[H.type](H.status)end if g(o.config)
+~=''then n.writefile(g(o.config),i:JSONEncode(E))end end function o.load(E)for F,G in E do local H=g(p.list)[F]if not H
+then continue end H.file:set(G)end end return o end)()end,[59]=function()local b,c,d=a(59)local e return(function(...)
+return{lock='rbxassetid://10723434711',maximize='rbxassetid://15556636376',minimize='rbxassetid://15556637715',close=
 'rbxassetid://10747384394',circle='rbxassetid://18804307590',normalDropdown='rbxassetid://10723433811',multiDropdown=
 'rbxassetid://10734884548',fingerprint='rbxassetid://10723375250',check='rbxassetid://10709790644',command=
 'rbxassetid://10723416765',input='rbxassetid://10734982297',search='rbxassetid://10734943674',finger=
@@ -873,15 +874,16 @@ TextTransparency=ap,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim
 return F(ae)end),TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[n]={L(0,5)}}}},m'Frame'{Size=UDim2.fromScale(1,1
 ),BackgroundTransparency=1,[n]={L(8),m'TextLabel'{FontFace=I('Montserrat',Enum.FontWeight.Bold),Size=UDim2.new(1,-39,0,
 18),BackgroundTransparency=1,TextColor3=i.text,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5
-,0),Text=u(function()if F(ab)then return F(Y)..' '..tostring(#F(ah.status.items))..'/'..tostring(#F(_))end return F(Y)..
-': '..F(al)end),TextTransparency=ap,TextXAlignment=Enum.TextXAlignment.Left,RichText=true},m'ImageLabel'{Size=UDim2.
-fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,0),BackgroundTransparency=1,Image=u(function
-()return F(ab)and j.multiDropdown or j.normalDropdown end),ImageColor3=i.text2,ImageTransparency=ap}}}}},m'Frame'{Size=
-UDim2.new(1,0,0,32),BackgroundTransparency=1,[n]={L(0,6),m'TextBox'{Size=UDim2.fromScale(1,1),BackgroundColor3=i.
-background,BackgroundTransparency=ap,FontFace=I('Montserrat',Enum.FontWeight.Bold),TextXAlignment=Enum.TextXAlignment.
-Left,TextScaled=true,ClearTextOnFocus=true,PlaceholderText='Search',TextColor3=i.text,TextTransparency=ap,[v]=aj,[t
-'Changed']=function(aq)local ar=F(aj)if aq=='Text'and ar and ar.Text then local as=ar.Text for at,au in F(am)do if
-string.find(F(af)(au.Name):lower(),as:lower())or as==''then au.Visible=true else au.Visible=false end end end end,[n]={m
+,0),Text=u(function()if F(ab)then return F(Y)..' '..tostring(#F(ah.status.items))..'/'..tostring(#F(_))end if typeof(F(
+al))=='table'then print'lastReturnedValue was a table'print(F(ab))return F(Y)end return F(Y)..': '..F(al)end),
+TextTransparency=ap,TextXAlignment=Enum.TextXAlignment.Left,RichText=true},m'ImageLabel'{Size=UDim2.fromOffset(24,24),
+AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,0),BackgroundTransparency=1,Image=u(function()return F(ab)and
+j.multiDropdown or j.normalDropdown end),ImageColor3=i.text2,ImageTransparency=ap}}}}},m'Frame'{Size=UDim2.new(1,0,0,32)
+,BackgroundTransparency=1,[n]={L(0,6),m'TextBox'{Size=UDim2.fromScale(1,1),BackgroundColor3=i.background,
+BackgroundTransparency=ap,FontFace=I('Montserrat',Enum.FontWeight.Bold),TextXAlignment=Enum.TextXAlignment.Left,
+TextScaled=true,ClearTextOnFocus=true,PlaceholderText='Search',TextColor3=i.text,TextTransparency=ap,[v]=aj,[t'Changed']
+=function(aq)local ar=F(aj)if aq=='Text'and ar and ar.Text then local as=ar.Text for at,au in F(am)do if string.find(F(
+af)(au.Name):lower(),as:lower())or as==''then au.Visible=true else au.Visible=false end end end end,[n]={m
 'UITextSizeConstraint'{MinTextSize=0,MaxTextSize=16},M(4),L(6,6,6,6)}}}},m'Frame'{Size=UDim2.new(1,0,0,32),
 BackgroundTransparency=1,Visible=ab,[n]={L(6,6,0,6),m'TextButton'{Interactable=ab,Size=UDim2.new(1,0,0,24),
 BackgroundTransparency=ap,BackgroundColor3=i.background,[t'Activated']=function()local aq={}if not F(an)then for ar,as
@@ -1404,62 +1406,62 @@ ae[ai]then return ae[ai]end end function af.remove(ai)if ae[ai]then ae[ai]=nil e
 function()local aa,ab,ac=a(98)local ad return(function(...)return function(ae:table,af:table,ag:table?):any ag=ag or{}
 local ah,ai=true,{}for aj,ak in af do if(not ae[aj]or typeof(ae[aj])~=typeof(ak))and not table.find(ag,aj)then ah=false
 table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah,ai end end)()end},{{1,2,{'Darius'}
-,{{78,2,{'darius.story'}},{2,2,{'Bundles'},{{3,2,{'Fusion'},{{16,1,{'Dependencies'},{{19,2,{'sharedState'}},{17,2,{
-'captureDependencies'}},{21,2,{'useDependency'}},{20,2,{'updateAll'}},{18,2,{'initDependency'}}}},{49,1,{'Utility'},{{51
-,2,{'cleanup'}},{52,2,{'doNothing'}},{55,2,{'restrictRead'}},{56,2,{'xtypeof'}},{54,2,{'needsDestruction'}},{53,2,{
-'isSimilar'}},{50,2,{'None'}}}},{4,1,{'Animation'},{{8,2,{'TweenScheduler'}},{9,2,{'getTweenRatio'}},{12,2,{
-'springCoefficients'}},{5,2,{'Spring'}},{11,2,{'packType'}},{10,2,{'lerpType'}},{13,2,{'unpackType'}},{7,2,{'Tween'}},{6
-,2,{'SpringScheduler'}}}},{48,2,{'Types'}},{39,2,{'PubTypes'}},{22,1,{'Instances'},{{27,2,{'OnChange'}},{23,2,{
-'Children'}},{24,2,{'Cleanup'}},{32,2,{'defaultProps'}},{29,2,{'Out'}},{31,2,{'applyInstanceProps'}},{30,2,{'Ref'}},{25,
-2,{'Hydrate'}},{26,2,{'New'}},{28,2,{'OnEvent'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{40,1,{'State'},{{45,2,{
-'Observer'}},{41,2,{'Computed'}},{46,2,{'Value'}},{47,2,{'unwrap'}},{43,2,{'ForPairs'}},{42,2,{'ForKeys'}},{44,2,{
-'ForValues'}}}},{33,1,{'Logging'},{{37,2,{'messages'}},{34,2,{'logError'}},{36,2,{'logWarn'}},{38,2,{'parseError'}},{35,
-2,{'logErrorNonFatal'}}}}}},{60,2,{'lucide'}},{61,2,{'services'}},{62,2,{'themeSystem'},{{63,2,{'default'}}}},{57,2,{
-'data'}},{59,2,{'icons'}},{58,2,{'flags'}}}},{87,2,{'utilities'},{{89,2,{'connections'}},{98,2,{'typecheck'}},{96,2,{
-'references'}},{93,2,{'get'}},{95,2,{'randomString'}},{88,2,{'animate'}},{97,2,{'tween'}},{90,2,{'customFont'}},{94,2,{
-'getStringBounds'}},{91,2,{'customFunctions'}},{92,2,{'drag'}}}},{64,1,{'components'},{{66,2,{'divider'}},{68,2,{
-'keybind'}},{75,2,{'textbox'}},{71,2,{'paragraph'}},{76,2,{'toggle'}},{77,2,{'warn'}},{69,2,{'label'}},{67,2,{'dropdown'
-}},{73,2,{'tabButton'}},{72,2,{'slider'}},{74,2,{'tabFrame'}},{65,2,{'button'}},{70,2,{'notification'}}}},{81,2,{
-'simpleElements'},{{86,2,{'UITextSizeConstraint'}},{82,2,{'UIAspectRatioConstraint'}},{85,2,{'UIPadding'}},{83,2,{
-'UICorner'}},{84,2,{'UIListLayout'}}}},{79,1,{'layouts'},{{80,2,{'main'}}}}}}},'0.4.1','WaxRuntime',string,task,
-setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay
-,az,aA=aj.insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)
-=='Lune'then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,b
-,c,d,e,f=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]=
-'StringValue'},{},{},{},{},{},{},{}local g,h={GetFullName={{},function(g)local h,i=g.Name,g.Parent while i do h=i.Name..
-'.'..h i=i.Parent end return h end},GetChildren={{},function(g)local h={}for i in ai,f[g]do au(h,i)end return h end},
-GetDescendants={{},function(g)local h={}for i in ai,f[g]do au(h,i)for j,k in ai,i:GetDescendants()do au(h,k)end end
-return h end},FindFirstChild={{'string','boolean?'},function(g,h,i)local j=f[g]for k in ai,j do if k.Name==h then return
-k end end if i then for l in ai,j do return l:FindFirstChild(h,true)end end end},FindFirstAncestor={{'string'},function(
-g,h)local i=g.Parent while i do if i.Name==h then return i end i=i.Parent end end},WaitForChild={{'string','number?'},
-function(g,h)return g:FindFirstChild(h)end}},{}for i,j in ai,g do local k,l,m=j[1],j[2],{}for n,o in ai,k do local p,t=
-az(o,'^([^%?]+)(%??)')m[n]={p,t}end h[i]=function(p,...)if not f[p]then ah(
-"Expected ':' not '.' calling member function "..i,2)end local t={...}for u,v in ai,m do local E=t[u]local F,G,H=an(E),v
-[1],v[2]if E==nil and not H then ah('Argument '..E..' missing or nil',3)end if G~='any'and F~=G and not(F=='nil'and H)
-then ah('Argument '..u..' expects type "'..G..'", got "'..F..'"',2)end end return l(p,...)end end local function k(l,m,n
-)local o,p=(ag({},{__mode='k'}))local function t(u)ah(u..' is not a valid (virtual) member of '..l..' "'..m..'"',3)end
-local function u(v)ah('Unable to assign (virtual) property '..v..'. Property is read only',3)end local v,E={},{}E.
-__metatable=false E.__index=function(F,G)if G=='ClassName'then return l elseif G=='Name'then return m elseif G=='Parent'
-then return n elseif l=='StringValue'and G=='Value'then return p else local H=h[G]if H then return H end end for H in ai
-,o do if H.Name==G then return H end end t(G)end E.__newindex=function(F,G,H)if G=='ClassName'then u(G)elseif G=='Name'
-then m=H elseif G=='Parent'then if H==v then return end if n~=nil then f[n][v]=nil end n=H if H~=nil then f[H][v]=true
-end elseif l=='StringValue'and G=='Value'then p=H else t(G)end end E.__tostring=function()return m end ag(v,E)f[v]=o if
-n~=nil then f[n][v]=true end return v end local function l(m,n)local o,p,t,u=m[1],m[2],m[3],m[4]local v=aD[p]local E=t
-and av(t,1)or v local F=k(v,E,n)aE[o]=F if t then for G,H in ai,t do F[G]=H end end if u then for G,H in ai,u do l(H,F)
-end end return F end local m=k('Folder','['..ad..']')for n,o in ai,ab do l(o,m)end for p,t in ai,aa do local u=aE[p]aF[u
-]=t b[u]=p local v=u.ClassName if v=='LocalScript'or v=='Script'then au(d,u)end end local function u(v)local E,F=v.
-ClassName,c[v]if F and E=='ModuleScript'then return ak(F)end local G=aF[v]local function H(I)I=aq(I)local J,K,L=v:
-GetFullName(),az(I,'[^:]+:(%d+): (.+)')if not K or not at then return J..':*: '..(L or I)end K=ar(K)local M=b[v]local N=
-at[M]local O=K-N+1 if O<0 then O='?'end return J..':'..O..': '..L end if E=='LocalScript'or E=='Script'then local I,J=
-ap(G)if not I then ah(H(J),0)end else local I={ap(G)}local J=av(I,1)if not J then local K=av(I,1)ah(H(K),0)end c[v]=I
-return ak(I)end end function a(v)local E=aE[v]local function F(G,...)local H={ap(G,...)}local I=av(H,1)if not I then ah(
-H[1],3)end return ak(H)end local G=aw(ag({},{__index=e,__newindex=function(G,H,I)e[H]=I end,__len=function()return#e end
-,__iter=function()return ai,e end}))local H,I=aw{version=ac,envname=ad,shared=G,script=am,require=ao},E local function J
-(K,...)local L,M,N=an(K),'Attempted to call require with a non-ModuleScript','Attempted to call require with self'if L==
-'table'and f[K]then if K.ClassName~='ModuleScript'then ah(M,2)elseif K==E then ah(N,2)end return u(K)elseif L=='string'
-and ay(K,1,1)~='@'then if#K==0 then ah('Attempted to call require with empty string',2)end local O=E if ay(K,1,1)=='/'
-then O=m elseif ay(K,1,2)=='./'then K=ay(K,3)end local P for Q in aA(K,'([^/]*)/?')do local R=Q if Q=='..'then R=
-'Parent'end if R~=''then local S=O:FindFirstChild(R)if not S then local T=O.Parent if T then S=T:FindFirstChild(R)end
-end if S then O=S elseif Q~=P and Q~='init'and Q~='init.server'and Q~='init.client'then ah('Virtual script path "'..K..
-'" not found',2)end end P=Q end if O.ClassName~='ModuleScript'then ah(M,2)elseif O==E then ah(N,2)end return u(O)end
-return F(ao,K,...)end return H,I,J end for v,E in ai,d do aC(u,E)end return u(m:GetChildren()[1])
+,{{78,2,{'darius.story'}},{2,2,{'Bundles'},{{57,2,{'data'}},{61,2,{'services'}},{59,2,{'icons'}},{3,2,{'Fusion'},{{48,2,
+{'Types'}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{4,1,{'Animation'},{{9,2,{'getTweenRatio'}},{13,2,{'unpackType'}},{8,2,{
+'TweenScheduler'}},{5,2,{'Spring'}},{12,2,{'springCoefficients'}},{6,2,{'SpringScheduler'}},{10,2,{'lerpType'}},{11,2,{
+'packType'}},{7,2,{'Tween'}}}},{49,1,{'Utility'},{{51,2,{'cleanup'}},{50,2,{'None'}},{55,2,{'restrictRead'}},{52,2,{
+'doNothing'}},{54,2,{'needsDestruction'}},{56,2,{'xtypeof'}},{53,2,{'isSimilar'}}}},{33,1,{'Logging'},{{34,2,{'logError'
+}},{38,2,{'parseError'}},{36,2,{'logWarn'}},{35,2,{'logErrorNonFatal'}},{37,2,{'messages'}}}},{16,1,{'Dependencies'},{{
+17,2,{'captureDependencies'}},{18,2,{'initDependency'}},{19,2,{'sharedState'}},{21,2,{'useDependency'}},{20,2,{
+'updateAll'}}}},{39,2,{'PubTypes'}},{40,1,{'State'},{{47,2,{'unwrap'}},{44,2,{'ForValues'}},{45,2,{'Observer'}},{46,2,{
+'Value'}},{42,2,{'ForKeys'}},{43,2,{'ForPairs'}},{41,2,{'Computed'}}}},{22,1,{'Instances'},{{27,2,{'OnChange'}},{28,2,{
+'OnEvent'}},{32,2,{'defaultProps'}},{25,2,{'Hydrate'}},{24,2,{'Cleanup'}},{30,2,{'Ref'}},{23,2,{'Children'}},{31,2,{
+'applyInstanceProps'}},{26,2,{'New'}},{29,2,{'Out'}}}}}},{60,2,{'lucide'}},{62,2,{'themeSystem'},{{63,2,{'default'}}}},{
+58,2,{'flags'}}}},{79,1,{'layouts'},{{80,2,{'main'}}}},{81,2,{'simpleElements'},{{83,2,{'UICorner'}},{84,2,{
+'UIListLayout'}},{82,2,{'UIAspectRatioConstraint'}},{86,2,{'UITextSizeConstraint'}},{85,2,{'UIPadding'}}}},{64,1,{
+'components'},{{67,2,{'dropdown'}},{75,2,{'textbox'}},{68,2,{'keybind'}},{77,2,{'warn'}},{74,2,{'tabFrame'}},{76,2,{
+'toggle'}},{65,2,{'button'}},{70,2,{'notification'}},{73,2,{'tabButton'}},{66,2,{'divider'}},{71,2,{'paragraph'}},{72,2,
+{'slider'}},{69,2,{'label'}}}},{87,2,{'utilities'},{{95,2,{'randomString'}},{96,2,{'references'}},{92,2,{'drag'}},{90,2,
+{'customFont'}},{91,2,{'customFunctions'}},{88,2,{'animate'}},{94,2,{'getStringBounds'}},{89,2,{'connections'}},{98,2,{
+'typecheck'}},{97,2,{'tween'}},{93,2,{'get'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,unpack
+,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay,az,aA=aj.insert,aj.remove,aj.freeze
+or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)=='Lune'then local aB,aC=ap(ao,
+'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,b,c,d,e,f=aB or function(aC,...)
+ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{},{}
+local g,h={GetFullName={{},function(g)local h,i=g.Name,g.Parent while i do h=i.Name..'.'..h i=i.Parent end return h end}
+,GetChildren={{},function(g)local h={}for i in ai,f[g]do au(h,i)end return h end},GetDescendants={{},function(g)local h=
+{}for i in ai,f[g]do au(h,i)for j,k in ai,i:GetDescendants()do au(h,k)end end return h end},FindFirstChild={{'string',
+'boolean?'},function(g,h,i)local j=f[g]for k in ai,j do if k.Name==h then return k end end if i then for l in ai,j do
+return l:FindFirstChild(h,true)end end end},FindFirstAncestor={{'string'},function(g,h)local i=g.Parent while i do if i.
+Name==h then return i end i=i.Parent end end},WaitForChild={{'string','number?'},function(g,h)return g:FindFirstChild(h)
+end}},{}for i,j in ai,g do local k,l,m=j[1],j[2],{}for n,o in ai,k do local p,t=az(o,'^([^%?]+)(%??)')m[n]={p,t}end h[i]
+=function(p,...)if not f[p]then ah("Expected ':' not '.' calling member function "..i,2)end local t={...}for u,v in ai,m
+do local E=t[u]local F,G,H=an(E),v[1],v[2]if E==nil and not H then ah('Argument '..E..' missing or nil',3)end if G~=
+'any'and F~=G and not(F=='nil'and H)then ah('Argument '..u..' expects type "'..G..'", got "'..F..'"',2)end end return l(
+p,...)end end local function k(l,m,n)local o,p=(ag({},{__mode='k'}))local function t(u)ah(u..
+' is not a valid (virtual) member of '..l..' "'..m..'"',3)end local function u(v)ah(
+'Unable to assign (virtual) property '..v..'. Property is read only',3)end local v,E={},{}E.__metatable=false E.__index=
+function(F,G)if G=='ClassName'then return l elseif G=='Name'then return m elseif G=='Parent'then return n elseif l==
+'StringValue'and G=='Value'then return p else local H=h[G]if H then return H end end for H in ai,o do if H.Name==G then
+return H end end t(G)end E.__newindex=function(F,G,H)if G=='ClassName'then u(G)elseif G=='Name'then m=H elseif G==
+'Parent'then if H==v then return end if n~=nil then f[n][v]=nil end n=H if H~=nil then f[H][v]=true end elseif l==
+'StringValue'and G=='Value'then p=H else t(G)end end E.__tostring=function()return m end ag(v,E)f[v]=o if n~=nil then f[
+n][v]=true end return v end local function l(m,n)local o,p,t,u=m[1],m[2],m[3],m[4]local v=aD[p]local E=t and av(t,1)or v
+local F=k(v,E,n)aE[o]=F if t then for G,H in ai,t do F[G]=H end end if u then for G,H in ai,u do l(H,F)end end return F
+end local m=k('Folder','['..ad..']')for n,o in ai,ab do l(o,m)end for p,t in ai,aa do local u=aE[p]aF[u]=t b[u]=p local
+v=u.ClassName if v=='LocalScript'or v=='Script'then au(d,u)end end local function u(v)local E,F=v.ClassName,c[v]if F and
+E=='ModuleScript'then return ak(F)end local G=aF[v]local function H(I)I=aq(I)local J,K,L=v:GetFullName(),az(I,
+'[^:]+:(%d+): (.+)')if not K or not at then return J..':*: '..(L or I)end K=ar(K)local M=b[v]local N=at[M]local O=K-N+1
+if O<0 then O='?'end return J..':'..O..': '..L end if E=='LocalScript'or E=='Script'then local I,J=ap(G)if not I then
+ah(H(J),0)end else local I={ap(G)}local J=av(I,1)if not J then local K=av(I,1)ah(H(K),0)end c[v]=I return ak(I)end end
+function a(v)local E=aE[v]local function F(G,...)local H={ap(G,...)}local I=av(H,1)if not I then ah(H[1],3)end return
+ak(H)end local G=aw(ag({},{__index=e,__newindex=function(G,H,I)e[H]=I end,__len=function()return#e end,__iter=function()
+return ai,e end}))local H,I=aw{version=ac,envname=ad,shared=G,script=am,require=ao},E local function J(K,...)local L,M,N
+=an(K),'Attempted to call require with a non-ModuleScript','Attempted to call require with self'if L=='table'and f[K]
+then if K.ClassName~='ModuleScript'then ah(M,2)elseif K==E then ah(N,2)end return u(K)elseif L=='string'and ay(K,1,1)~=
+'@'then if#K==0 then ah('Attempted to call require with empty string',2)end local O=E if ay(K,1,1)=='/'then O=m elseif
+ay(K,1,2)=='./'then K=ay(K,3)end local P for Q in aA(K,'([^/]*)/?')do local R=Q if Q=='..'then R='Parent'end if R~=''
+then local S=O:FindFirstChild(R)if not S then local T=O.Parent if T then S=T:FindFirstChild(R)end end if S then O=S
+elseif Q~=P and Q~='init'and Q~='init.server'and Q~='init.client'then ah('Virtual script path "'..K..'" not found',2)end
+end P=Q end if O.ClassName~='ModuleScript'then ah(M,2)elseif O==E then ah(N,2)end return u(O)end return F(ao,K,...)end
+return H,I,J end for v,E in ai,d do aC(u,E)end return u(m:GetChildren()[1])
