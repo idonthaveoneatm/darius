@@ -395,11 +395,15 @@ return function(property)
 				noKeyCode = false
 			end
 			if noKeyCode then
-				_flag.status.keycode:set(get(bind).Name)
+				if bind then
+					_flag.status.keycode:set(get(bind).Name)
+				end
 			end
 		end)
 	else
-		_flag.status.keycode:set(get(bind).Name)
+		if bind then
+			_flag.status.keycode:set(get(bind).Name)
+		end
 	end
 
 	local returnFunctions = {}

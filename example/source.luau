@@ -46,8 +46,6 @@ local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
     HideBind = Enum.KeyCode.T,
-    --UseConfig = true,
-    Config = "dariusTestScript",
     IsMobile = false
 })
 print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
@@ -270,7 +268,6 @@ tab2:Button({
         })
     end
 })
-darius:LoadConfig()
 
 darius.OnDestruction:Connect(function()
     print("Goodbye Darius!")

@@ -235,6 +235,11 @@ return function(property)
 									if get(multiselect) then
 										return get(name).." "..tostring(#get(_flag.status.items)).."/"..tostring(#get(items))
 									end
+									if typeof(get(lastReturnedValue)) == "table" then
+										print("lastReturnedValue was a table")
+										print(get(multiselect))
+										return get(name)
+									end
 									return get(name)..": "..get(lastReturnedValue)
 								end),
 								TextTransparency = selectedAnimation,
