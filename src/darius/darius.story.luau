@@ -1,4 +1,4 @@
---[[]]
+--[[
 local darius = require(script.Parent)
 local randomString = require(script.Parent.utilities).randomString
 local lucide = require(script.Parent.Bundles.lucide)
@@ -277,9 +277,10 @@ return function(target)
                 }
             })
         end
-    })]]
+    })
     darius:LoadConfig()
     return function()
         darius:Destroy()
     end
 end
+]]
