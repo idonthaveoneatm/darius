@@ -6,12 +6,12 @@ local HttpService = require(script.Parent.Bundles).services.HttpService
 local customFunctions = require(script.Parent.utilities).customFunctions
 
 local fakeData = {
-	['dropdown'] = "apple",
+	--['dropdown'] = "apple",
 	['dropdown_m'] = {"apple", "carrot", "banana"},
 	['keybind'] = {keycode = Enum.KeyCode.Q.Name, coordinate = "0,0"},
 	['toggle_lk'] = {boolean = true, keycode = Enum.KeyCode.R.Name},
 	['toggle'] = {keycode = "E"},
-	['slider'] = 50,
+	--['slider'] = 50,
 	['textbox'] = "heyy",
 	['textbox_n'] = "1121212"
 }
@@ -32,7 +32,7 @@ return function(target)
         Title = "Darius",
         Description = "What the sigma this isn't Quantum UI",
         HideBind = Enum.KeyCode.T,
-        UseConfig = true,
+        --UseConfig = true,
         Config = "test",
         IsMobile = false,
         Theme = {
@@ -122,25 +122,13 @@ return function(target)
     })
     tab:Dropdown({
         Name = "Dropdown",
-        Items = {
-            {
-                Value = '<font color="rgb(255,0,0)">apple</font>',
-                Image = randomIcon()
-            },
-            'banana',
-            'carrot',
-            'dingleberry',
-            'egg plant',
-            'frank',
-            'grape',
-            'helicopter'
-        },
+        Items = {'Legit', 'Blatant'},
         Multiselect = false,
-        --FLAG = "dropdown",
+        FLAG = "dropdown",
         Regex = ExtractItem,
-        Default = "banana",
+        Default = "Blatant",
         Callback = function(value)
-            print(value)
+            
         end
     })
 
@@ -177,7 +165,7 @@ return function(target)
         Name = "Slider",
         Min = 0,
         Max = 100,
-        Default = 10,
+        --Default = 10,
         FLAG = "slider",
         Callback = function(value)
             --print(`Slider: {value}`)
@@ -208,77 +196,7 @@ return function(target)
             --print(`TextBox: {value}`)
         end
     })
---[[
-    tab:Label("Label")
-    tab:Paragraph({
-        Title = "Paragraph",
-        Body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
-    })
-
-    tab:Divider()
-    local duration = 0
-    local title = ""
-    local body = ""
-
-    tab2:TextBox({
-        Name = "Title",
-        Placeholder = "Placeholder Text!",
-        OnLeave = true,
-        Default = "Title",
-        Callback = function(value)
-            title = value
-        end
-    })
-    tab2:TextBox({
-        Name = "Body",
-        Placeholder = "Placeholder Text!",
-        OnLeave = true,
-        Default = "Body BODY body",
-        Callback = function(value)
-            body = value
-        end
-    })
-    tab2:Slider({
-        Name = "Duration",
-        Min = 0,
-        Max = 100,
-        --Default = 10,
-        Callback = function(value)
-            duration = value
-        end
-    })
-    tab2:Button({
-        Name = "Send notification",
-        Callback = function()
-            darius:Notify({
-                Title = title,
-                Body = body,
-                Image = randomIcon(),
-                Duration = duration,
-                Buttons = {
-                    {
-                        Name = "Button",
-                        Callback = function()
-                            print("Button 1")
-                        end
-                    },
-                    {
-                        Name = "Button",
-                        Callback = function()
-                            print("Button 2")
-                        end
-                    },
-                    {
-                        Name = "Button",
-                        Callback = function()
-                            print("Button 3")
-                        end
-                    }
-                }
-            })
-        end
-    })
-    darius:LoadConfig()
+    --darius:LoadConfig()
     return function()
         darius:Destroy()
     end

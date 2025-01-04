@@ -113,21 +113,12 @@ tab:Dropdown({
 tab:Dropdown({
     Name = "Dropdown",
     Items = {
-        {
-            Value = '<font color="rgb(255,0,0)">apple</font>',
-            Image = randomIcon()
-        },
-        'banana',
-        'carrot',
-        'dingleberry',
-        'egg plant',
-        'frank',
-        'grape',
-        'helicopter'
+        "Legit", "Blatant"
     },
     Multiselect = false,
     FLAG = "dropdown",
     Regex = ExtractItem,
+    Default = "Blatant",
     Callback = function(value)
         print(darius.flags.dropdown.Value)
     end

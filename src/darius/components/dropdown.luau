@@ -506,12 +506,13 @@ return function(property)
 		observe(_flag.file):onChange(function()
 			local file = get(_flag.file)
 			local noChange = true
+			if file ~= nil then
+				noChange = false
+			end
 			if get(multiselect) then
 				_flag.status.items:set(file)
-				noChange = false
 			else
 				_flag.status.item:set(file)
-				noChange = false
 			end
 			if noChange then
 				if get(multiselect) then

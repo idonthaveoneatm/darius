@@ -83,7 +83,7 @@ return function(property)
 	local _flag
 	if get(flag) ~= "" then
 		_flag = flagCreator.register(get(flag), {
-			percentageOf = value(get(min))
+			percentageOf = value(nil)
 		},"slider", get(flag) == slider.uid)
 	end
 
@@ -236,10 +236,13 @@ return function(property)
 										AnchorPoint = Vector2.new(1,0.5),
 										Position = UDim2.new(1,0,0.5,0),
 										Text = computed(function()
-											if get(displayAsPercent) then
-												return tostring(round(get(percentage) * 100)).."%"
+											if get(_flag.status.percentageOf) then
+												if get(displayAsPercent) then
+													return tostring(round(get(percentage) * 100)).."%"
+												end
+												return get(_flag.status.percentageOf)
 											end
-											return get(_flag.status.percentageOf)
+											return ""
 										end),
 										TextXAlignment = Enum.TextXAlignment.Right,
 										RichText = true,
@@ -385,6 +388,7 @@ return function(property)
 		end)
 	else
 		_flag.status.percentageOf:set(get(default))
+		print(get(default))
 	end
 
 	local returnFunctions = {}

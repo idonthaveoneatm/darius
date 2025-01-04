@@ -473,14 +473,14 @@ return function(property)
 		name:set(newText)
 	end
 	function returnFunctions:SetValue(newValue:boolean)
-		local _didPass, _failedItems = typecheck({['SetValue'] = newValue}, {SetValue = false})
+		local _didPass, _failedItems = typecheck({['SetValue'] = newValue}, {['SetValue'] = false})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
 		_flag.status.boolean:set(newValue)
 	end
 	function returnFunctions:SetBind(newBind:EnumItem)
 		assert(get(linkKeybind), "Requires LinkKeybind")
-		local _didPass, _failedItems = typecheck({['SetBind'] = newBind}, {SetBind = Enum.keyCode.C})
+		local _didPass, _failedItems = typecheck({['SetBind'] = newBind}, {['SetBind'] = Enum.keyCode.C})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
 		checkKeyCode(newBind, "At :SetBind")
