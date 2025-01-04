@@ -3,7 +3,6 @@
 Made by griffin
 Discord: @griffindoescooking
 Github: https://github.com/idonthaveoneatm
-loadstring(game:HttpGet("http://127.0.0.1:5500/example/source.luau"))()
 
 ]]--
 
@@ -18,17 +17,6 @@ local function randomString(length)
     end
 end
 
-local fakeData = {
-	['dropdown'] = {"apple"},
-	['dropdown_m'] = {"apple", "carrot", "banana"},
-	['keybind'] = {keycode = Enum.KeyCode.Q.Name, coordinate = "0,0"},
-	['toggle_lk'] = {boolean = true, keycode = Enum.KeyCode.E.Name},
-	['toggle'] = {boolean = true},
-	['slider'] = 50,
-	['textbox'] = "heyy",
-	['textbox_n'] = "1121212"
-}
-
 local lucide = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/example/lucide.luau"))()
 local randomIcons = {}
 for _,v in lucide do
@@ -38,23 +26,17 @@ local function randomIcon():string
     return randomIcons[math.floor(math.random(1,#randomIcons))]
 end
 
-local format = "minified"
-local branch = "beta"
---local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/{branch}/{format}.luau`))()
-local darius = loadstring(game:HttpGetAsync(`http://127.0.0.1:5500/{format}.luau`))()
+local format = "bundled"
+local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/{format}.luau`))()
+
 local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
     HideBind = Enum.KeyCode.T,
+    UseConfig = true,
+    Config = "dariusTestScript",
     IsMobile = false
 })
---[[
-print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
-for i,v in fakeData do
-    darius.flags[i].OnChange:Connect(function(value)
-        print(`{i}: "{value}"`)
-    end)
-end]]
 
 local tab = window:Tab({
     Name = randomString(6),
@@ -71,14 +53,10 @@ for i=1,10 do
     })
 end
 
-local a
-local togled = false
-
 tab:Button({
     Name = "Button",
     Callback = function()
-        a:SetValue(togled)
-        togled = not togled
+        print("Hello World!")
     end
 })
 
@@ -109,33 +87,40 @@ tab:Dropdown({
     Regex = ExtractItem,
     FLAG = "dropdown_m",
     Callback = function(value)
-        for i,v in darius.flags.dropdown_m.Value do
-            print(i,v)
-        end
+        print(value)
     end
 })
 tab:Dropdown({
     Name = "Dropdown",
     Items = {
-        "Legit", "Blatant"
+        {
+            Value = '<font color="rgb(255,0,0)">apple</font>',
+            Image = randomIcon()
+        },
+        'banana',
+        'carrot',
+        'dingleberry',
+        'egg plant',
+        'frank',
+        'grape',
+        'helicopter'
     },
     Multiselect = false,
     FLAG = "dropdown",
     Regex = ExtractItem,
-    Default = "Blatant",
     Callback = function(value)
-        print(darius.flags.dropdown.Value)
+        print(value)
     end
 })
 
-a = tab:Toggle({
+local a = tab:Toggle({
     Name = "Toggle",
     Default = false,
     LinkKeybind = true,
     Bind = Enum.KeyCode.E,
     FLAG = "toggle_lk",
     Callback = function(value)
-        print(darius.flags.toggle_lk.Value)
+        print(`Toggle: {value}`)
     end
 })
 local b
@@ -144,7 +129,6 @@ b = tab:Toggle({
     Default = false,
     FLAG = "toggle",
     Callback = function(v)
-        print(darius.flags.toggle.Value)
         if v then
             a:Disable()
             b:SetName("Enable first toggle")
@@ -163,20 +147,15 @@ tab:Keybind({
     end
 })
 
-print(darius.flags.slider.Value)
-
 tab:Slider({
     Name = "Slider",
     Min = 0,
     Max = 100,
-    Default = 10,
     FLAG = "slider",
     Callback = function(value)
-        print(darius.flags.slider.Value)
+        print(`Slider: {value}`)
     end
 })
-
-print(darius.flags.slider.Value)
 
 tab:TextBox({
     Name = "TextBox Numbers",
@@ -187,7 +166,7 @@ tab:TextBox({
     Default = "",
     FLAG = "textbox_n",
     Callback = function(value)
-        print(darius.flags.textbox_n.Value)
+        print(`TextBox Numbers: {value}`)
     end
 })
 tab:TextBox({
@@ -199,7 +178,7 @@ tab:TextBox({
     Default = "",
     FLAG = "textbox",
     Callback = function(value)
-        print(darius.flags.textbox.Value)
+        print(`TextBox: {value}`)
     end
 })
 
@@ -272,6 +251,7 @@ tab2:Button({
         })
     end
 })
+darius:LoadConfig()
 
 darius.OnDestruction:Connect(function()
     print("Goodbye Darius!")
