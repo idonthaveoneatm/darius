@@ -4,6 +4,7 @@ return function(property)
 	local data = Bundles.data
 	local theme = Bundles.themeSystem
 	local icons = Bundles.icons
+	local flagCreator = Bundles.flags
 	local services = Bundles.services
 	local UserInputService = services.UserInputService
 	local Fusion = Bundles.Fusion
@@ -21,6 +22,7 @@ return function(property)
 	local connections = utilities.connections
 	local customFont = utilities.customFont
 	local references = utilities.references
+	local randomString = utilities.randomString
 	local drag = utilities.drag
 
 	local simpleElements = require(darius.simpleElements)
@@ -66,8 +68,6 @@ return function(property)
 	local selectedTab = data.find("selectedTab")
 	local currentBinds = data.find("currentBinds")
 	local useConfig = data.find("useConfig")
-	local flags = data.find("flags")
-	local configLoaded = data.find("configLoaded")
 	local searchText = data.find("searchText")
 	local instanceName = data.find("instanceName")
 	local isMobile = data.find("isMobile")
@@ -81,10 +81,10 @@ return function(property)
 	local callback = property.Callback
 	local default = property.Default or value(false)
 	local isEnabled = property.IsEnabled or value(true)
+	local bind = property.Bind
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
 	local keyCode = value()
-	local hasKeyCodeBeenSet = false
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
 		if table.find(_currentBinds, keycode) then
@@ -96,26 +96,29 @@ return function(property)
 			end
 			currentBinds:update("binds", _currentBinds)
 			keyCode:set(keycode)
-			hasKeyCodeBeenSet = true
 		end
 	end
-	if get(linkKeybind) and get(property.Bind) then
-		if not get(useConfig.boolean) then
-			checkKeyCode(get(property.Bind), "At property set")
-		end
-	end
-	local flag = property.FLAG or value("")
-	local hasFlag = false
+	local flag = property.FLAG or value(toggle.uid)
+	local _flag
 	if get(flag) ~= "" then
-		local _names = get(flags.names)
-		assert(not table.find(_names, get(flag)), ('FLAG "%s" already exists'):format(get(flag)))
-		table.insert(_names, get(flag))
-		flags:update("names", _names)
-		hasFlag = true
-		local _specialCase = get(flags.specialCase)
-		_specialCase[get(flag)] = {isToggle = true}
-		flags:update("specialCase", _specialCase)
+		_flag = flagCreator.register(get(flag), {
+			boolean = value(false),
+			keycode = value(nil)
+		},"toggle", get(flag) == toggle.uid)
 	end
+	observe(_flag.status.boolean):onChange(function()
+		if get(isEnabled) then
+			task.spawn(get(callback), get(_flag.status.boolean))
+		end
+	end)
+	observe(_flag.status.keycode):onChange(function()
+		local success, result = pcall(function()
+			return Enum.KeyCode[get(_flag.status.keycode)]
+		end)
+		if success then
+			checkKeyCode(result, "RAHHH")
+		end
+	end)
 
 	-- Variables
 
@@ -126,12 +129,6 @@ return function(property)
 	local selectedAnimation = animate(function()
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
-	local toggled = value(false)
-	observe(toggled):onChange(function()
-		if get(isEnabled) then
-			task.spawn(get(callback), get(toggled))
-		end
-	end)
 	local listening = value(false)
 	local keybindConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if get(isMobile.boolean) then
@@ -146,53 +143,12 @@ return function(property)
 			isListening:update("boolean", false)
 		else
 			if input.KeyCode and input.KeyCode == get(keyCode) and not gameProcessed and not get(isListening.boolean) and get(isEnabled) then
-				toggled:set(not get(toggled))
+				_flag.status.boolean:set(not get(_flag.status.boolean))
 			end
 		end
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
-	local function configLoad()
-		if hasFlag then
-			if get(configLoaded.boolean) then
-				local savedFlag = get(flags.list)[get(flag)]
-				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = {}})
-				if savedFlag and _didPass and savedFlag.boolean then
-					if savedFlag.keycode and get(linkKeybind) then
-						checkKeyCode(Enum.KeyCode[savedFlag.keycode], "From configLoad FLAG")
-					end
-					toggled:set(savedFlag.boolean)
-				end
-				observe(toggled):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = _list[get(flag)] or {}
-					_list[get(flag)].boolean = get(toggled)
-					flags:update("list", _list)
-				end)
-				observe(keyCode):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = _list[get(flag)] or {}
-					_list[get(flag)].keycode = get(keyCode).Name
-					flags:update("list", _list)
-				end)
-				if not savedFlag then
-					task.wait()
-					if get(linkKeybind) then
-						checkKeyCode(get(property.Bind), "From configLoad no FLAG")
-					end
-					toggled:set(get(default))
-				end
-			end
-		else
-			if get(configLoaded.boolean) and not hasKeyCodeBeenSet then
-				task.wait()
-				if get(linkKeybind) then
-					checkKeyCode(get(property.Bind), "From configLoad no FLAG")
-				end
-				toggled:set(get(default))
-			end
-		end
-	end
 
 	-- Toggle
 
@@ -221,7 +177,7 @@ return function(property)
 				dragConnection:Disconnect()
 				dragConnection = nil
 			else
-				toggled:set(not get(toggled))
+				_flag.status.boolean:set(not get(_flag.status.boolean))
 			end
 		end,
 
@@ -323,7 +279,7 @@ return function(property)
 							if not get(isEnabled) then
 								return
 							end
-							toggled:set(not get(toggled))
+							_flag.status.boolean:set(not get(_flag.status.boolean))
 						end,
 
 						[children] = {
@@ -340,7 +296,7 @@ return function(property)
 										Position = UDim2.new(1,0,0.5,0),
 										BackgroundTransparency = selectedAnimation,
 										BackgroundColor3 = animate(function()
-											return get(toggled) and theme.get("toggled") or theme.get("selectedTab")
+											return get(_flag.status.boolean) and theme.get("toggled") or theme.get("selectedTab")
 										end,40,1),
 
 										[children] = {
@@ -355,7 +311,7 @@ return function(property)
 													if not get(isSelected) then
 														return 1
 													end
-													if get(toggled) then
+													if get(_flag.status.boolean) then
 														return 0
 													end
 													return 1
@@ -481,13 +437,32 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) then
-		if get(configLoaded.boolean) then
-			configLoad()
-		else
-			observe(configLoaded.boolean):onChange(configLoad)
-		end
+		observe(_flag.file):onChange(function()
+			local file = get(_flag.file)
+			local noBoolean = true
+			local noKeyCode = true
+			if file.boolean ~= nil then
+				_flag.status.boolean:set(file.boolean)
+				noBoolean = false
+			end
+			if file.keycode ~= nil then
+				_flag.status.keycode:set(file.keycode)
+				noKeyCode = false
+			end
+			if noBoolean then
+				_flag.status.boolean:set(get(default))
+			end
+			if noKeyCode then
+				if bind then
+					_flag.status.keycode:set(get(bind).Name)
+				end
+			end
+		end)
 	else
-		toggled:set(get(default))
+		_flag.status.boolean:set(get(default))
+		if bind then
+			_flag.status.keycode:set(get(bind).Name)
+		end
 	end
 
 	local returnFunctions = {}
@@ -498,14 +473,14 @@ return function(property)
 		name:set(newText)
 	end
 	function returnFunctions:SetValue(newValue:boolean)
-		local _didPass, _failedItems = typecheck({['SetValue'] = newValue}, {SetValue = false})
+		local _didPass, _failedItems = typecheck({['SetValue'] = newValue}, {['SetValue'] = true})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		toggled:set(newValue)
+		_flag.status.boolean:set(newValue)
 	end
 	function returnFunctions:SetBind(newBind:EnumItem)
 		assert(get(linkKeybind), "Requires LinkKeybind")
-		local _didPass, _failedItems = typecheck({['SetBind'] = newBind}, {SetBind = Enum.keyCode.C})
+		local _didPass, _failedItems = typecheck({['SetBind'] = newBind}, {['SetBind'] = Enum.keyCode.C})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
 		checkKeyCode(newBind, "At :SetBind")

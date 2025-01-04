@@ -5,6 +5,7 @@ return function(property)
 	local data = Bundles.data
 	local theme = Bundles.themeSystem
 	local icons = Bundles.icons
+	local flagCreator = Bundles.flags
 	local services = Bundles.services
 		local UserInputService = services.UserInputService
 		local RunService = services.RunService
@@ -78,14 +79,12 @@ return function(property)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local default = property.Default and value(math.clamp(get(property.Default), get(min), get(max))) or value(get(min))
-	local flag = property.FLAG or value("")
-	local hasFlag = false
+	local flag = property.FLAG or value(slider.uid)
+	local _flag
 	if get(flag) ~= "" then
-		local _names = get(flags.names)
-		assert(not table.find(_names, get(flag)), ('FLAG "%s" already exists'):format(get(flag)))
-		table.insert(_names, get(flag))
-		flags:update("names", _names)
-		hasFlag = true
+		_flag = flagCreator.register(get(flag), {
+			percentageOf = value(nil)
+		},"slider", get(flag) == slider.uid)
 	end
 
 	-- Variables
@@ -107,13 +106,13 @@ return function(property)
 		return tonumber(string.format('%.' .. get(roundTo) .. 'f', Value))
 	end
 	local percentage = value(0)
-	local percentageOf = value(get(min))
-	observe(percentageOf):onChange(function()
-		percentage:set(mapValue(get(percentageOf), get(min), get(max), 0, 1))
+	
+	observe(_flag.status.percentageOf):onChange(function()
+		percentage:set(mapValue(get(_flag.status.percentageOf), get(min), get(max), 0, 1))
 		if not get(isEnabled) then
 			return
 		end
-		task.spawn(get(callback), get(percentageOf))
+		task.spawn(get(callback), get(_flag.status.percentageOf))
 	end)
 	local textbuttonRef = value()
 	local textlabelX = value(10)
@@ -124,31 +123,6 @@ return function(property)
 			button1Down:set(false)
 		end
 	end)
-	local function configLoad()
-		if hasFlag then
-			if get(configLoaded.boolean) then
-				local savedFlag = get(flags.list)[get(flag)]
-				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = 0})
-				if savedFlag and _didPass then
-					percentageOf:set(math.clamp(savedFlag, get(min), get(max)))
-				end
-				observe(percentageOf):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = get(percentageOf)
-					flags:update("list", _list)
-				end)
-				if not savedFlag then
-					task.wait()
-					percentageOf:set(get(default))
-				end
-			end
-		else
-			if get(configLoaded.boolean) then
-				task.wait()
-				percentageOf:set(get(default))
-			end
-		end
-	end
 
 	-- Slider
 
@@ -262,10 +236,13 @@ return function(property)
 										AnchorPoint = Vector2.new(1,0.5),
 										Position = UDim2.new(1,0,0.5,0),
 										Text = computed(function()
-											if get(displayAsPercent) then
-												return tostring(round(get(percentage) * 100)).."%"
+											if get(_flag.status.percentageOf) then
+												if get(displayAsPercent) then
+													return tostring(round(get(percentage) * 100)).."%"
+												end
+												return get(_flag.status.percentageOf)
 											end
-											return get(percentageOf)
+											return ""
 										end),
 										TextXAlignment = Enum.TextXAlignment.Right,
 										RichText = true,
@@ -328,7 +305,7 @@ return function(property)
 											local nMPos = UserInputService:GetMouseLocation().X
 											local nX = math.clamp(gPos + (nMPos - mPos) + Diff, 0, get(textbuttonRef).AbsoluteSize.X)
 
-											percentageOf:set(round(mapValue(nX, 0, get(textbuttonRef).AbsoluteSize.X, get(min), get(max))))
+											_flag.status.percentageOf:set(round(mapValue(nX, 0, get(textbuttonRef).AbsoluteSize.X, get(min), get(max))))
 											RunService.RenderStepped:Wait()
 										end
 									end
@@ -398,13 +375,20 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) then
-		if get(configLoaded.boolean) then
-			configLoad()
-		else
-			observe(configLoaded.boolean):onChange(configLoad)
-		end
+		observe(_flag.file):onChange(function()
+			local file = get(_flag.file)
+			local noPercentageOf = true
+			if file ~= nil then
+				_flag.status.percentageOf:set(file)
+				noPercentageOf = false
+			end
+			if noPercentageOf then
+				_flag.status.percentageOf:set(get(default))
+			end
+		end)
 	else
-		percentageOf:set(get(default))
+		_flag.status.percentageOf:set(get(default))
+		print(get(default))
 	end
 
 	local returnFunctions = {}
@@ -418,7 +402,7 @@ return function(property)
 		local _didPass, _failedItems = typecheck({['SetValue'] = newValue}, {SetValue = 0})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		percentageOf:set(math.clamp(newValue, get(min), get(max)))
+		_flag.status.percentageOf:set(math.clamp(newValue, get(min), get(max)))
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)

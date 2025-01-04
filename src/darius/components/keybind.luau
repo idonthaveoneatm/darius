@@ -4,6 +4,7 @@ return function(property)
 	local data = Bundles.data
 	local theme = Bundles.themeSystem
 	local icons = Bundles.icons
+	local flagCreator = Bundles.flags
 	local services = Bundles.services
 	local UserInputService = services.UserInputService
 	local Fusion = Bundles.Fusion
@@ -13,7 +14,6 @@ return function(property)
 		local observe = Fusion.Observer
 		local onevent = Fusion.OnEvent
 		local computed = Fusion.Computed
-		local ref = Fusion.Ref
 
 	local utilities = require(darius.utilities)
 	local get = utilities.get
@@ -58,8 +58,6 @@ return function(property)
 	local selectedTab = data.find("selectedTab")
 	local currentBinds = data.find("currentBinds")
 	local useConfig = data.find("useConfig")
-	local flags = data.find("flags")
-	local configLoaded = data.find("configLoaded")
 	local searchText = data.find("searchText")
 	local isMobile = data.find("isMobile")
 	local instanceName = data.find("instanceName")
@@ -71,10 +69,10 @@ return function(property)
 	local _parent = property.Parent
 	local name = property.Name
 	local callback = property.Callback
+	local bind = property.Bind
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local keyCode = value()
-	local hasKeyCodeBeenSet = false
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
 		if table.find(_currentBinds, keycode) then
@@ -86,26 +84,32 @@ return function(property)
 			end
 			currentBinds:update("binds", _currentBinds)
 			keyCode:set(keycode)
-			hasKeyCodeBeenSet = true
 		end
 	end
-	if property.Bind then
-		if not get(useConfig.boolean) then
-			checkKeyCode(get(property.Bind), "At property set")
-		end
-	end
-	local flag = property.FLAG or value("")
-	local hasFlag = false
+	local flag = property.FLAG or value(keybind.uid)
+	local _flag
 	if get(flag) ~= "" then
-		local _names = get(flags.names)
-		assert(not table.find(_names, get(flag)), ('FLAG "%s" already exists'):format(get(flag)))
-		table.insert(_names, get(flag))
-		flags:update("names", _names)
-		hasFlag = true
-		local _specialCase = get(flags.specialCase)
-		_specialCase[get(flag)] = {isKeybind = true}
-		flags:update("specialCase", _specialCase)
+		_flag = flagCreator.register(get(flag), {
+			coordinate = value(Vector2.new(0,0)),
+			keycode = value(nil),
+			mobile = get(isMobile.boolean)
+		},"keybind", get(flag) == keybind.uid)
 	end
+
+	observe(_flag.status.keycode):onChange(function()
+		if get(keyCode) and get(keyCode).Name == get(_flag.status.keycode) then
+			return
+		end
+		local success, result = pcall(function()
+			return Enum.KeyCode[get(_flag.status.keycode)]
+		end)
+		if success then
+			checkKeyCode(result, "RAHHH")
+		end
+	end)
+	observe(keyCode):onChange(function()
+		_flag.status.keycode:set(get(keyCode).Name)
+	end)
 
 	-- Variables
 
@@ -136,39 +140,6 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
-	local coordinate = value(Vector2.new(0,0))
-	local function configLoad()
-		if hasFlag then
-			if get(configLoaded.boolean) then
-				local savedFlag = get(flags.list)[get(flag)]
-				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = {}})
-				if savedFlag and _didPass then
-					checkKeyCode(Enum.KeyCode[savedFlag.keycode], "From configLoad has FLAG")
-				end
-				observe(keyCode):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = _list[get(flag)] or {}
-					_list[get(flag)].keycode = get(keyCode).Name
-					flags:update("list", _list)
-				end)
-				observe(coordinate):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = _list[get(flag)] or {}
-					_list[get(flag)].coordinate = tostring(get(coordinate))
-					flags:update("list", _list)
-				end)
-				if not savedFlag then
-					task.wait()
-					checkKeyCode(get(property.Bind), "From configLoad no FLAG")
-				end
-			end
-		else
-			if get(configLoaded.boolean) and not hasKeyCodeBeenSet then
-				task.wait()
-				checkKeyCode(get(property.Bind), "From configLoad no FLAG")
-			end
-		end
-	end
 
 	-- Keybind
 
@@ -197,7 +168,7 @@ return function(property)
 			if dragConnection then
 				dragConnection:Disconnect()
 				dragConnection = nil
-				coordinate:set(mobileButton.AbsolutePosition)
+				_flag.status.coordinate:set(mobileButton.AbsolutePosition)
 			else
 				task.spawn(get(callback))
 			end
@@ -360,7 +331,7 @@ return function(property)
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
-							coordinate:set(mobileButton.AbsolutePosition)
+							_flag.status.coordinate:set(mobileButton.AbsolutePosition)
 						end,
 
 						[children] = {
@@ -416,10 +387,22 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) then
-		if get(configLoaded.boolean) then
-			configLoad()
-		else
-			observe(configLoaded.boolean):onChange(configLoad)
+		observe(_flag.file):onChange(function()
+			local file = get(_flag.file)
+			local noKeyCode = true
+			if file.keycode ~= nil then
+				_flag.status.keycode:set(file.keycode)
+				noKeyCode = false
+			end
+			if noKeyCode then
+				if bind then
+					_flag.status.keycode:set(get(bind).Name)
+				end
+			end
+		end)
+	else
+		if bind then
+			_flag.status.keycode:set(get(bind).Name)
 		end
 	end
 

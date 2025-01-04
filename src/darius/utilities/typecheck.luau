@@ -3,7 +3,7 @@ return function(variables:table, correctVariables:table, ignoreList:table?):any
     local didPass = true
     local itemsThatFailed = {}
     for key, correctType in correctVariables do
-        if (not variables[key] or typeof(variables[key]) ~= typeof(correctType)) and not table.find(ignoreList, key) then
+        if (variables[key] == nil or typeof(variables[key]) ~= typeof(correctType)) and not table.find(ignoreList, key) then
             didPass = false
             table.insert(itemsThatFailed,`{key} expected: {typeof(correctType)} got: {typeof(variables[key])}`)
         end

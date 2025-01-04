@@ -4,6 +4,7 @@ return function(property)
 	local data = bundles.data
 	local theme = bundles.themeSystem
 	local icons = bundles.icons
+	local flagCreator = bundles.flags
 	local Fusion = bundles.Fusion
 		local new = Fusion.New
 		local children = Fusion.Children
@@ -58,8 +59,6 @@ return function(property)
 
 	local selectedTab = data.find("selectedTab")
 	local useConfig = data.find("useConfig")
-	local flags = data.find("flags")
-	local configLoaded = data.find("configLoaded")
 	local searchText = data.find("searchText")
 	local textbox = data.add(property)
 
@@ -75,14 +74,12 @@ return function(property)
 	local onLeave = property.OnLeave or value(false)
 	local clearTextOnFocus = property.ClearTextOnFocus or value(false)
 	local placeHolder = property.Placeholder or value("")
-	local flag = property.FLAG or value("")
-	local hasFlag = false
+	local flag = property.FLAG or value(textbox.uid)
+	local _flag
 	if get(flag) ~= "" then
-		local _names = get(flags.names)
-		assert(not table.find(_names, get(flag)), ('FLAG "%s" already exists'):format(get(flag)))
-		table.insert(_names, get(flag))
-		flags:update("names", _names)
-		hasFlag = true
+		_flag = flagCreator.register(get(flag), {
+			correctText = value(""),
+		},"textbox", get(flag) == textbox.uid)
 	end
 
 	-- Variables
@@ -95,17 +92,18 @@ return function(property)
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
 	local textboxRef = value()
-	local updatedText = value("")
 	local focused = value(false)
-	local lastCorrectText = value(get(updatedText))
+	local correctText = value("")
+	local lastCorrectText = value(get(_flag.status.correctText))
 	local lastCalled = value("")
-	observe(updatedText):onChange(function()
+
+	observe(correctText):onChange(function()
 		if get(onlyNumbers) then
-			if tonumber(get(updatedText)) or get(updatedText) == "" then
-				lastCorrectText:set(get(updatedText))
+			if tonumber(get(correctText)) or get(correctText) == "" then
+				lastCorrectText:set(get(correctText))
 			end
 		else
-			lastCorrectText:set(get(updatedText))
+			lastCorrectText:set(get(correctText))
 		end
 		local textBox = get(textboxRef)
 		textBox.Text = get(lastCorrectText)
@@ -113,81 +111,38 @@ return function(property)
 			return
 		end
 		if get(onlyNumbers) then
-			if (tonumber(get(updatedText)) or get(updatedText) == "") and get(lastCalled) ~= get(updatedText) then
-				task.spawn(get(callback), get(updatedText))
-				lastCalled:set(get(updatedText))
+			if (tonumber(get(correctText)) or get(correctText) == "") and get(lastCalled) ~= get(correctText) then
+				task.spawn(get(callback), get(correctText))
+				_flag.status.correctText:set(get(correctText))
+				lastCalled:set(get(correctText))
 			end
 		else
-			if get(lastCalled) == get(updatedText) then
+			if get(lastCalled) == get(correctText) then
 				return
 			end
-			task.spawn(get(callback), get(updatedText))
-			lastCalled:set(get(updatedText))
+			task.spawn(get(callback), get(correctText))
+			_flag.status.correctText:set(get(correctText))
+			lastCalled:set(get(correctText))
 		end
 	end)
 	observe(focused):onChange(function()
 		if get(onLeave) and not get(focused) then
 			if get(onlyNumbers) then
-				if (tonumber(get(updatedText)) or get(updatedText) == "") and get(lastCalled) ~= get(updatedText) then
-					task.spawn(get(callback), get(updatedText))
-					lastCalled:set(get(updatedText))
+				if (tonumber(get(correctText)) or get(correctText) == "") and get(lastCalled) ~= get(correctText) then
+					task.spawn(get(callback), get(correctText))
+					_flag.status.correctText:set(get(correctText))
+					lastCalled:set(get(correctText))
 				end
 			else
-				if get(lastCalled) == get(updatedText) then
+				if get(lastCalled) == get(correctText) then
 					return
 				end
-				task.spawn(get(callback), get(updatedText))
-				lastCalled:set(get(updatedText))
+				task.spawn(get(callback), get(correctText))
+				_flag.status.correctText:set(get(correctText))
+				lastCalled:set(get(correctText))
 			end
 		end
 	end)
-	local function configLoad()
-		if hasFlag then
-			if get(configLoaded.boolean) then
-				local savedFlag = get(flags.list)[get(flag)]
-				local _didPass = typecheck({[get(flag)] = savedFlag},{[get(flag)] = ""})
-				if savedFlag and _didPass then
-					if get(onLeave) then
-						focused:set(true)
-					end
-					updatedText:set(savedFlag)
-					if get(onLeave) then
-						focused:set(false)
-					end
-				end
-				observe(lastCorrectText):onChange(function()
-					local _list = get(flags.list)
-					_list[get(flag)] = get(lastCorrectText)
-					flags:update("list", _list)
-				end)
-				if not savedFlag then
-					task.wait()
-					if get(default) ~= "" then
-						if get(onLeave) then
-							focused:set(true)
-						end
-						updatedText:set(get(default))
-						if get(onLeave) then
-							focused:set(false)
-						end
-					end
-				end
-			end
-		else
-			if get(configLoaded.boolean) then
-				task.wait()
-				if get(default) ~= "" then
-					if get(onLeave) then
-						focused:set(true)
-					end
-					updatedText:set(get(default))
-					if get(onLeave) then
-						focused:set(false)
-					end
-				end
-			end
-		end
-	end
 
 	-- TextBox
 
@@ -332,7 +287,7 @@ return function(property)
 								[onevent "Changed"] = function(changedProperty)
 									local _textbox = get(textboxRef)
 									if _textbox and _textbox.Text and changedProperty == "Text" then
-										updatedText:set(_textbox.Text)
+										correctText:set(_textbox.Text)
 									end
 								end,
 
@@ -357,20 +312,36 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) then
-		if get(configLoaded.boolean) then
-			configLoad()
-		else
-			observe(configLoaded.boolean):onChange(configLoad)
-		end
+		observe(_flag.file):onChange(function()
+			local file = get(_flag.file)
+			local noCorrectText = true
+			if file ~= nil then
+				if get(onLeave) then
+					focused:set(true)
+				end
+				correctText:set(file)
+				if get(onLeave) then
+					focused:set(false)
+				end
+				noCorrectText = false
+			end
+			if noCorrectText then
+				if get(onLeave) then
+					focused:set(true)
+				end
+				correctText:set(get(default))
+				if get(onLeave) then
+					focused:set(false)
+				end
+			end
+		end)
 	else
-		if get(default) ~= "" then
-			if get(onLeave) then
-				focused:set(true)
-			end
-			updatedText:set(get(default))
-			if get(onLeave) then
-				focused:set(false)
-			end
+		if get(onLeave) then
+			focused:set(true)
+		end
+		correctText:set(get(default))
+		if get(onLeave) then
+			focused:set(false)
 		end
 	end
 
@@ -385,7 +356,7 @@ return function(property)
 		local _didPass, _failedItems = typecheck({['SetInput'] = newInput}, {SetInput = get(onlyNumbers) and 1 or ""})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		updatedText:set(newInput)
+		correctText:set(newInput)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
