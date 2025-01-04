@@ -473,7 +473,7 @@ return function(property)
 		name:set(newText)
 	end
 	function returnFunctions:SetValue(newValue:boolean)
-		local _didPass, _failedItems = typecheck({['SetValue'] = newValue}, {['SetValue'] = false})
+		local _didPass, _failedItems = typecheck({['SetValue'] = newValue}, {['SetValue'] = true})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
 		_flag.status.boolean:set(newValue)

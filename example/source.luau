@@ -71,10 +71,14 @@ for i=1,10 do
     })
 end
 
+local a
+local togled = false
+
 tab:Button({
     Name = "Button",
     Callback = function()
-        print("Hello World!")
+        a:SetValue(togled)
+        togled = not togled
     end
 })
 
@@ -124,7 +128,7 @@ tab:Dropdown({
     end
 })
 
-local a = tab:Toggle({
+a = tab:Toggle({
     Name = "Toggle",
     Default = false,
     LinkKeybind = true,
@@ -159,15 +163,20 @@ tab:Keybind({
     end
 })
 
+print(darius.flags.slider.Value)
+
 tab:Slider({
     Name = "Slider",
     Min = 0,
     Max = 100,
+    Default = 10,
     FLAG = "slider",
     Callback = function(value)
         print(darius.flags.slider.Value)
     end
 })
+
+print(darius.flags.slider.Value)
 
 tab:TextBox({
     Name = "TextBox Numbers",

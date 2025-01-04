@@ -81,11 +81,14 @@ return function(target)
         })
     end
 
+    local a
+    local toggled = false
     tab:Button({
         Name = "Button",
         DisabledText = "heyy",
         Callback = function()
-            --print("Hello World!")
+            a:SetValue(toggled)
+            toggled = not toggled
         end
     })
 
@@ -132,7 +135,7 @@ return function(target)
         end
     })
 
-    local a = tab:Toggle({
+    a = tab:Toggle({
         Name = "Toggle",
         --Default = true,
         LinkKeybind = true,
