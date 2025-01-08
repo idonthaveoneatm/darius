@@ -100,7 +100,7 @@ return function(target)
     return cleanedItem or itemToClean
     end
 
-    tab:Dropdown({
+    local d1 = tab:Dropdown({
         Name = "Multiselect Dropdown",
         Items = {
             {
@@ -118,12 +118,12 @@ return function(target)
         Multiselect = true,
         Regex = ExtractItem,
         FLAG = "dropdown_m",
-        Default = {"apple","banana"},
+        Default = {"apple"},
         Callback = function(value)
             print(value)
         end
     })
-    tab:Dropdown({
+    local d2 = tab:Dropdown({
         Name = "Dropdown",
         Items = {'Legit', 'Blatant'},
         Multiselect = false,
@@ -134,6 +134,10 @@ return function(target)
             
         end
     })
+
+    d1:SetItems({"apple", "fruit", "banana", "rappa"})
+    d2:SelectItem("Legit")
+    d1:SelectItems({"banana", "legit", "rappa"})
 
     a = tab:Toggle({
         Name = "Toggle",

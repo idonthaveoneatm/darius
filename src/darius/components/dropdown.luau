@@ -545,12 +545,10 @@ return function(property)
 
 		name:set(newText)
 	end
-	--[[
 	function returnFunctions:SetItems(newTable) -- Sets a new table of items
 		local _didPass, _failedItems = typecheck({['SetItems'] = newTable}, {SetItems = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		selectedItems:set({})
 		items:set(newTable)
 		local multiselectTable = {}
 		local foundAnything = false
@@ -570,18 +568,18 @@ return function(property)
 			else
 				if get(lastReturnedValue) == cleanedItem then
 					foundAnything = true
-					task.spawn(get(callback), cleanedItem)
+					_flag.status.item:set(cleanedItem)
 					break
 				end
 			end
 		end
 		if foundAnything then
 			if get(multiselect) then
-				selectedItems:set(multiselectTable)
+				_flag.status.items:set(multiselectTable)
 			end
 		end
-	end]]
-	--[[
+	end
+
 	function returnFunctions:SelectItem(item) -- Sets item used when Multiselect is false
 		assert(not get(multiselect), ":SelectItem requires Multiselect to be false")
 		local _didPass, _failedItems = typecheck({['SelectItem'] = item}, {SelectItem = ""})
@@ -600,9 +598,8 @@ return function(property)
 			end
 		end
 		assert(hasItem, ":SelectItem couldn't find "..item)
-		selectedItems:set({item})
-	end]]
-	--[[
+		_flag.status.item:set(item)
+	end
 	function returnFunctions:SelectItems(newSelecteds) -- Sets items used when Multiselect is true
 		assert(get(multiselect), ":SelectItems requires Multiselect to be true")
 		local _didPass, _failedItems = typecheck({['SelectItems'] = newSelecteds}, {SelectItems = {}})
@@ -620,12 +617,11 @@ return function(property)
 			if found then
 				newSelecteds[i] = get(regex)(v)
 			else
-				warn(":SelectItems couldn't find", v, "in Items. Removing it.")
-				newSelecteds[i] = nil
+				table.remove(newSelecteds, i)
 			end
 		end
-		selectedItems:set(newSelecteds)
-	end]]
+		_flag.status.items:set(newSelecteds)
+	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
 	end
