@@ -33,7 +33,7 @@ return function(target)
         Description = "What the sigma this isn't Quantum UI",
         HideBind = Enum.KeyCode.T,
         --UseConfig = true,
-        Config = "test",
+        --Config = "test",
         IsMobile = false,
         Theme = {
             background = Color3.fromHex("#D6DCE0"),
@@ -58,16 +58,9 @@ return function(target)
         Parent = target
     })
 
-    --print("UseConfig=false\n\tNo LoadConfig\n\tall defaults")
-    for i,v in fakeData do
-        darius.flags[i].OnChange:Connect(function(value)
-            print(`OnChange {i}: "{value}"`, value)
-        end)
-    end
-
 
     local tab = window:Tab({
-        Name = "Autofarm",
+        Name = "Main",
         --Image = randomIcon()
     })
     local tab2 = window:Tab({
@@ -81,6 +74,14 @@ return function(target)
         })
     end
 
+    tab:ColorPicker({
+        Name = "Colorpicker",
+        Callback = function(value)
+            print(value)
+        end
+    })
+
+    --[[
     local a
     local toggled = false
     tab:Button({
@@ -118,7 +119,7 @@ return function(target)
         Multiselect = true,
         Regex = ExtractItem,
         FLAG = "dropdown_m",
-        Default = {"apple"},
+        --Default = {"apple"},
         Callback = function(value)
             print(value)
         end
@@ -129,15 +130,15 @@ return function(target)
         Multiselect = false,
         FLAG = "dropdown",
         Regex = ExtractItem,
-        Default = "Blatant",
+        --Default = "Blatant",
         Callback = function(value)
-            
+
         end
     })
 
     d1:SetItems({"apple", "fruit", "banana", "rappa"})
-    d2:SelectItem("Legit")
-    d1:SelectItems({"banana", "legit", "rappa"})
+    --d2:SelectItem("Legit")
+    --d1:SelectItems({"banana", "legit", "rappa"})
 
     a = tab:Toggle({
         Name = "Toggle",
@@ -152,7 +153,7 @@ return function(target)
     local b
     b = tab:Toggle({
         Name = "the toggle",
-        Default = true,
+        --Default = true,
         FLAG = "toggle",
         Callback = function(v)
             print(v)
@@ -185,7 +186,7 @@ return function(target)
         ClearTextOnFocus = false,
         OnlyNumbers = true,
         OnLeave = true,
-        Default = "12121212",
+        --Default = "12121212",
         FLAG = "textbox_n",
         Callback = function(value)
             print(`TextBox Numbers: {value}`)

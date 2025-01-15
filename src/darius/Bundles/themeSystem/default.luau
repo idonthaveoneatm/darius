@@ -1,6 +1,7 @@
 return {
     background = Color3.fromHex("#2C2F33"),
     background2 = Color3.fromHex("#222427"),
+    background3 = Color3.fromHex("#1A1A1B"),
 
     text = Color3.fromHex("#DCE1E5"),
     text2 = Color3.fromHex("#737C8A"),

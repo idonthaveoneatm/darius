@@ -198,7 +198,7 @@ return function(property)
 				[children] = {
 					UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,6)),
 					UIPadding(0,8),
-					new "TextLabel" { -- Name
+					new "TextLabel" {
 						FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 						Size = UDim2.new(0.5,-6,0,18),
 						BackgroundTransparency = 1,
@@ -211,7 +211,7 @@ return function(property)
 						TextXAlignment = Enum.TextXAlignment.Left,
 						RichText = true
 					},
-					new "Frame" { -- Slider
+					new "Frame" {
 						Size = UDim2.new(0.5,0,1,0),
 						AnchorPoint = Vector2.new(1,0.5),
 						Position = UDim2.new(1,0,0.5,0),
@@ -388,7 +388,6 @@ return function(property)
 		end)
 	else
 		_flag.status.percentageOf:set(get(default))
-		print(get(default))
 	end
 
 	local returnFunctions = {}

@@ -12,5 +12,6 @@ return {
     ['input'] = "rbxassetid://10734982297",
     ['search'] = "rbxassetid://10734943674",
     ['finger'] = "rbxassetid://10734929723",
-    ['alert'] = "rbxassetid://10709752996"
+    ['alert'] = "rbxassetid://10709752996",
+    ['paint'] = "rbxassetid://10734910187"
 }
