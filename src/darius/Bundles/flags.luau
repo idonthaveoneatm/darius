@@ -68,6 +68,24 @@ local types = {
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
         end))
+    end,
+    ['colorpicker'] = function(flag)
+        local color = flag.status.color
+        local transparency = flag.status.transparency
+        connections.add(observe(color):onChange(function()
+            if not flag.private then
+                task.spawn(funcs.export)
+            end
+            flag.user.Value = {get(color), get(transparency)}
+            flag.bindableEvent:Fire(unpack(flag.user.Value))
+        end))
+        connections.add(observe(transparency):onChange(function()
+            if not flag.private then
+                task.spawn(funcs.export)
+            end
+            flag.user.Value = {get(color), get(transparency)}
+            flag.bindableEvent:Fire(unpack(flag.user.Value))
+        end))
     end
 }
 local cleaner = {
@@ -99,6 +117,9 @@ local cleaner = {
     end,
     ['textbox'] = function(status)
         return get(status.correctText)
+    end,
+    ['colorpicker'] = function(status)
+        return {color = get(status.color), transparency = get(status.transparency)}
     end
 }
 

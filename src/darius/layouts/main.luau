@@ -33,7 +33,7 @@ return function(property, bindableEvent)
 	local animate = utilities.animate
 	local connections = utilities.connections
 
-	local dariusWarn = require(script.Parent.Parent.components.warn)
+	local dariusWarn = require(script.Parent.Parent.components.warn)[1]
 
 	-- References
 
@@ -485,7 +485,7 @@ return function(property, bindableEvent)
 		AnchorPoint = Vector2.new(0.5,0.5),
 		Position = UDim2.fromScale(0.5,0.5),
 		TextScaled = true,
-		Text = "Hide UI",
+		Text = "Toggle UI",
 		FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 		TextColor3 = theme.mobileButtonText,
 		BackgroundColor3 = theme.mobileButtonBackground,

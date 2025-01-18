@@ -49,9 +49,13 @@ List of all color variables:
 
 background
 background2
+
 text
 text2
+
 selectedTab
+
+colorpickerBar
 
 notificationButton
 
@@ -272,6 +276,27 @@ local textbox = tab:TextBox({
 ```lua
 textbox:SetInput("New Hey")
 ```
+## Create a Color Picker
+```lua
+local colorpicker = tab:ColorPicker({
+    Name = "Color Picker",
+    Callback = function(color, transparency): Color3, number
+
+    end,
+
+    -- Optional
+    IsEnabled = false,
+    DisabledText = "Hey you cant use this!",
+    FLAG = "colorpicker",
+    Color = Color3.fromHex("#a49ae6"), -- Best color
+    Transparency = 0.5
+})
+```
+### Returned Functions
+```lua
+colorpicker:SetColor(Color3.new(1,0,0))
+colorpicker:SetTransparency(0)
+```
 ## Create a Label
 ```lua
 local label = tab:Label("heyo")
@@ -296,8 +321,12 @@ paragraph:SetBody("New Title")
 ```lua
 tab:Divider()
 ```
+## Create a Keybind List
+```lua
+tab:KeybindList()
+```
 ## Universal Returned Functions
-**EXCLUDES** :Tab :Window :Label :Divider :Paragraph
+**EXCLUDES** :Tab :Window :Label :Divider :Paragraph :KeybindList
 ```lua
 <Component>:Enable()
 <Component>:Disable()

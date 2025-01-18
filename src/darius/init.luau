@@ -18,6 +18,8 @@ local mainLayout = require(script.layouts.main)
 
 local flagCreator = require(script.Bundles.flags)
 
+local setWarnTitle = require(script.components.warn)[2]
+
 local function addComponent(name, parent, properties)
 	properties.Parent = parent
 	return require(script.components[name])(properties)
@@ -66,6 +68,10 @@ function darius:Window(windowProperty)
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
+	-- Warn
+
+	setWarnTitle(windowProperty.Title)
+
 	-- Theme
 
 	theme.create(windowProperty.Theme or {})
@@ -79,7 +85,7 @@ function darius:Window(windowProperty)
 	data.add({binds = {}}, "currentBinds")
 	data.add({string = ""}, "searchText")
 	data.add({boolean = true}, "isVisible")
-	local isMobile = data.add({boolean = windowProperty.IsMobile}, "isMobile")
+	data.add({boolean = windowProperty.IsMobile}, "isMobile")
 	data.add({boolean = false}, "isListening")
 	local flags = data.find("flags")
 	local configLoaded = data.add({boolean = false}, "configLoaded")
@@ -173,6 +179,13 @@ function darius:Window(windowProperty)
 		end
 		function components:Divider()
 			return addComponent("divider", tabFrame, {tab = tab})
+		end
+		function components:ColorPicker(property)
+			property.tab = tab
+			return addComponent("colorpicker", tabFrame, property)
+		end
+		function components:KeybindList()
+			return addComponent("keybindList", tabFrame, {tab = tab})
 		end
 		return tabs[tab.uid]
 	end

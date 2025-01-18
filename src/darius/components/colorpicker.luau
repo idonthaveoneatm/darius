@@ -4,6 +4,10 @@ return function(property)
 	local data = Bundles.data
 	local theme = Bundles.themeSystem
 	local icons = Bundles.icons
+	local flagCreator = Bundles.flags
+	local services = Bundles.services
+	local RunService = services.RunService
+	local UserInputService = services.UserInputService
 	local Fusion = Bundles.Fusion
 		local new = Fusion.New
 		local children = Fusion.Children
@@ -19,10 +23,12 @@ return function(property)
 	local typecheck = utilities.typecheck
 	local customFont = utilities.customFont
 	local randomString = utilities.randomString
+	local connections = utilities.connections
 
 	local simpleElements = require(darius.simpleElements)
 	local UIListLayout = simpleElements.UIListLayout
 	local UIPadding = simpleElements.UIPadding
+	local UIAspectRatioConstraint = simpleElements.UIAspectRatioConstraint
 	local UITextSizeConstraint = simpleElements.UITextSizeConstraint
 	local UICorner = simpleElements.UICorner
 	local SO = Enum.SortOrder
@@ -36,10 +42,16 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
-        Callback = function()end
+        Callback = function()end,
+		FLAG = "",
+		Color = Color3.new(),
+		Transparency = 0
 	},{
 		property.IsEnabled and "" or "IsEnabled",
-		property.DisabledText and "" or "DisabledText"
+		property.DisabledText and "" or "DisabledText",
+		property.FLAG and "" or "FLAG",
+		property.Color and "" or "Color",
+		property.Transparency and "" or "Transparency"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -47,7 +59,8 @@ return function(property)
 
 	local selectedTab = data.find("selectedTab")
 	local searchText = data.find("searchText")
-	local button = data.add(property)
+	local useConfig = data.find("useConfig")
+	local colorpicker = data.add(property)
 
 	-- Properties
 
@@ -56,21 +69,42 @@ return function(property)
 	local callback = property.Callback
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local _color = property.Color or value(Color3.new(1))
+	local _transparency = property.Transparency or value(0)
+	local flag = property.FLAG or value(colorpicker.uid)
+	local _flag
+	if get(flag) ~= "" then
+		_flag = flagCreator.register(get(flag), {
+			color = value(Color3.new(1)),
+			transparency = value(0)
+		},"colorpicker", get(flag) == colorpicker.uid)
+	end
+	observe(_flag.status.color):onChange(function()
+		if get(isEnabled) then
+			task.spawn(get(callback), get(_flag.status.color), get(_flag.status.transparency))
+		end
+	end)
+	observe(_flag.status.transparency):onChange(function()
+		if get(isEnabled) then
+			task.spawn(get(callback), get(_flag.status.color), get(_flag.status.transparency))
+		end
+	end)
+	local color = _flag.status.color
+	local transparency = _flag.status.transparency
 
 	-- Variables
 
-	local isSelected = value(get(selectedTab.string) == get(button.tab).uid)
+	local isSelected = value(get(selectedTab.string) == get(colorpicker.tab).uid)
 	observe(selectedTab.string):onChange(function()
-		isSelected:set(get(selectedTab.string) == get(button.tab).uid)
+		isSelected:set(get(selectedTab.string) == get(colorpicker.tab).uid)
 	end)
 	local selectedAnimation = animate(function()
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
 	local dropped = value(false)
-	local transparency = value(false)
+	local transparencyAnim = value(false)
 	local droppedFinished = value(false)
 
-	local color = value(Color3.fromRGB(255,0,0))
 	local hexCodeTextBox = value()
 	local hexCodeLength = value(0)
 
@@ -80,7 +114,16 @@ return function(property)
 	local RGBTextBox = value()
 	local RGBLength = value(0)
 
-	-- Button
+	local saturationValue = value()
+	local saturationValueDown = value(false)
+
+	local hue = value()
+	local hueDown = value(false)
+
+	local transparencyRef = value()
+	local transparencyDown = value(false)
+
+	-- Colorpicker
 
 	new "TextButton" {
 		Interactable = computed(function()
@@ -103,19 +146,19 @@ return function(property)
 			if not get(isSelected) then
 				return 1
 			end
-			return get(transparency) and 0 or 1
+			return get(transparencyAnim) and 0 or 1
 		end,40,1),
 		BackgroundColor3 = theme.background2,
 
 		[onevent "Activated"] = function()
-			if get(transparency) then
+			if get(transparencyAnim) then
 				droppedFinished:set(false)
 				task.wait(0.15)
 				dropped:set(not get(dropped))
 				task.wait(0.15)
-				transparency:set(not get(transparency))
+				transparencyAnim:set(not get(transparencyAnim))
 			else
-				transparency:set(not get(transparency))
+				transparencyAnim:set(not get(transparencyAnim))
 				task.wait(0.15)
 				dropped:set(not get(dropped))
 				task.wait(0.15)
@@ -179,9 +222,226 @@ return function(property)
 					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,8)),
 					new "Frame" {
 						Visible = dropped,
-						Size = UDim2.new(1,0,1,-44),
+						Size = UDim2.new(1,0,0,120-44),
 						BackgroundTransparency = 1,
 
+						[children] = {
+							UIPadding(0,8),
+							UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Right,VA.Top,UDim.new(0,8)),
+							new "TextButton" { -- Saturation and Value
+								Size = UDim2.fromScale(0,1),
+								BackgroundTransparency = animate(function()
+									if not get(isSelected) then
+										return 1
+									end
+									return get(droppedFinished) and 0 or 1
+								end,40,1),
+
+								[ref] = saturationValue,
+
+								[onevent "InputBegan"] = function(input)
+									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+										return
+									end
+									saturationValueDown:set(true)
+									local _changed
+									_changed = input.Changed:Connect(function()
+										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+											saturationValueDown:set(false)
+											_changed:Disconnect()
+										end
+									end)
+								end,
+
+								[children] = {
+									UIAspectRatioConstraint(2,Enum.AspectType.ScaleWithParentSize,Enum.DominantAxis.Height),
+									new "UIGradient" {
+										Color = computed(function()
+											return ColorSequence.new {
+												ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+												ColorSequenceKeypoint.new(1, Color3.fromHSV(({get(color):ToHSV()})[1],1,1)),
+											  }
+										end)
+									},
+									new "Frame" {
+										Size = UDim2.fromScale(1,1),
+										BackgroundTransparency = animate(function()
+											if not get(isSelected) then
+												return 1
+											end
+											return get(droppedFinished) and 0 or 1
+										end,40,1),
+
+										[children] = {
+											new "UIGradient" {
+												Rotation = 270,
+												Color = ColorSequence.new {
+													ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
+													ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0)),
+												},
+												Transparency = computed(function()
+													return NumberSequence.new {
+														NumberSequenceKeypoint.new(0, 0),
+														NumberSequenceKeypoint.new(1, 1),
+													  }
+												end)
+											}
+										}
+									},
+									new "Frame" {
+										ZIndex = 2,
+										AnchorPoint = Vector2.new(0.5,0.5),
+										BackgroundColor3 = computed(function()
+											local _,_,_val = get(color):ToHSV()
+											return Color3.fromHSV(0,0,1-_val)
+										end),
+										BackgroundTransparency = animate(function()
+											if not get(isSelected) then
+												return 1
+											end
+											return get(droppedFinished) and 0 or 1
+										end,40,1),
+										Size = UDim2.fromOffset(4,4),
+										Position = computed(function()
+											local _,_sat,_val = get(color):ToHSV()
+											return UDim2.fromScale(_sat, 1-_val)
+										end)
+									}
+								}
+							},
+							new "TextButton" { -- Hue
+								Size = UDim2.new(0,36,1),
+								BackgroundTransparency = animate(function()
+									if not get(isSelected) then
+										return 1
+									end
+									return get(droppedFinished) and 0 or 1
+								end,40,1),
+
+								[onevent "InputBegan"] = function(input)
+									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+										return
+									end
+									hueDown:set(true)
+									local _changed
+									_changed = input.Changed:Connect(function()
+										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+											hueDown:set(false)
+											_changed:Disconnect()
+										end
+									end)
+								end,
+
+								[ref] = hue,
+
+								[children] = {
+									new "UIGradient" {
+										Rotation = 90,
+										Color = ColorSequence.new {
+											ColorSequenceKeypoint.new(0, Color3.fromHSV(1, 1, 1)),
+											ColorSequenceKeypoint.new(0.1, Color3.fromHSV(0.9, 1, 1)),
+											ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.8, 1, 1)),
+											ColorSequenceKeypoint.new(0.3, Color3.fromHSV(0.7, 1, 1)),
+											ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.6, 1, 1)),
+											ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
+											ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.4, 1, 1)),
+											ColorSequenceKeypoint.new(0.7, Color3.fromHSV(0.3, 1, 1)),
+											ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.2, 1, 1)),
+											ColorSequenceKeypoint.new(0.9, Color3.fromHSV(0.1, 1, 1)),
+											ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 1, 1)),
+										}
+									},
+									new "Frame" {
+										AnchorPoint = Vector2.new(0,0.5),
+										BackgroundColor3 = theme.colorpickerBar,
+										Size = UDim2.new(1,0,0,2),
+										BackgroundTransparency = animate(function()
+											if not get(isSelected) then
+												return 1
+											end
+											return get(droppedFinished) and 0 or 1
+										end,40,1),
+										Position = computed(function()
+											local _hue = get(color):ToHSV()
+											return UDim2.fromScale(0,1 - _hue)
+										end)
+									}
+								}
+							},
+							new "ImageButton" { -- Transparency
+								ZIndex = 2,
+								Size = UDim2.new(0,36,1),
+								BackgroundTransparency = 1,
+								Image = "rbxassetid://15612242981",
+								ScaleType = Enum.ScaleType.Crop,
+								ImageTransparency = animate(function()
+									if not get(isSelected) then
+										return 1
+									end
+									return get(droppedFinished) and 0 or 1
+								end,40,1),
+
+								[onevent "InputBegan"] = function(input)
+									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+										return
+									end
+									transparencyDown:set(true)
+									local _changed
+									_changed = input.Changed:Connect(function()
+										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+											transparencyDown:set(false)
+											_changed:Disconnect()
+										end
+									end)
+								end,
+
+								[ref] = transparencyRef,
+
+								[children] = {
+									new "Frame" {
+										Size = UDim2.fromScale(1,1),
+										BackgroundTransparency = animate(function()
+											if not get(isSelected) then
+												return 1
+											end
+											return get(droppedFinished) and 0 or 1
+										end,40,1),
+
+										[children] = {
+											new "UIGradient" {
+												Rotation = 90,
+												Color = computed(function()
+													return ColorSequence.new {
+														ColorSequenceKeypoint.new(0, get(color)),
+														ColorSequenceKeypoint.new(1, get(color)),
+													  }
+												end),
+												Transparency = computed(function()
+													return NumberSequence.new {
+														NumberSequenceKeypoint.new(0, 0),
+														NumberSequenceKeypoint.new(1, 1),
+													  }
+												end)
+											}
+										}
+									},
+									new "Frame" {
+										AnchorPoint = Vector2.new(0,0.5),
+										BackgroundColor3 = theme.colorpickerBar,
+										BackgroundTransparency = animate(function()
+											if not get(isSelected) then
+												return 1
+											end
+											return get(droppedFinished) and 0 or 1
+										end,40,1),
+										Size = UDim2.new(1,0,0,2),
+										Position = computed(function()
+											return UDim2.fromScale(0,get(transparency))
+										end)
+									}
+								}
+							},
+						}
 					},
 					new "Frame" {
 						Size = UDim2.new(1,-136,0,36),
@@ -446,6 +706,12 @@ return function(property)
 						}
 					},
 					new "TextButton" {
+						Interactable = computed(function()
+							if not get(isEnabled) then
+								return false
+							end
+							return get(isSelected)
+						end),
 						Size = UDim2.new(0,100,0,36),
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
@@ -476,6 +742,12 @@ return function(property)
 										end,40,1)
 									},
 									new "TextBox" {
+										Interactable = computed(function()
+											if not get(isEnabled) then
+												return false
+											end
+											return get(isSelected)
+										end),
 										Name = randomString(8),
 										BackgroundTransparency = 1,
 										Size = computed(function()
@@ -484,6 +756,7 @@ return function(property)
 										PlaceholderText = "Hex",
 										PlaceholderColor3 = theme.text2,
 										TextColor3 = theme.text,
+										TextTransparency = selectedAnimation,
 										Text = computed(function()
 											return "#"..get(color):ToHex()
 										end),
@@ -549,9 +822,10 @@ return function(property)
 								Size = UDim2.fromOffset(24,24),
 								Image = icons.paint,
 								ImageColor3 = color,
-								BackgroundTransparency = computed(function()
-									return get(isSelected) and 1 or 1
-								end),
+								BackgroundTransparency = 1,
+								ImageTransparency = animate(function()
+									return not get(isSelected) and 1 or get(transparency)
+								end,40,1),
 
 								[children] = {
 									UICorner(6)
@@ -564,6 +838,60 @@ return function(property)
 		}
 	}
 
+	connections.add(RunService.Heartbeat:Connect(function()
+		if get(saturationValueDown) then
+			local _saturationValue = get(saturationValue)
+			local newSV = UserInputService:GetMouseLocation() - _saturationValue.AbsolutePosition
+			newSV = Vector2.new(math.clamp(newSV.X, 0, _saturationValue.AbsoluteSize.X), math.clamp(newSV.Y, 0, _saturationValue.AbsoluteSize.Y))
+			local _hue = get(color):ToHSV()
+			color:set(Color3.fromHSV(_hue, newSV.X/_saturationValue.AbsoluteSize.X,(_saturationValue.AbsoluteSize.Y - newSV.Y)/_saturationValue.AbsoluteSize.Y))
+		end
+		if get(hueDown) then
+			local _hue = get(hue)
+			local newHue = UserInputService:GetMouseLocation() - _hue.AbsolutePosition
+			newHue = Vector2.new(newHue.X, math.clamp(newHue.Y, 0, _hue.AbsoluteSize.Y))
+			local _,_sat,_val = get(color):ToHSV()
+			color:set(Color3.fromHSV((_hue.AbsoluteSize.Y - newHue.Y)/_hue.AbsoluteSize.Y, _sat, _val))
+		end
+		if get(transparencyDown) then
+			local _transparency = get(transparencyRef)
+			local newTransparency = UserInputService:GetMouseLocation() - _transparency.AbsolutePosition
+			newTransparency = Vector2.new(0, math.clamp(newTransparency.Y, 0, _transparency.AbsoluteSize.Y))
+			transparency:set(newTransparency.Y/_transparency.AbsoluteSize.Y)
+		end
+	end))
+
+	-- Closure
+
+	if get(useConfig.boolean) then
+		observe(_flag.file):onChange(function()
+			local file = get(_flag.file)
+			local noColor = true
+			local noTransparency = true
+			if file.color ~= nil then
+				local a = string.split(file.color:gsub(" ", ""), ",")
+				table.foreach(a, function(i,v)
+					a[i] = tonumber(v)
+				end)
+				_flag.status.color:set(Color3.new(unpack(a)))
+				noColor = false
+			end
+			if file.transparency ~= nil then
+				_flag.status.transparency:set(tonumber(file.transparency))
+				noTransparency = false
+			end
+			if noColor then
+				_flag.status.color:set(get(_color))
+			end
+			if noTransparency then
+				_flag.status.transparency:set(get(_transparency))
+			end
+		end)
+	else
+		_flag.status.color:set(get(_color))
+		_flag.status.transparency:set(get(_transparency))
+	end
+
 	local returnFunctions = {}
 	function returnFunctions:SetName(newText)
 		local _didPass, _failedItems = typecheck({['SetName'] = newText}, {SetName = ""})
@@ -571,14 +899,17 @@ return function(property)
 
 		name:set(newText)
 	end
-	function returnFunctions:SetCallback(newFunction)
-		local _didPass, _failedItems = typecheck({['SetCallback'] = newFunction}, {SetCallback = function()end})
+	function returnFunctions:SetColor(newColor)
+		local _didPass, _failedItems = typecheck({['SetColor'] = newColor}, {SetColor = Color3.new()})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		callback:set(newFunction)
+		_flag.status.color:set(newColor)
 	end
-	function returnFunctions:Fire()
-		task.spawn(get(callback))
+	function returnFunctions:SetTransparency(newTransparency)
+		local _didPass, _failedItems = typecheck({['SetTransparency'] = newTransparency}, {SetTransparency = 0})
+		assert(_didPass, table.concat(_failedItems, "\n"))
+
+		_flag.status.transparency:set(newTransparency)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)

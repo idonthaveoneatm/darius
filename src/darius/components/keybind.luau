@@ -34,7 +34,7 @@ return function(property)
 	local HA = Enum.HorizontalAlignment
 	local VA = Enum.VerticalAlignment
 
-	local dariusWarn = require(script.Parent.warn)
+	local dariusWarn = require(script.Parent.warn)[1]
 
 	-- Typecheck
 
@@ -157,11 +157,11 @@ return function(property)
 		AnchorPoint = Vector2.new(0.5,0.5),
 		Position = UDim2.fromScale(0.5,0.5),
 		TextScaled = true,
-		Text = get(name),
+		Text = name,
 		FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 		TextColor3 = theme.mobileButtonText,
 		BackgroundColor3 = theme.mobileButtonBackground,
-		BackgroundTransparency = 0.6,
+		BackgroundTransparency = 0.5,
 		TextTransparency = 0.1,
 
 		[onevent "Activated"] = function()

@@ -1,5 +1,8 @@
 local darius = script.Parent.Parent
-return function(body)
+local title = ""
+
+local returnTable = {}
+table.insert(returnTable, function(body)
     local bundles = require(darius.Bundles)
     local notificaton = require(script.Parent.notification)
     local references = require(darius.utilities).references
@@ -7,10 +10,15 @@ return function(body)
     local theme = bundles.themeSystem
     notificaton({
         Parent = references.get("notificationList"),
-        Title = "Darius Interface",
+        Title = title,
         Body = body,
         Duration = 3,
         Image = icons.alert,
         ImageColor = theme.get("red")
     })
-end
+end)
+table.insert(returnTable, function(newTitle)
+    title = newTitle
+end)
+
+return returnTable
