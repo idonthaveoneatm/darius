@@ -60,6 +60,7 @@ return function(property)
 	local selectedTab = data.find("selectedTab")
 	local searchText = data.find("searchText")
 	local useConfig = data.find("useConfig")
+	local offset = data.find("offset")
 	local colorpicker = data.add(property)
 
 	-- Properties
@@ -841,23 +842,23 @@ return function(property)
 	connections.add(RunService.Heartbeat:Connect(function()
 		if get(saturationValueDown) then
 			local _saturationValue = get(saturationValue)
-			local newSV = UserInputService:GetMouseLocation() - _saturationValue.AbsolutePosition
+			local newSV = UserInputService:GetMouseLocation() - _saturationValue.AbsolutePosition - Vector2.new(0,get(offset.number))
 			newSV = Vector2.new(math.clamp(newSV.X, 0, _saturationValue.AbsoluteSize.X), math.clamp(newSV.Y, 0, _saturationValue.AbsoluteSize.Y))
 			local _hue = get(color):ToHSV()
 			color:set(Color3.fromHSV(_hue, newSV.X/_saturationValue.AbsoluteSize.X,(_saturationValue.AbsoluteSize.Y - newSV.Y)/_saturationValue.AbsoluteSize.Y))
 		end
 		if get(hueDown) then
 			local _hue = get(hue)
-			local newHue = UserInputService:GetMouseLocation() - _hue.AbsolutePosition
+			local newHue = UserInputService:GetMouseLocation() - _hue.AbsolutePosition - Vector2.new(0,get(offset.number))
 			newHue = Vector2.new(newHue.X, math.clamp(newHue.Y, 0, _hue.AbsoluteSize.Y))
 			local _,_sat,_val = get(color):ToHSV()
 			color:set(Color3.fromHSV((_hue.AbsoluteSize.Y - newHue.Y)/_hue.AbsoluteSize.Y, _sat, _val))
 		end
 		if get(transparencyDown) then
-			local _transparency = get(transparencyRef)
-			local newTransparency = UserInputService:GetMouseLocation() - _transparency.AbsolutePosition
-			newTransparency = Vector2.new(0, math.clamp(newTransparency.Y, 0, _transparency.AbsoluteSize.Y))
-			transparency:set(newTransparency.Y/_transparency.AbsoluteSize.Y)
+			local __transparency = get(transparencyRef)
+			local newTransparency = UserInputService:GetMouseLocation() - __transparency.AbsolutePosition - Vector2.new(0,get(offset.number))
+			newTransparency = Vector2.new(0, math.clamp(newTransparency.Y, 0, __transparency.AbsoluteSize.Y))
+			transparency:set(newTransparency.Y/__transparency.AbsoluteSize.Y)
 		end
 	end))
 

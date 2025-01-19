@@ -49,6 +49,7 @@ function darius:Window(windowProperty)
         HideBind = Enum.KeyCode.T,
         UseConfig = false,
         IsMobile = false,
+		Offset = 0,
         Theme = {},
         noOffset = false,
 		Parent = Instance.new("Part")
@@ -57,7 +58,8 @@ function darius:Window(windowProperty)
 		windowProperty.IsMobile and "" or "IsMobile",
 		windowProperty.UseConfig and "" or "UseConfig",
 		windowProperty.Theme and "" or "Theme",
-		windowProperty.Parent and "" or "Parent"
+		windowProperty.Parent and "" or "Parent",
+		windowProperty.Offset and "" or "Offset"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -87,6 +89,7 @@ function darius:Window(windowProperty)
 	data.add({boolean = true}, "isVisible")
 	data.add({boolean = windowProperty.IsMobile}, "isMobile")
 	data.add({boolean = false}, "isListening")
+	data.add({number = windowProperty.Offset or 58}, "offset")
 	local flags = data.find("flags")
 	local configLoaded = data.add({boolean = false}, "configLoaded")
 	local useConfig = data.add({boolean = false}, "useConfig")
