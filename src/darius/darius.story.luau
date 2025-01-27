@@ -25,10 +25,11 @@ return function(target)
     local window = darius:Window({
         Title = "Darius",
         Description = "What the sigma this isn't Quantum UI",
+        Icon = randomIcon(),
         HideBind = Enum.KeyCode.T,
         UseConfig = true,
         Config = "test",
-        IsMobile = true,
+        IsMobile = false,
         Theme = {
             background = Color3.fromHex("#D6DCE0"),
             text = Color3.fromHex("#2A2C31"),
@@ -50,7 +51,7 @@ return function(target)
             toggled = Color3.fromHex("#2A2C31")
         },
 
-        noOffset = true,
+        Offset = 0,
         Parent = target
     })
 
@@ -68,7 +69,26 @@ return function(target)
         })
     end
 
-    tab:ColorPicker({
+    tab:TextBox({
+        Name = "Textbox",
+        Callback = function(v)
+            
+        end
+    })
+    tab:Keybind({
+        Name = "Keybind",
+        Callback = function(v)
+            
+        end
+    })
+    tab:Toggle({
+        Name = "Toggle",
+        LinkKeybind = true,
+        Callback = function(v)
+            
+        end
+    })
+    local a = tab:ColorPicker({
         Name = "Colorpicker",
         --Color = Color3.fromHex('#a49ae6'),
         --Transparency = 0.5,
@@ -77,12 +97,21 @@ return function(target)
 
         end
     })
-    tab:KeybindList()
-    tab:Keybind({
-        Name = "Hello Hello",
+    tab:Button({
+        Name = "sdfsdf",
         Callback = function()
+            a:Disable()
         end
     })
+    tab:Slider({
+        Name = "Slider",
+        Min = 0,
+        Max = 100,
+        Callback = function(v)
+            
+        end
+    })
+    tab:KeybindList()
     darius:LoadConfig()
     return function()
         darius:Destroy()

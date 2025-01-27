@@ -198,6 +198,8 @@ tab:ColorPicker({
 })
 
 tab:Divider()
+tab:KeybindList()
+
 local duration = 0
 local title = ""
 local body = ""

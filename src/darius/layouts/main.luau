@@ -55,6 +55,7 @@ return function(property, bindableEvent)
 	local isVisible = data.find("isVisible")
 	local isMobile = data.find("isMobile")
 	local isListening = data.find("isListening")
+	local bindData = data.find("bindData")
 
 	-- Variables
 
@@ -90,16 +91,23 @@ return function(property, bindableEvent)
 	local hasBind = value(false)
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
+		local _bindData = get(bindData.bindData)
 		if table.find(_currentBinds, keycode) then
 			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
 		else
 			table.insert(_currentBinds, keycode)
 			if get(keyCode) then
 				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
+				_bindData[get(keyCode).Name] = nil
 			end
-			currentBinds:update("binds", _currentBinds)
 			keyCode:set(keycode)
 			hasBind:set(true)
+			_bindData[get(keyCode).Name] = {
+				bind = get(keyCode),
+				name = "Toggle Interface"
+			}
+			bindData:update("bindData", _bindData)
+			currentBinds:update("binds", _currentBinds)
 		end
 	end
 	if not get(isMobile.boolean) then
@@ -111,6 +119,7 @@ return function(property, bindableEvent)
 		local tabData = data.find(_selectedTab)
 		backTitle:set(get(tabData.Name):upper())
 	end)
+	local icon  = value(property.Icon or "")
 
 	local mobileButton
 	local dragConnection
@@ -187,24 +196,49 @@ return function(property, bindableEvent)
 												BackgroundTransparency = 1,
 
 												[children] = {
-													UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
-													new "TextLabel" {
-														Size = UDim2.new(1,0,0.6,0),
-														Text = property.Title,
-														TextColor3 = theme.text,
-														FontFace = customFont("Montserrat", Enum.FontWeight.ExtraBold),
-														TextScaled = true,
+													UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Top,UDim.new(0,5)),
+													new "ImageLabel" {
+														Visible = computed(function()
+															if get(icon) ~= "" then
+																return true
+															end
+															return false
+														end),
+														Size = UDim2.fromOffset(44,44),
 														BackgroundTransparency = 1,
-														TextXAlignment = Enum.TextXAlignment.Left
+														Image = icon,
+														ImageColor3 = theme.text2
 													},
-													new "TextLabel" {
-														Size = UDim2.new(1,0,0.4,-4),
-														Text = property.Description,
-														TextColor3 = theme.text2,
-														FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-														TextScaled = true,
+													new "Frame" {
+														Size = computed(function()
+															if get(icon) ~= "" then
+																return UDim2.new(1,-49,1,0)
+															end
+															return UDim2.new(1,0,1,0)
+														end),
 														BackgroundTransparency = 1,
-														TextXAlignment = Enum.TextXAlignment.Left
+
+														[children] = {
+															UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
+															new "TextLabel" {
+																Size = UDim2.new(1,0,0.6,0),
+																Text = property.Title,
+																TextColor3 = theme.text,
+																FontFace = customFont("Montserrat", Enum.FontWeight.ExtraBold),
+																TextScaled = true,
+																BackgroundTransparency = 1,
+																TextXAlignment = Enum.TextXAlignment.Left
+															},
+															new "TextLabel" {
+																Size = UDim2.new(1,0,0.4,-4),
+																Text = property.Description,
+																TextColor3 = theme.text2,
+																FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+																TextScaled = true,
+																BackgroundTransparency = 1,
+																TextXAlignment = Enum.TextXAlignment.Left
+															}
+														}
 													}
 												}
 											},

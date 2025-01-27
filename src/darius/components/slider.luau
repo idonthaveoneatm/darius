@@ -62,8 +62,6 @@ return function(property)
 
 	local selectedTab = data.find("selectedTab")
 	local useConfig = data.find("useConfig")
-	local flags = data.find("flags")
-	local configLoaded = data.find("configLoaded")
 	local searchText = data.find("searchText")
 	local slider = data.add(property)
 
@@ -78,7 +76,10 @@ return function(property)
 	local roundTo = property.DecimalPlace or value(0)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
-	local default = property.Default and value(math.clamp(get(property.Default), get(min), get(max))) or value(get(min))
+	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
+	if not get(default) then
+		default = value(get(min))
+	end
 	local flag = property.FLAG or value(slider.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -106,7 +107,7 @@ return function(property)
 		return tonumber(string.format('%.' .. get(roundTo) .. 'f', Value))
 	end
 	local percentage = value(0)
-	
+
 	observe(_flag.status.percentageOf):onChange(function()
 		percentage:set(mapValue(get(_flag.status.percentageOf), get(min), get(max), 0, 1))
 		if not get(isEnabled) then
@@ -115,8 +116,8 @@ return function(property)
 		task.spawn(get(callback), get(_flag.status.percentageOf))
 	end)
 	local textbuttonRef = value()
-	local textlabelX = value(10)
-	local textlabelRef = value()
+	local textboxX = value(10)
+	local textBoxRef = value()
 	local button1Down = value(false)
 	UserInputService.InputEnded:Connect(function(input)
 		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and get(button1Down) then
@@ -226,36 +227,46 @@ return function(property)
 								[children] = {
 									UICorner(4),
 									UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Right,VA.Center,UDim.new(0,1)),
-									new "TextLabel" {
+									new "TextBox" {
 										FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 										Size = UDim2.new(0,0,0,14),
 										BackgroundTransparency = 1,
 										TextColor3 = theme.text2,
 										TextTransparency = selectedAnimation,
 										TextScaled = true,
+										ClearTextOnFocus = true,
 										AnchorPoint = Vector2.new(1,0.5),
 										Position = UDim2.new(1,0,0.5,0),
 										Text = computed(function()
-											if get(_flag.status.percentageOf) then
-												if get(displayAsPercent) then
-													return tostring(round(get(percentage) * 100)).."%"
-												end
-												return get(_flag.status.percentageOf)
+											if get(displayAsPercent) then
+												return tostring(round(get(percentage) * 100)).."%"
 											end
-											return ""
+											return get(_flag.status.percentageOf) or ""
 										end),
 										TextXAlignment = Enum.TextXAlignment.Right,
 										RichText = true,
 										AutomaticSize = Enum.AutomaticSize.X,
 
 										[onevent "Changed"] = function(changedProperty)
-											local _textlabel = get(textlabelRef)
-											if changedProperty == "AbsoluteSize" and _textlabel and _textlabel.AbsoluteSize then
-												textlabelX:set(_textlabel.AbsoluteSize.X)
+											local textbox = get(textBoxRef)
+											if changedProperty == "AbsoluteSize" and textbox and textbox.AbsoluteSize then
+												textboxX:set(textbox.AbsoluteSize.X)
 											end
 										end,
 
-										[ref] = textlabelRef,
+										[onevent "FocusLost"] = function()
+											local textbox = get(textBoxRef)
+											if tonumber(textbox.Text) then
+												_flag.status.percentageOf:set(math.clamp(tonumber(textbox.Text), get(min), get(max)))
+											else
+												if get(displayAsPercent) then
+													textbox.Text = tostring(round(get(percentage) * 100)).."%"
+												end
+												textbox.Text = get(_flag.status.percentageOf)
+											end
+										end,
+
+										[ref] = textBoxRef,
 
 										[children] = {
 											UIPadding(0,5,0,5)
@@ -270,7 +281,7 @@ return function(property)
 											return 1
 										end,40,1),
 										Size = animate(function()
-											return UDim2.fromOffset(get(textlabelX),2)
+											return UDim2.fromOffset(get(textboxX),2)
 										end,40,1),
 
 										[children] = {
@@ -386,6 +397,9 @@ return function(property)
 				_flag.status.percentageOf:set(get(default))
 			end
 		end)
+		if _flag.private then
+			_flag.status.percentageOf:set(get(default))
+		end
 	else
 		_flag.status.percentageOf:set(get(default))
 	end

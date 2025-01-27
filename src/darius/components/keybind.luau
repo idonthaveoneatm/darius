@@ -62,6 +62,7 @@ return function(property)
 	local isMobile = data.find("isMobile")
 	local instanceName = data.find("instanceName")
 	local isListening = data.find("isListening")
+	local bindData = data.find("bindData")
 	local keybind = data.add(property)
 
 	-- Properties
@@ -75,15 +76,22 @@ return function(property)
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
+		local _bindData = get(bindData.bindData)
 		if table.find(_currentBinds, keycode) then
 			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
 		else
 			table.insert(_currentBinds, keycode)
 			if get(keyCode) then
 				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
+				_bindData[get(keyCode).Name] = nil
 			end
-			currentBinds:update("binds", _currentBinds)
 			keyCode:set(keycode)
+			_bindData[get(keyCode).Name] = {
+				bind = get(keyCode),
+				name = get(name)
+			}
+			bindData:update("bindData", _bindData)
+			currentBinds:update("binds", _currentBinds)
 		end
 	end
 	local flag = property.FLAG or value(keybind.uid)
@@ -140,6 +148,14 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
+	local function findKeyCode(keyName)
+		for _,v in Enum.KeyCode do
+			if v.Name and v.Name == keyName then
+				return v
+			end
+		end
+		return nil
+	end
 
 	-- Keybind
 
@@ -400,6 +416,11 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			if bind then
+				_flag.status.keycode:set(get(bind).Name)
+			end
+		end
 	else
 		if bind then
 			_flag.status.keycode:set(get(bind).Name)

@@ -524,6 +524,17 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			if get(multiselect) then
+				if default and #get(default) > 0 then
+					_flag.status.items:set(get(default))
+				end
+			else
+				if default then
+					_flag.status.item:set(get(default))
+				end
+			end
+		end
 	else
 		if get(multiselect) then
 			if default and #get(default) > 0 then

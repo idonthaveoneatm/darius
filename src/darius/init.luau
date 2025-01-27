@@ -46,6 +46,7 @@ function darius:Window(windowProperty)
 	local didPass, failedItems = typecheck(windowProperty,{
 		Title = "",
         Description = "",
+		Icon = "",
         HideBind = Enum.KeyCode.T,
         UseConfig = false,
         IsMobile = false,
@@ -54,6 +55,7 @@ function darius:Window(windowProperty)
         noOffset = false,
 		Parent = Instance.new("Part")
 	},{
+		windowProperty.Icon and "" or "Icon",
 		windowProperty.noOffset and "" or "noOffset",
 		windowProperty.IsMobile and "" or "IsMobile",
 		windowProperty.UseConfig and "" or "UseConfig",
@@ -85,6 +87,7 @@ function darius:Window(windowProperty)
 	data.add({number = windowProperty.noOffset and 0 or 58}, "absoluteOffset")
 	data.add({name = randomString(32)}, "instanceName")
 	data.add({binds = {}}, "currentBinds")
+	data.add({bindData = {}}, "bindData")
 	data.add({string = ""}, "searchText")
 	data.add({boolean = true}, "isVisible")
 	data.add({boolean = windowProperty.IsMobile}, "isMobile")

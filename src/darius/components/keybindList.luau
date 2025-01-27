@@ -11,11 +11,17 @@ return function(property)
         local value = fusion.Value
         local computed = fusion.Computed
         local observe = fusion.Observer
+		local onevent = fusion.OnEvent
 
 	local simpleElements = require(darius.simpleElements)
 	local UICorner = simpleElements.UICorner
 	local UIPadding = simpleElements.UIPadding
 	local UITextSizeConstraint = simpleElements.UITextSizeConstraint
+	local UIListLayout = simpleElements.UIListLayout
+	local SO = Enum.SortOrder
+	local FD = Enum.FillDirection
+	local HA = Enum.HorizontalAlignment
+	local VA = Enum.VerticalAlignment
 
     local utilities = require(darius.utilities)
     local get = utilities.get
@@ -28,6 +34,7 @@ return function(property)
 	local selectedTab = data.find("selectedTab")
 	local searchText = data.find("searchText")
     local currentBinds = data.find("currentBinds")
+	local bindData = data.find("bindData")
 	local keybindList = data.add(property)
 
 	-- Properties
@@ -76,10 +83,43 @@ return function(property)
         end)
         return table.concat(tmp, ", ")
     end
+	local name = value("Active Keybinds")
+
+	local setChildren, module
 
 	-- keybindList
 
-	new "Frame" {
+	module, setChildren = require(script.Parent.module)({
+		Name = name,
+		Children = {}
+	})
+
+	local function updateModule(tbl)
+		local newChildren = {
+			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,5))
+		}
+		local _bindData = get(bindData.bindData)
+		for _,v in get(currentBinds.binds) do
+			local _data = _bindData[v.Name]
+			table.insert(newChildren, new "TextLabel" {
+				Size = UDim2.new(1,0,0,14),
+				BackgroundTransparency = 1,
+				TextColor3 = theme.text,
+				FontFace = customFont("Montserrat", Enum.FontWeight.Regular),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				RichText = true,
+				Text = computed(function()
+					if _data.boolean then
+						return `[{_data.bind.Name}] {_data.name} (<i>{string.upper(tostring(get(_data.boolean)))}</i>)`
+					end
+					return `[{_data.bind.Name}] {_data.name}`
+				end)
+			})
+		end
+		setChildren(newChildren)
+	end
+
+	new "TextButton" {	
 		Visible = computed(function()
 			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) then
 				return false
@@ -93,6 +133,18 @@ return function(property)
 			return UDim2.new(1,0,0,36 + get(ySize))
 		end),
 		AutomaticSize = Enum.AutomaticSize.Y,
+
+		[onevent "Activated"] = function()
+			if typeof(module) == "Instance" then
+				module:Destroy()
+				module = nil
+			end
+			module, setChildren = require(script.Parent.module)({
+				Name = name,
+				Children = {}
+			})
+			updateModule(get(currentBinds.binds))
+		end,
 
 		[children] = {
 			UICorner(6),
@@ -145,6 +197,11 @@ return function(property)
 			}
 		}
 	}
+	
+	observe(currentBinds.binds):onChange(function()
+		updateModule(get(currentBinds.binds))
+	end)
+	updateModule(get(currentBinds.binds))
 
     body:set(createBody(get(currentBinds.binds)))
     observe(currentBinds.binds):onChange(function()

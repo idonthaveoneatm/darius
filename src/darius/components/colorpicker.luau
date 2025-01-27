@@ -28,7 +28,6 @@ return function(property)
 	local simpleElements = require(darius.simpleElements)
 	local UIListLayout = simpleElements.UIListLayout
 	local UIPadding = simpleElements.UIPadding
-	local UIAspectRatioConstraint = simpleElements.UIAspectRatioConstraint
 	local UITextSizeConstraint = simpleElements.UITextSizeConstraint
 	local UICorner = simpleElements.UICorner
 	local SO = Enum.SortOrder
@@ -102,9 +101,6 @@ return function(property)
 	local selectedAnimation = animate(function()
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
-	local dropped = value(false)
-	local transparencyAnim = value(false)
-	local droppedFinished = value(false)
 
 	local hexCodeTextBox = value()
 	local hexCodeLength = value(0)
@@ -124,9 +120,374 @@ return function(property)
 	local transparencyRef = value()
 	local transparencyDown = value(false)
 
+	local module, setChildren
+
 	-- Colorpicker
 
-	new "TextButton" {
+	local function createColorPickerModule()
+		return {
+			Name = name,
+			Children = {
+				UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,5)),
+				new "TextButton" { -- Saturation and Value
+					Size = UDim2.fromOffset(224,224),
+	
+					[ref] = saturationValue,
+	
+					[onevent "InputBegan"] = function(input)
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+							return
+						end
+						saturationValueDown:set(true)
+						local _changed
+						_changed = input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+								saturationValueDown:set(false)
+								_changed:Disconnect()
+							end
+						end)
+					end,
+	
+					[children] = {
+						new "UIGradient" {
+							Color = computed(function()
+								return ColorSequence.new {
+									ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+									ColorSequenceKeypoint.new(1, Color3.fromHSV(({get(color):ToHSV()})[1],1,1)),
+									}
+							end)
+						},
+						new "Frame" {
+							Size = UDim2.fromScale(1,1),
+	
+							[children] = {
+								new "UIGradient" {
+									Rotation = 270,
+									Color = ColorSequence.new {
+										ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
+										ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0)),
+									},
+									Transparency = computed(function()
+										return NumberSequence.new {
+											NumberSequenceKeypoint.new(0, 0),
+											NumberSequenceKeypoint.new(1, 1),
+											}
+									end)
+								}
+							}
+						},
+						new "Frame" {
+							ZIndex = 2,
+							AnchorPoint = Vector2.new(0.5,0.5),
+							BackgroundColor3 = computed(function()
+								local _,_,_val = get(color):ToHSV()
+								return Color3.fromHSV(0,0,1-_val)
+							end),
+							Size = UDim2.fromOffset(4,4),
+							Position = computed(function()
+								local _,_sat,_val = get(color):ToHSV()
+								return UDim2.fromScale(_sat, 1-_val)
+							end)
+						}
+					}
+				},
+				new "TextButton" { -- Hue
+					Size = UDim2.new(1,0,0,24),
+	
+					[onevent "InputBegan"] = function(input)
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+							return
+						end
+						hueDown:set(true)
+						local _changed
+						_changed = input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+								hueDown:set(false)
+								_changed:Disconnect()
+							end
+						end)
+					end,
+	
+					[ref] = hue,
+	
+					[children] = {
+						new "UIGradient" {
+							Color = ColorSequence.new {
+								ColorSequenceKeypoint.new(0, Color3.fromHSV(1, 1, 1)),
+								ColorSequenceKeypoint.new(0.1, Color3.fromHSV(0.9, 1, 1)),
+								ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.8, 1, 1)),
+								ColorSequenceKeypoint.new(0.3, Color3.fromHSV(0.7, 1, 1)),
+								ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.6, 1, 1)),
+								ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
+								ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.4, 1, 1)),
+								ColorSequenceKeypoint.new(0.7, Color3.fromHSV(0.3, 1, 1)),
+								ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.2, 1, 1)),
+								ColorSequenceKeypoint.new(0.9, Color3.fromHSV(0.1, 1, 1)),
+								ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 1, 1)),
+							}
+						},
+						new "Frame" {
+							AnchorPoint = Vector2.new(0,0.5),
+							BackgroundColor3 = theme.colorpickerBar,
+							Size = UDim2.new(0,2,1,0),
+							Position = computed(function()
+								local _hue = get(color):ToHSV()
+								return UDim2.fromScale(1 - _hue,0.5)
+							end)
+						}
+					}
+				},
+				new "ImageButton" { -- Transparency
+					ZIndex = 2,
+					Size = UDim2.new(1,0,0,24),
+					BackgroundTransparency = 1,
+					Image = "rbxassetid://15612242981",
+					ScaleType = Enum.ScaleType.Crop,
+	
+					[onevent "InputBegan"] = function(input)
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+							return
+						end
+						transparencyDown:set(true)
+						local _changed
+						_changed = input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+								transparencyDown:set(false)
+								_changed:Disconnect()
+							end
+						end)
+					end,
+	
+					[ref] = transparencyRef,
+	
+					[children] = {
+						new "Frame" {
+							Size = UDim2.fromScale(1,1),
+	
+							[children] = {
+								new "UIGradient" {
+									Color = computed(function()
+										return ColorSequence.new {
+											ColorSequenceKeypoint.new(0, get(color)),
+											ColorSequenceKeypoint.new(1, get(color)),
+											}
+									end),
+									Transparency = computed(function()
+										return NumberSequence.new {
+											NumberSequenceKeypoint.new(0, 0),
+											NumberSequenceKeypoint.new(1, 1),
+											}
+									end)
+								}
+							}
+						},
+						new "Frame" {
+							AnchorPoint = Vector2.new(0,0.5),
+							BackgroundColor3 = theme.colorpickerBar,
+							Size = UDim2.new(0,2,1,0),
+							Position = computed(function()
+								return UDim2.fromScale(get(transparency),0.5)
+							end)
+						}
+					}
+				},
+				new "Frame" { -- RGB
+					Size = UDim2.new(1,0,0,16),
+					BackgroundTransparency = 1,
+	
+					[children] = {
+						UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4)),
+						{
+							new "TextLabel" {
+								Size = UDim2.new(0,0,0,16),
+								AutomaticSize = Enum.AutomaticSize.X,
+								Text = "RGB:",
+								TextColor3 = theme.text2,
+								BackgroundTransparency = 1,
+								TextSize = 16,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								TextXAlignment = Enum.TextXAlignment.Right
+							},
+							new "TextBox" {
+								Name = randomString(8),
+								BackgroundTransparency = 1,
+								Size = UDim2.new(0,42,0,16),
+								PlaceholderText = "RGB",
+								PlaceholderColor3 = theme.text2,
+								AutomaticSize = Enum.AutomaticSize.X,
+								TextColor3 = theme.text,
+								Text = computed(function()
+									local a = {get(color).R,get(color).G,get(color).B}
+									for i,v in a do
+										a[i] = math.floor(math.clamp(v*255,0,255))
+									end
+									return table.concat(a, ", ")
+								end),
+								TextScaled = true,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								ClearTextOnFocus = true,
+								TextXAlignment = Enum.TextXAlignment.Right,
+	
+								[ref] = RGBTextBox,
+	
+								[onevent "Changed"] = function(changedProperty)
+									local _RGBTextBox = get(RGBTextBox)
+									if changedProperty == "TextBounds" and _RGBTextBox and _RGBTextBox.TextBounds then
+										RGBLength:set(_RGBTextBox.TextBounds.X)
+									end
+								end,
+	
+								[onevent "FocusLost"] = function()
+									local _RGBTextBox = get(RGBTextBox)
+									local _rgb = _RGBTextBox.Text:gsub(" ","")
+									local a = {get(color).R,get(color).G,get(color).B}
+									for i,v in a do
+										a[i] = math.floor(math.clamp(v*255,0,255))
+									end
+									local _old = table.concat(a, ", ")
+									local s,result = pcall(function()
+										local b = string.split(_rgb, ",")
+										table.foreach(b, function(i,v)
+											if not tonumber(v) then
+												return nil
+											end
+											b[i] = math.clamp(v, 0, 255)
+										end)
+										return Color3.fromRGB(b[1],b[2],b[3])
+									end)
+									if s and result then
+										color:set(result)
+									else
+										_RGBTextBox.Text = _old
+									end
+								end,
+	
+								[children] = {
+									UITextSizeConstraint(1,16),
+									new "UISizeConstraint" {
+										MaxSize = Vector2.new(110,16),
+										MinSize = Vector2.new(42,16)
+									},
+									new "Frame"{
+										AnchorPoint = Vector2.new(1,0.5),
+										BackgroundColor3 = theme.text2,
+										Position = UDim2.fromScale(1,1),
+										Size = animate(function()
+											return UDim2.fromOffset(math.clamp(get(RGBLength),0,110),2)
+										end,40,1),
+	
+										[children] = {
+											UICorner(0,1)
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				new "Frame" { -- HSV
+					Size = UDim2.new(1,0,0,16),
+					BackgroundTransparency = 1,
+	
+					[children] = {
+						UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,5)),
+						{
+							new "TextLabel" {
+								Size = UDim2.new(0,0,0,16),
+								AutomaticSize = Enum.AutomaticSize.X,
+								Text = "HSV:",
+								TextColor3 = theme.text2,
+								BackgroundTransparency = 1,
+								TextSize = 16,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								TextXAlignment = Enum.TextXAlignment.Right
+							},
+							new "TextBox" {
+								Name = randomString(8),
+								BackgroundTransparency = 1,
+								Size = UDim2.new(0,36,0,16),
+								AutomaticSize = Enum.AutomaticSize.X,
+								PlaceholderText = "HSV",
+								PlaceholderColor3 = theme.text2,
+								TextColor3 = theme.text,
+								Text = computed(function()
+									local a = {get(color):ToHSV()}
+									for i,v in a do
+										a[i] = math.floor(v*100)/100
+									end
+									return table.concat(a, ", ")
+								end),
+								TextScaled = true,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								ClearTextOnFocus = true,
+								TextXAlignment = Enum.TextXAlignment.Right,
+	
+								[ref] = HSVTextBox,
+	
+								[onevent "Changed"] = function(changedProperty)
+									local _HSVTextBox = get(HSVTextBox)
+									if changedProperty == "TextBounds" and _HSVTextBox and _HSVTextBox.TextBounds then
+										HSVLength:set(_HSVTextBox.TextBounds.X)
+									end
+								end,
+	
+								[onevent "FocusLost"] = function()
+									local _HSVTextBox = get(HSVTextBox)
+									local _hsv = _HSVTextBox.Text:gsub(" ","")
+									local a = {get(color):ToHSV()}
+									for i,v in a do
+										a[i] = math.floor(v*100)/100
+									end
+									local _old = table.concat(a, ", ")
+									local s,result = pcall(function()
+										local b = string.split(_hsv, ",")
+										table.foreach(b, function(i,v)
+											if not tonumber(v) then
+												return nil
+											end
+										end)
+										return Color3.fromHSV(unpack(b))
+									end)
+									if s and result then
+										color:set(result)
+									else
+										_HSVTextBox.Text = _old
+									end
+								end,
+	
+								[children] = {
+									UITextSizeConstraint(1,16),
+									new "UISizeConstraint" {
+										MaxSize = Vector2.new(110,16),
+										MinSize = Vector2.new(36,16)
+									},
+									new "Frame"{
+										AnchorPoint = Vector2.new(1,0.5),
+										BackgroundColor3 = theme.text2,
+										Position = UDim2.fromScale(1,1),
+										Size = animate(function()
+											return UDim2.fromOffset(math.clamp(get(HSVLength),36,110),2)
+										end,40,1),
+	
+										[children] = {
+											UICorner(0,1)
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	end
+	observe(isEnabled):onChange(function()
+		if not get(isEnabled) and typeof(module) == "Instance" then
+			module:Destroy()
+		end
+	end)
+
+	new "Frame" {
 		Interactable = computed(function()
 			if not get(isEnabled) then
 				return false
@@ -140,32 +501,9 @@ return function(property)
 			return true
 		end),
 		Parent = _parent,
-		Size = animate(function()
-			return get(dropped) and UDim2.new(1,0,0,156) or UDim2.new(1,0,0,36)
-		end,40,1),
-		BackgroundTransparency = animate(function()
-			if not get(isSelected) then
-				return 1
-			end
-			return get(transparencyAnim) and 0 or 1
-		end,40,1),
+		Size = UDim2.new(1,0,0,36),
+		BackgroundTransparency = 1,
 		BackgroundColor3 = theme.background2,
-
-		[onevent "Activated"] = function()
-			if get(transparencyAnim) then
-				droppedFinished:set(false)
-				task.wait(0.15)
-				dropped:set(not get(dropped))
-				task.wait(0.15)
-				transparencyAnim:set(not get(transparencyAnim))
-			else
-				transparencyAnim:set(not get(transparencyAnim))
-				task.wait(0.15)
-				dropped:set(not get(dropped))
-				task.wait(0.15)
-				droppedFinished:set(true)
-			end
-		end,
 
 		[children] = {
 			UICorner(6),
@@ -214,470 +552,6 @@ return function(property)
 				}
 			},
 			new "Frame" {
-				ZIndex = 2,
-				Size = UDim2.fromScale(1,1),
-				BackgroundTransparency = 1,
-
-				[children] = {
-					UIPadding(36,0,0,0),
-					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,8)),
-					new "Frame" {
-						Visible = dropped,
-						Size = UDim2.new(1,0,0,120-44),
-						BackgroundTransparency = 1,
-
-						[children] = {
-							UIPadding(0,8),
-							UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Right,VA.Top,UDim.new(0,8)),
-							new "TextButton" { -- Saturation and Value
-								Size = UDim2.fromScale(0,1),
-								BackgroundTransparency = animate(function()
-									if not get(isSelected) then
-										return 1
-									end
-									return get(droppedFinished) and 0 or 1
-								end,40,1),
-
-								[ref] = saturationValue,
-
-								[onevent "InputBegan"] = function(input)
-									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-										return
-									end
-									saturationValueDown:set(true)
-									local _changed
-									_changed = input.Changed:Connect(function()
-										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
-											saturationValueDown:set(false)
-											_changed:Disconnect()
-										end
-									end)
-								end,
-
-								[children] = {
-									UIAspectRatioConstraint(2,Enum.AspectType.ScaleWithParentSize,Enum.DominantAxis.Height),
-									new "UIGradient" {
-										Color = computed(function()
-											return ColorSequence.new {
-												ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-												ColorSequenceKeypoint.new(1, Color3.fromHSV(({get(color):ToHSV()})[1],1,1)),
-											  }
-										end)
-									},
-									new "Frame" {
-										Size = UDim2.fromScale(1,1),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-
-										[children] = {
-											new "UIGradient" {
-												Rotation = 270,
-												Color = ColorSequence.new {
-													ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
-													ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0)),
-												},
-												Transparency = computed(function()
-													return NumberSequence.new {
-														NumberSequenceKeypoint.new(0, 0),
-														NumberSequenceKeypoint.new(1, 1),
-													  }
-												end)
-											}
-										}
-									},
-									new "Frame" {
-										ZIndex = 2,
-										AnchorPoint = Vector2.new(0.5,0.5),
-										BackgroundColor3 = computed(function()
-											local _,_,_val = get(color):ToHSV()
-											return Color3.fromHSV(0,0,1-_val)
-										end),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-										Size = UDim2.fromOffset(4,4),
-										Position = computed(function()
-											local _,_sat,_val = get(color):ToHSV()
-											return UDim2.fromScale(_sat, 1-_val)
-										end)
-									}
-								}
-							},
-							new "TextButton" { -- Hue
-								Size = UDim2.new(0,36,1),
-								BackgroundTransparency = animate(function()
-									if not get(isSelected) then
-										return 1
-									end
-									return get(droppedFinished) and 0 or 1
-								end,40,1),
-
-								[onevent "InputBegan"] = function(input)
-									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-										return
-									end
-									hueDown:set(true)
-									local _changed
-									_changed = input.Changed:Connect(function()
-										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
-											hueDown:set(false)
-											_changed:Disconnect()
-										end
-									end)
-								end,
-
-								[ref] = hue,
-
-								[children] = {
-									new "UIGradient" {
-										Rotation = 90,
-										Color = ColorSequence.new {
-											ColorSequenceKeypoint.new(0, Color3.fromHSV(1, 1, 1)),
-											ColorSequenceKeypoint.new(0.1, Color3.fromHSV(0.9, 1, 1)),
-											ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.8, 1, 1)),
-											ColorSequenceKeypoint.new(0.3, Color3.fromHSV(0.7, 1, 1)),
-											ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.6, 1, 1)),
-											ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
-											ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.4, 1, 1)),
-											ColorSequenceKeypoint.new(0.7, Color3.fromHSV(0.3, 1, 1)),
-											ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.2, 1, 1)),
-											ColorSequenceKeypoint.new(0.9, Color3.fromHSV(0.1, 1, 1)),
-											ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 1, 1)),
-										}
-									},
-									new "Frame" {
-										AnchorPoint = Vector2.new(0,0.5),
-										BackgroundColor3 = theme.colorpickerBar,
-										Size = UDim2.new(1,0,0,2),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-										Position = computed(function()
-											local _hue = get(color):ToHSV()
-											return UDim2.fromScale(0,1 - _hue)
-										end)
-									}
-								}
-							},
-							new "ImageButton" { -- Transparency
-								ZIndex = 2,
-								Size = UDim2.new(0,36,1),
-								BackgroundTransparency = 1,
-								Image = "rbxassetid://15612242981",
-								ScaleType = Enum.ScaleType.Crop,
-								ImageTransparency = animate(function()
-									if not get(isSelected) then
-										return 1
-									end
-									return get(droppedFinished) and 0 or 1
-								end,40,1),
-
-								[onevent "InputBegan"] = function(input)
-									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-										return
-									end
-									transparencyDown:set(true)
-									local _changed
-									_changed = input.Changed:Connect(function()
-										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
-											transparencyDown:set(false)
-											_changed:Disconnect()
-										end
-									end)
-								end,
-
-								[ref] = transparencyRef,
-
-								[children] = {
-									new "Frame" {
-										Size = UDim2.fromScale(1,1),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-
-										[children] = {
-											new "UIGradient" {
-												Rotation = 90,
-												Color = computed(function()
-													return ColorSequence.new {
-														ColorSequenceKeypoint.new(0, get(color)),
-														ColorSequenceKeypoint.new(1, get(color)),
-													  }
-												end),
-												Transparency = computed(function()
-													return NumberSequence.new {
-														NumberSequenceKeypoint.new(0, 0),
-														NumberSequenceKeypoint.new(1, 1),
-													  }
-												end)
-											}
-										}
-									},
-									new "Frame" {
-										AnchorPoint = Vector2.new(0,0.5),
-										BackgroundColor3 = theme.colorpickerBar,
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-										Size = UDim2.new(1,0,0,2),
-										Position = computed(function()
-											return UDim2.fromScale(0,get(transparency))
-										end)
-									}
-								}
-							},
-						}
-					},
-					new "Frame" {
-						Size = UDim2.new(1,-136,0,36),
-						BackgroundTransparency = 1,
-
-						[children] = {
-							UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Right,VA.Center,UDim.new(0,8)),
-							new "Frame" {
-								Size = UDim2.fromOffset(0,32),
-								AutomaticSize = Enum.AutomaticSize.X,
-								BackgroundTransparency = 1,
-
-								[children] = {
-									UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Center,VA.Center,UDim.new(0,4)),
-									{
-										new "TextLabel" {
-											Size = UDim2.new(0,0,0,16),
-											AutomaticSize = Enum.AutomaticSize.X,
-											Text = "RGB:",
-											BackgroundTransparency = 1,
-											TextSize = 16,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											TextXAlignment = Enum.TextXAlignment.Right,
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1)
-										},
-										new "TextBox" {
-											Name = randomString(8),
-											BackgroundTransparency = 1,
-											Size = UDim2.new(0,42,0,16),
-											PlaceholderText = "RGB",
-											PlaceholderColor3 = theme.text2,
-											AutomaticSize = Enum.AutomaticSize.X,
-											TextColor3 = theme.text,
-											Text = computed(function()
-												local a = {get(color).R,get(color).G,get(color).B}
-												for i,v in a do
-													a[i] = math.floor(math.clamp(v*255,0,255))
-												end
-												return table.concat(a, ", ")
-											end),
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1),
-											TextScaled = true,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											ClearTextOnFocus = true,
-											TextXAlignment = Enum.TextXAlignment.Right,
-
-											[ref] = RGBTextBox,
-
-											[onevent "Changed"] = function(changedProperty)
-												local _RGBTextBox = get(RGBTextBox)
-												if changedProperty == "TextBounds" and _RGBTextBox and _RGBTextBox.TextBounds then
-													RGBLength:set(_RGBTextBox.TextBounds.X)
-												end
-											end,
-
-											[onevent "FocusLost"] = function()
-												local _RGBTextBox = get(RGBTextBox)
-												local _rgb = _RGBTextBox.Text:gsub(" ","")
-												local a = {get(color).R,get(color).G,get(color).B}
-												for i,v in a do
-													a[i] = math.floor(math.clamp(v*255,0,255))
-												end
-												local _old = table.concat(a, ", ")
-												local s,result = pcall(function()
-													local b = string.split(_rgb, ",")
-													table.foreach(b, function(i,v)
-														if not tonumber(v) then
-															return nil
-														end
-														b[i] = math.clamp(v, 0, 255)
-													end)
-													return Color3.fromRGB(b[1],b[2],b[3])
-												end)
-												if s and result then
-													color:set(result)
-												else
-													_RGBTextBox.Text = _old
-												end
-											end,
-
-											[children] = {
-												UITextSizeConstraint(1,16),
-												new "UISizeConstraint" {
-													MaxSize = Vector2.new(110,16),
-													MinSize = Vector2.new(42,16)
-												},
-												new "Frame"{
-													AnchorPoint = Vector2.new(1,0.5),
-													BackgroundColor3 = theme.text2,
-													BackgroundTransparency = animate(function()
-														if not get(isSelected) then
-															return 1
-														end
-														return get(droppedFinished) and 0.5 or 1
-													end,40,1),
-													Position = UDim2.fromScale(1,1),
-													Size = animate(function()
-														return UDim2.fromOffset(math.clamp(get(RGBLength),0,110),2)
-													end,40,1),
-
-													[children] = {
-														UICorner(0,1)
-													}
-												}
-											}
-										}
-									}
-								}
-							},
-							new "Frame" {
-								Size = UDim2.fromOffset(0,32),
-								AutomaticSize = Enum.AutomaticSize.X,
-								BackgroundTransparency = 1,
-
-								[children] = {
-									UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Center,VA.Center,UDim.new(0,5)),
-									{
-										new "TextLabel" {
-											Size = UDim2.new(0,0,0,16),
-											AutomaticSize = Enum.AutomaticSize.X,
-											Text = "HSV:",
-											BackgroundTransparency = 1,
-											TextSize = 16,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											TextXAlignment = Enum.TextXAlignment.Right,
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1)
-										},
-										new "TextBox" {
-											Name = randomString(8),
-											BackgroundTransparency = 1,
-											Size = UDim2.new(0,36,0,16),
-											AutomaticSize = Enum.AutomaticSize.X,
-											PlaceholderText = "HSV",
-											PlaceholderColor3 = theme.text2,
-											TextColor3 = theme.text,
-											Text = computed(function()
-												local a = {get(color):ToHSV()}
-												for i,v in a do
-													a[i] = math.floor(v*100)/100
-												end
-												return table.concat(a, ", ")
-											end),
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1),
-											TextScaled = true,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											ClearTextOnFocus = true,
-											TextXAlignment = Enum.TextXAlignment.Right,
-
-											[ref] = HSVTextBox,
-
-											[onevent "Changed"] = function(changedProperty)
-												local _HSVTextBox = get(HSVTextBox)
-												if changedProperty == "TextBounds" and _HSVTextBox and _HSVTextBox.TextBounds then
-													HSVLength:set(_HSVTextBox.TextBounds.X)
-												end
-											end,
-
-											[onevent "FocusLost"] = function()
-												local _HSVTextBox = get(HSVTextBox)
-												local _hsv = _HSVTextBox.Text:gsub(" ","")
-												local a = {get(color):ToHSV()}
-												for i,v in a do
-													a[i] = math.floor(v*100)/100
-												end
-												local _old = table.concat(a, ", ")
-												local s,result = pcall(function()
-													local b = string.split(_hsv, ",")
-													table.foreach(b, function(i,v)
-														if not tonumber(v) then
-															return nil
-														end
-													end)
-													return Color3.fromHSV(unpack(b))
-												end)
-												if s and result then
-													color:set(result)
-												else
-													_HSVTextBox.Text = _old
-												end
-											end,
-
-											[children] = {
-												UITextSizeConstraint(1,16),
-												new "UISizeConstraint" {
-													MaxSize = Vector2.new(110,16),
-													MinSize = Vector2.new(36,16)
-												},
-												new "Frame"{
-													AnchorPoint = Vector2.new(1,0.5),
-													BackgroundColor3 = theme.text2,
-													BackgroundTransparency = animate(function()
-														if not get(isSelected) then
-															return 1
-														end
-														return get(droppedFinished) and 0.5 or 1
-													end,40,1),
-													Position = UDim2.fromScale(1,1),
-													Size = animate(function()
-														return UDim2.fromOffset(math.clamp(get(HSVLength),36,110),2)
-													end,40,1),
-
-													[children] = {
-														UICorner(0,1)
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			new "Frame" {
 				Size = UDim2.fromScale(1,1),
 				BackgroundTransparency = 1,
 				[children] = {
@@ -717,6 +591,10 @@ return function(property)
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
 
+						[onevent "Activated"] = function()
+							module, setChildren = require(script.Parent.module)(createColorPickerModule())
+						end,
+
 						[children] = {
 							UIPadding(0,8),
 							UICorner(6),
@@ -727,21 +605,6 @@ return function(property)
 
 								[children] = {
 									UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Right,VA.Center,UDim.new(0,4)),
-									new "TextLabel" {
-										Visible = dropped,
-										Size = UDim2.new(0,32,0,16),
-										Text = "Hex:",
-										BackgroundTransparency = 1,
-										TextScaled = true,
-										FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-										TextXAlignment = Enum.TextXAlignment.Right,
-										TextTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1)
-									},
 									new "TextBox" {
 										Interactable = computed(function()
 											if not get(isEnabled) then
@@ -751,9 +614,7 @@ return function(property)
 										end),
 										Name = randomString(8),
 										BackgroundTransparency = 1,
-										Size = computed(function()
-											return get(dropped) and UDim2.new(1,0,0,16) or UDim2.new(1,0,0,16)
-										end),
+										Size = UDim2.new(1,0,0,16),
 										PlaceholderText = "Hex",
 										PlaceholderColor3 = theme.text2,
 										TextColor3 = theme.text,
@@ -850,15 +711,15 @@ return function(property)
 		if get(hueDown) then
 			local _hue = get(hue)
 			local newHue = UserInputService:GetMouseLocation() - _hue.AbsolutePosition - Vector2.new(0,get(offset.number))
-			newHue = Vector2.new(newHue.X, math.clamp(newHue.Y, 0, _hue.AbsoluteSize.Y))
+			newHue = Vector2.new(math.clamp(newHue.X, 0, _hue.AbsoluteSize.X), 0)
 			local _,_sat,_val = get(color):ToHSV()
-			color:set(Color3.fromHSV((_hue.AbsoluteSize.Y - newHue.Y)/_hue.AbsoluteSize.Y, _sat, _val))
+			color:set(Color3.fromHSV((_hue.AbsoluteSize.X - newHue.X)/_hue.AbsoluteSize.X, _sat, _val))
 		end
 		if get(transparencyDown) then
 			local __transparency = get(transparencyRef)
 			local newTransparency = UserInputService:GetMouseLocation() - __transparency.AbsolutePosition - Vector2.new(0,get(offset.number))
-			newTransparency = Vector2.new(0, math.clamp(newTransparency.Y, 0, __transparency.AbsoluteSize.Y))
-			transparency:set(newTransparency.Y/__transparency.AbsoluteSize.Y)
+			newTransparency = Vector2.new(math.clamp(newTransparency.X, 0, __transparency.AbsoluteSize.X),0)
+			transparency:set(newTransparency.X/__transparency.AbsoluteSize.X)
 		end
 	end))
 
@@ -888,6 +749,10 @@ return function(property)
 				_flag.status.transparency:set(get(_transparency))
 			end
 		end)
+		if _flag.private then
+			_flag.status.color:set(get(_color))
+			_flag.status.transparency:set(get(_transparency))
+		end
 	else
 		_flag.status.color:set(get(_color))
 		_flag.status.transparency:set(get(_transparency))

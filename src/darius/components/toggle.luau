@@ -22,7 +22,6 @@ return function(property)
 	local connections = utilities.connections
 	local customFont = utilities.customFont
 	local references = utilities.references
-	local randomString = utilities.randomString
 	local drag = utilities.drag
 
 	local simpleElements = require(darius.simpleElements)
@@ -72,6 +71,7 @@ return function(property)
 	local instanceName = data.find("instanceName")
 	local isMobile = data.find("isMobile")
 	local isListening = data.find("isListening")
+	local bindData = data.find("bindData")
 	local toggle = data.add(property)
 
 	-- Properties
@@ -84,20 +84,6 @@ return function(property)
 	local bind = property.Bind
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
-	local keyCode = value()
-	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
-		local _currentBinds = get(currentBinds.binds)
-		if table.find(_currentBinds, keycode) then
-			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
-		else
-			table.insert(_currentBinds, keycode)
-			if get(keyCode) then
-				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
-			end
-			currentBinds:update("binds", _currentBinds)
-			keyCode:set(keycode)
-		end
-	end
 	local flag = property.FLAG or value(toggle.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -105,6 +91,28 @@ return function(property)
 			boolean = value(false),
 			keycode = value(nil)
 		},"toggle", get(flag) == toggle.uid)
+	end
+	local keyCode = value()
+	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
+		local _currentBinds = get(currentBinds.binds)
+		local _bindData = get(bindData.bindData)
+		if table.find(_currentBinds, keycode) then
+			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
+		else
+			table.insert(_currentBinds, keycode)
+			if get(keyCode) then
+				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
+				_bindData[get(keyCode).Name] = nil
+			end
+			keyCode:set(keycode)
+			_bindData[get(keyCode).Name] = {
+				bind = get(keyCode),
+				name = get(name),
+				boolean = _flag.status.boolean
+			}
+			bindData:update("bindData", _bindData)
+			currentBinds:update("binds", _currentBinds)
+		end
 	end
 	observe(_flag.status.boolean):onChange(function()
 		if get(isEnabled) then
@@ -458,6 +466,12 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			_flag.status.boolean:set(get(default))
+			if bind then
+				_flag.status.keycode:set(get(bind).Name)
+			end
+		end
 	else
 		_flag.status.boolean:set(get(default))
 		if bind then

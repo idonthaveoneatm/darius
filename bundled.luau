@@ -53,6 +53,7 @@ function darius:Window(windowProperty)
 	local didPass, failedItems = typecheck(windowProperty,{
 		Title = "",
         Description = "",
+		Icon = "",
         HideBind = Enum.KeyCode.T,
         UseConfig = false,
         IsMobile = false,
@@ -61,6 +62,7 @@ function darius:Window(windowProperty)
         noOffset = false,
 		Parent = Instance.new("Part")
 	},{
+		windowProperty.Icon and "" or "Icon",
 		windowProperty.noOffset and "" or "noOffset",
 		windowProperty.IsMobile and "" or "IsMobile",
 		windowProperty.UseConfig and "" or "UseConfig",
@@ -92,6 +94,7 @@ function darius:Window(windowProperty)
 	data.add({number = windowProperty.noOffset and 0 or 58}, "absoluteOffset")
 	data.add({name = randomString(32)}, "instanceName")
 	data.add({binds = {}}, "currentBinds")
+	data.add({bindData = {}}, "bindData")
 	data.add({string = ""}, "searchText")
 	data.add({boolean = true}, "isVisible")
 	data.add({boolean = windowProperty.IsMobile}, "isMobile")
@@ -5350,7 +5353,6 @@ return function(property)
 	local simpleElements = require(darius.simpleElements)
 	local UIListLayout = simpleElements.UIListLayout
 	local UIPadding = simpleElements.UIPadding
-	local UIAspectRatioConstraint = simpleElements.UIAspectRatioConstraint
 	local UITextSizeConstraint = simpleElements.UITextSizeConstraint
 	local UICorner = simpleElements.UICorner
 	local SO = Enum.SortOrder
@@ -5424,9 +5426,6 @@ return function(property)
 	local selectedAnimation = animate(function()
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
-	local dropped = value(false)
-	local transparencyAnim = value(false)
-	local droppedFinished = value(false)
 
 	local hexCodeTextBox = value()
 	local hexCodeLength = value(0)
@@ -5446,9 +5445,374 @@ return function(property)
 	local transparencyRef = value()
 	local transparencyDown = value(false)
 
+	local module, setChildren
+
 	-- Colorpicker
 
-	new "TextButton" {
+	local function createColorPickerModule()
+		return {
+			Name = name,
+			Children = {
+				UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,5)),
+				new "TextButton" { -- Saturation and Value
+					Size = UDim2.fromOffset(224,224),
+	
+					[ref] = saturationValue,
+	
+					[onevent "InputBegan"] = function(input)
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+							return
+						end
+						saturationValueDown:set(true)
+						local _changed
+						_changed = input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+								saturationValueDown:set(false)
+								_changed:Disconnect()
+							end
+						end)
+					end,
+	
+					[children] = {
+						new "UIGradient" {
+							Color = computed(function()
+								return ColorSequence.new {
+									ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+									ColorSequenceKeypoint.new(1, Color3.fromHSV(({get(color):ToHSV()})[1],1,1)),
+									}
+							end)
+						},
+						new "Frame" {
+							Size = UDim2.fromScale(1,1),
+	
+							[children] = {
+								new "UIGradient" {
+									Rotation = 270,
+									Color = ColorSequence.new {
+										ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
+										ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0)),
+									},
+									Transparency = computed(function()
+										return NumberSequence.new {
+											NumberSequenceKeypoint.new(0, 0),
+											NumberSequenceKeypoint.new(1, 1),
+											}
+									end)
+								}
+							}
+						},
+						new "Frame" {
+							ZIndex = 2,
+							AnchorPoint = Vector2.new(0.5,0.5),
+							BackgroundColor3 = computed(function()
+								local _,_,_val = get(color):ToHSV()
+								return Color3.fromHSV(0,0,1-_val)
+							end),
+							Size = UDim2.fromOffset(4,4),
+							Position = computed(function()
+								local _,_sat,_val = get(color):ToHSV()
+								return UDim2.fromScale(_sat, 1-_val)
+							end)
+						}
+					}
+				},
+				new "TextButton" { -- Hue
+					Size = UDim2.new(1,0,0,24),
+	
+					[onevent "InputBegan"] = function(input)
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+							return
+						end
+						hueDown:set(true)
+						local _changed
+						_changed = input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+								hueDown:set(false)
+								_changed:Disconnect()
+							end
+						end)
+					end,
+	
+					[ref] = hue,
+	
+					[children] = {
+						new "UIGradient" {
+							Color = ColorSequence.new {
+								ColorSequenceKeypoint.new(0, Color3.fromHSV(1, 1, 1)),
+								ColorSequenceKeypoint.new(0.1, Color3.fromHSV(0.9, 1, 1)),
+								ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.8, 1, 1)),
+								ColorSequenceKeypoint.new(0.3, Color3.fromHSV(0.7, 1, 1)),
+								ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.6, 1, 1)),
+								ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
+								ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.4, 1, 1)),
+								ColorSequenceKeypoint.new(0.7, Color3.fromHSV(0.3, 1, 1)),
+								ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.2, 1, 1)),
+								ColorSequenceKeypoint.new(0.9, Color3.fromHSV(0.1, 1, 1)),
+								ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 1, 1)),
+							}
+						},
+						new "Frame" {
+							AnchorPoint = Vector2.new(0,0.5),
+							BackgroundColor3 = theme.colorpickerBar,
+							Size = UDim2.new(0,2,1,0),
+							Position = computed(function()
+								local _hue = get(color):ToHSV()
+								return UDim2.fromScale(1 - _hue,0.5)
+							end)
+						}
+					}
+				},
+				new "ImageButton" { -- Transparency
+					ZIndex = 2,
+					Size = UDim2.new(1,0,0,24),
+					BackgroundTransparency = 1,
+					Image = "rbxassetid://15612242981",
+					ScaleType = Enum.ScaleType.Crop,
+	
+					[onevent "InputBegan"] = function(input)
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+							return
+						end
+						transparencyDown:set(true)
+						local _changed
+						_changed = input.Changed:Connect(function()
+							if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
+								transparencyDown:set(false)
+								_changed:Disconnect()
+							end
+						end)
+					end,
+	
+					[ref] = transparencyRef,
+	
+					[children] = {
+						new "Frame" {
+							Size = UDim2.fromScale(1,1),
+	
+							[children] = {
+								new "UIGradient" {
+									Color = computed(function()
+										return ColorSequence.new {
+											ColorSequenceKeypoint.new(0, get(color)),
+											ColorSequenceKeypoint.new(1, get(color)),
+											}
+									end),
+									Transparency = computed(function()
+										return NumberSequence.new {
+											NumberSequenceKeypoint.new(0, 0),
+											NumberSequenceKeypoint.new(1, 1),
+											}
+									end)
+								}
+							}
+						},
+						new "Frame" {
+							AnchorPoint = Vector2.new(0,0.5),
+							BackgroundColor3 = theme.colorpickerBar,
+							Size = UDim2.new(0,2,1,0),
+							Position = computed(function()
+								return UDim2.fromScale(get(transparency),0.5)
+							end)
+						}
+					}
+				},
+				new "Frame" { -- RGB
+					Size = UDim2.new(1,0,0,16),
+					BackgroundTransparency = 1,
+	
+					[children] = {
+						UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4)),
+						{
+							new "TextLabel" {
+								Size = UDim2.new(0,0,0,16),
+								AutomaticSize = Enum.AutomaticSize.X,
+								Text = "RGB:",
+								TextColor3 = theme.text2,
+								BackgroundTransparency = 1,
+								TextSize = 16,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								TextXAlignment = Enum.TextXAlignment.Right
+							},
+							new "TextBox" {
+								Name = randomString(8),
+								BackgroundTransparency = 1,
+								Size = UDim2.new(0,42,0,16),
+								PlaceholderText = "RGB",
+								PlaceholderColor3 = theme.text2,
+								AutomaticSize = Enum.AutomaticSize.X,
+								TextColor3 = theme.text,
+								Text = computed(function()
+									local a = {get(color).R,get(color).G,get(color).B}
+									for i,v in a do
+										a[i] = math.floor(math.clamp(v*255,0,255))
+									end
+									return table.concat(a, ", ")
+								end),
+								TextScaled = true,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								ClearTextOnFocus = true,
+								TextXAlignment = Enum.TextXAlignment.Right,
+	
+								[ref] = RGBTextBox,
+	
+								[onevent "Changed"] = function(changedProperty)
+									local _RGBTextBox = get(RGBTextBox)
+									if changedProperty == "TextBounds" and _RGBTextBox and _RGBTextBox.TextBounds then
+										RGBLength:set(_RGBTextBox.TextBounds.X)
+									end
+								end,
+	
+								[onevent "FocusLost"] = function()
+									local _RGBTextBox = get(RGBTextBox)
+									local _rgb = _RGBTextBox.Text:gsub(" ","")
+									local a = {get(color).R,get(color).G,get(color).B}
+									for i,v in a do
+										a[i] = math.floor(math.clamp(v*255,0,255))
+									end
+									local _old = table.concat(a, ", ")
+									local s,result = pcall(function()
+										local b = string.split(_rgb, ",")
+										table.foreach(b, function(i,v)
+											if not tonumber(v) then
+												return nil
+											end
+											b[i] = math.clamp(v, 0, 255)
+										end)
+										return Color3.fromRGB(b[1],b[2],b[3])
+									end)
+									if s and result then
+										color:set(result)
+									else
+										_RGBTextBox.Text = _old
+									end
+								end,
+	
+								[children] = {
+									UITextSizeConstraint(1,16),
+									new "UISizeConstraint" {
+										MaxSize = Vector2.new(110,16),
+										MinSize = Vector2.new(42,16)
+									},
+									new "Frame"{
+										AnchorPoint = Vector2.new(1,0.5),
+										BackgroundColor3 = theme.text2,
+										Position = UDim2.fromScale(1,1),
+										Size = animate(function()
+											return UDim2.fromOffset(math.clamp(get(RGBLength),0,110),2)
+										end,40,1),
+	
+										[children] = {
+											UICorner(0,1)
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				new "Frame" { -- HSV
+					Size = UDim2.new(1,0,0,16),
+					BackgroundTransparency = 1,
+	
+					[children] = {
+						UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,5)),
+						{
+							new "TextLabel" {
+								Size = UDim2.new(0,0,0,16),
+								AutomaticSize = Enum.AutomaticSize.X,
+								Text = "HSV:",
+								TextColor3 = theme.text2,
+								BackgroundTransparency = 1,
+								TextSize = 16,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								TextXAlignment = Enum.TextXAlignment.Right
+							},
+							new "TextBox" {
+								Name = randomString(8),
+								BackgroundTransparency = 1,
+								Size = UDim2.new(0,36,0,16),
+								AutomaticSize = Enum.AutomaticSize.X,
+								PlaceholderText = "HSV",
+								PlaceholderColor3 = theme.text2,
+								TextColor3 = theme.text,
+								Text = computed(function()
+									local a = {get(color):ToHSV()}
+									for i,v in a do
+										a[i] = math.floor(v*100)/100
+									end
+									return table.concat(a, ", ")
+								end),
+								TextScaled = true,
+								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+								ClearTextOnFocus = true,
+								TextXAlignment = Enum.TextXAlignment.Right,
+	
+								[ref] = HSVTextBox,
+	
+								[onevent "Changed"] = function(changedProperty)
+									local _HSVTextBox = get(HSVTextBox)
+									if changedProperty == "TextBounds" and _HSVTextBox and _HSVTextBox.TextBounds then
+										HSVLength:set(_HSVTextBox.TextBounds.X)
+									end
+								end,
+	
+								[onevent "FocusLost"] = function()
+									local _HSVTextBox = get(HSVTextBox)
+									local _hsv = _HSVTextBox.Text:gsub(" ","")
+									local a = {get(color):ToHSV()}
+									for i,v in a do
+										a[i] = math.floor(v*100)/100
+									end
+									local _old = table.concat(a, ", ")
+									local s,result = pcall(function()
+										local b = string.split(_hsv, ",")
+										table.foreach(b, function(i,v)
+											if not tonumber(v) then
+												return nil
+											end
+										end)
+										return Color3.fromHSV(unpack(b))
+									end)
+									if s and result then
+										color:set(result)
+									else
+										_HSVTextBox.Text = _old
+									end
+								end,
+	
+								[children] = {
+									UITextSizeConstraint(1,16),
+									new "UISizeConstraint" {
+										MaxSize = Vector2.new(110,16),
+										MinSize = Vector2.new(36,16)
+									},
+									new "Frame"{
+										AnchorPoint = Vector2.new(1,0.5),
+										BackgroundColor3 = theme.text2,
+										Position = UDim2.fromScale(1,1),
+										Size = animate(function()
+											return UDim2.fromOffset(math.clamp(get(HSVLength),36,110),2)
+										end,40,1),
+	
+										[children] = {
+											UICorner(0,1)
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	end
+	observe(isEnabled):onChange(function()
+		if not get(isEnabled) and typeof(module) == "Instance" then
+			module:Destroy()
+		end
+	end)
+
+	new "Frame" {
 		Interactable = computed(function()
 			if not get(isEnabled) then
 				return false
@@ -5462,32 +5826,9 @@ return function(property)
 			return true
 		end),
 		Parent = _parent,
-		Size = animate(function()
-			return get(dropped) and UDim2.new(1,0,0,156) or UDim2.new(1,0,0,36)
-		end,40,1),
-		BackgroundTransparency = animate(function()
-			if not get(isSelected) then
-				return 1
-			end
-			return get(transparencyAnim) and 0 or 1
-		end,40,1),
+		Size = UDim2.new(1,0,0,36),
+		BackgroundTransparency = 1,
 		BackgroundColor3 = theme.background2,
-
-		[onevent "Activated"] = function()
-			if get(transparencyAnim) then
-				droppedFinished:set(false)
-				task.wait(0.15)
-				dropped:set(not get(dropped))
-				task.wait(0.15)
-				transparencyAnim:set(not get(transparencyAnim))
-			else
-				transparencyAnim:set(not get(transparencyAnim))
-				task.wait(0.15)
-				dropped:set(not get(dropped))
-				task.wait(0.15)
-				droppedFinished:set(true)
-			end
-		end,
 
 		[children] = {
 			UICorner(6),
@@ -5536,470 +5877,6 @@ return function(property)
 				}
 			},
 			new "Frame" {
-				ZIndex = 2,
-				Size = UDim2.fromScale(1,1),
-				BackgroundTransparency = 1,
-
-				[children] = {
-					UIPadding(36,0,0,0),
-					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,8)),
-					new "Frame" {
-						Visible = dropped,
-						Size = UDim2.new(1,0,0,120-44),
-						BackgroundTransparency = 1,
-
-						[children] = {
-							UIPadding(0,8),
-							UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Right,VA.Top,UDim.new(0,8)),
-							new "TextButton" { -- Saturation and Value
-								Size = UDim2.fromScale(0,1),
-								BackgroundTransparency = animate(function()
-									if not get(isSelected) then
-										return 1
-									end
-									return get(droppedFinished) and 0 or 1
-								end,40,1),
-
-								[ref] = saturationValue,
-
-								[onevent "InputBegan"] = function(input)
-									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-										return
-									end
-									saturationValueDown:set(true)
-									local _changed
-									_changed = input.Changed:Connect(function()
-										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
-											saturationValueDown:set(false)
-											_changed:Disconnect()
-										end
-									end)
-								end,
-
-								[children] = {
-									UIAspectRatioConstraint(2,Enum.AspectType.ScaleWithParentSize,Enum.DominantAxis.Height),
-									new "UIGradient" {
-										Color = computed(function()
-											return ColorSequence.new {
-												ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-												ColorSequenceKeypoint.new(1, Color3.fromHSV(({get(color):ToHSV()})[1],1,1)),
-											  }
-										end)
-									},
-									new "Frame" {
-										Size = UDim2.fromScale(1,1),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-
-										[children] = {
-											new "UIGradient" {
-												Rotation = 270,
-												Color = ColorSequence.new {
-													ColorSequenceKeypoint.new(0, Color3.fromRGB(0,0,0)),
-													ColorSequenceKeypoint.new(1, Color3.fromRGB(0,0,0)),
-												},
-												Transparency = computed(function()
-													return NumberSequence.new {
-														NumberSequenceKeypoint.new(0, 0),
-														NumberSequenceKeypoint.new(1, 1),
-													  }
-												end)
-											}
-										}
-									},
-									new "Frame" {
-										ZIndex = 2,
-										AnchorPoint = Vector2.new(0.5,0.5),
-										BackgroundColor3 = computed(function()
-											local _,_,_val = get(color):ToHSV()
-											return Color3.fromHSV(0,0,1-_val)
-										end),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-										Size = UDim2.fromOffset(4,4),
-										Position = computed(function()
-											local _,_sat,_val = get(color):ToHSV()
-											return UDim2.fromScale(_sat, 1-_val)
-										end)
-									}
-								}
-							},
-							new "TextButton" { -- Hue
-								Size = UDim2.new(0,36,1),
-								BackgroundTransparency = animate(function()
-									if not get(isSelected) then
-										return 1
-									end
-									return get(droppedFinished) and 0 or 1
-								end,40,1),
-
-								[onevent "InputBegan"] = function(input)
-									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-										return
-									end
-									hueDown:set(true)
-									local _changed
-									_changed = input.Changed:Connect(function()
-										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
-											hueDown:set(false)
-											_changed:Disconnect()
-										end
-									end)
-								end,
-
-								[ref] = hue,
-
-								[children] = {
-									new "UIGradient" {
-										Rotation = 90,
-										Color = ColorSequence.new {
-											ColorSequenceKeypoint.new(0, Color3.fromHSV(1, 1, 1)),
-											ColorSequenceKeypoint.new(0.1, Color3.fromHSV(0.9, 1, 1)),
-											ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.8, 1, 1)),
-											ColorSequenceKeypoint.new(0.3, Color3.fromHSV(0.7, 1, 1)),
-											ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.6, 1, 1)),
-											ColorSequenceKeypoint.new(0.5, Color3.fromHSV(0.5, 1, 1)),
-											ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.4, 1, 1)),
-											ColorSequenceKeypoint.new(0.7, Color3.fromHSV(0.3, 1, 1)),
-											ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.2, 1, 1)),
-											ColorSequenceKeypoint.new(0.9, Color3.fromHSV(0.1, 1, 1)),
-											ColorSequenceKeypoint.new(1, Color3.fromHSV(0, 1, 1)),
-										}
-									},
-									new "Frame" {
-										AnchorPoint = Vector2.new(0,0.5),
-										BackgroundColor3 = theme.colorpickerBar,
-										Size = UDim2.new(1,0,0,2),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-										Position = computed(function()
-											local _hue = get(color):ToHSV()
-											return UDim2.fromScale(0,1 - _hue)
-										end)
-									}
-								}
-							},
-							new "ImageButton" { -- Transparency
-								ZIndex = 2,
-								Size = UDim2.new(0,36,1),
-								BackgroundTransparency = 1,
-								Image = "rbxassetid://15612242981",
-								ScaleType = Enum.ScaleType.Crop,
-								ImageTransparency = animate(function()
-									if not get(isSelected) then
-										return 1
-									end
-									return get(droppedFinished) and 0 or 1
-								end,40,1),
-
-								[onevent "InputBegan"] = function(input)
-									if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
-										return
-									end
-									transparencyDown:set(true)
-									local _changed
-									_changed = input.Changed:Connect(function()
-										if input.UserInputState == Enum.UserInputState.End or input.UserInputState.Cancel then
-											transparencyDown:set(false)
-											_changed:Disconnect()
-										end
-									end)
-								end,
-
-								[ref] = transparencyRef,
-
-								[children] = {
-									new "Frame" {
-										Size = UDim2.fromScale(1,1),
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-
-										[children] = {
-											new "UIGradient" {
-												Rotation = 90,
-												Color = computed(function()
-													return ColorSequence.new {
-														ColorSequenceKeypoint.new(0, get(color)),
-														ColorSequenceKeypoint.new(1, get(color)),
-													  }
-												end),
-												Transparency = computed(function()
-													return NumberSequence.new {
-														NumberSequenceKeypoint.new(0, 0),
-														NumberSequenceKeypoint.new(1, 1),
-													  }
-												end)
-											}
-										}
-									},
-									new "Frame" {
-										AnchorPoint = Vector2.new(0,0.5),
-										BackgroundColor3 = theme.colorpickerBar,
-										BackgroundTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1),
-										Size = UDim2.new(1,0,0,2),
-										Position = computed(function()
-											return UDim2.fromScale(0,get(transparency))
-										end)
-									}
-								}
-							},
-						}
-					},
-					new "Frame" {
-						Size = UDim2.new(1,-136,0,36),
-						BackgroundTransparency = 1,
-
-						[children] = {
-							UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Right,VA.Center,UDim.new(0,8)),
-							new "Frame" {
-								Size = UDim2.fromOffset(0,32),
-								AutomaticSize = Enum.AutomaticSize.X,
-								BackgroundTransparency = 1,
-
-								[children] = {
-									UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Center,VA.Center,UDim.new(0,4)),
-									{
-										new "TextLabel" {
-											Size = UDim2.new(0,0,0,16),
-											AutomaticSize = Enum.AutomaticSize.X,
-											Text = "RGB:",
-											BackgroundTransparency = 1,
-											TextSize = 16,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											TextXAlignment = Enum.TextXAlignment.Right,
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1)
-										},
-										new "TextBox" {
-											Name = randomString(8),
-											BackgroundTransparency = 1,
-											Size = UDim2.new(0,42,0,16),
-											PlaceholderText = "RGB",
-											PlaceholderColor3 = theme.text2,
-											AutomaticSize = Enum.AutomaticSize.X,
-											TextColor3 = theme.text,
-											Text = computed(function()
-												local a = {get(color).R,get(color).G,get(color).B}
-												for i,v in a do
-													a[i] = math.floor(math.clamp(v*255,0,255))
-												end
-												return table.concat(a, ", ")
-											end),
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1),
-											TextScaled = true,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											ClearTextOnFocus = true,
-											TextXAlignment = Enum.TextXAlignment.Right,
-
-											[ref] = RGBTextBox,
-
-											[onevent "Changed"] = function(changedProperty)
-												local _RGBTextBox = get(RGBTextBox)
-												if changedProperty == "TextBounds" and _RGBTextBox and _RGBTextBox.TextBounds then
-													RGBLength:set(_RGBTextBox.TextBounds.X)
-												end
-											end,
-
-											[onevent "FocusLost"] = function()
-												local _RGBTextBox = get(RGBTextBox)
-												local _rgb = _RGBTextBox.Text:gsub(" ","")
-												local a = {get(color).R,get(color).G,get(color).B}
-												for i,v in a do
-													a[i] = math.floor(math.clamp(v*255,0,255))
-												end
-												local _old = table.concat(a, ", ")
-												local s,result = pcall(function()
-													local b = string.split(_rgb, ",")
-													table.foreach(b, function(i,v)
-														if not tonumber(v) then
-															return nil
-														end
-														b[i] = math.clamp(v, 0, 255)
-													end)
-													return Color3.fromRGB(b[1],b[2],b[3])
-												end)
-												if s and result then
-													color:set(result)
-												else
-													_RGBTextBox.Text = _old
-												end
-											end,
-
-											[children] = {
-												UITextSizeConstraint(1,16),
-												new "UISizeConstraint" {
-													MaxSize = Vector2.new(110,16),
-													MinSize = Vector2.new(42,16)
-												},
-												new "Frame"{
-													AnchorPoint = Vector2.new(1,0.5),
-													BackgroundColor3 = theme.text2,
-													BackgroundTransparency = animate(function()
-														if not get(isSelected) then
-															return 1
-														end
-														return get(droppedFinished) and 0.5 or 1
-													end,40,1),
-													Position = UDim2.fromScale(1,1),
-													Size = animate(function()
-														return UDim2.fromOffset(math.clamp(get(RGBLength),0,110),2)
-													end,40,1),
-
-													[children] = {
-														UICorner(0,1)
-													}
-												}
-											}
-										}
-									}
-								}
-							},
-							new "Frame" {
-								Size = UDim2.fromOffset(0,32),
-								AutomaticSize = Enum.AutomaticSize.X,
-								BackgroundTransparency = 1,
-
-								[children] = {
-									UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Center,VA.Center,UDim.new(0,5)),
-									{
-										new "TextLabel" {
-											Size = UDim2.new(0,0,0,16),
-											AutomaticSize = Enum.AutomaticSize.X,
-											Text = "HSV:",
-											BackgroundTransparency = 1,
-											TextSize = 16,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											TextXAlignment = Enum.TextXAlignment.Right,
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1)
-										},
-										new "TextBox" {
-											Name = randomString(8),
-											BackgroundTransparency = 1,
-											Size = UDim2.new(0,36,0,16),
-											AutomaticSize = Enum.AutomaticSize.X,
-											PlaceholderText = "HSV",
-											PlaceholderColor3 = theme.text2,
-											TextColor3 = theme.text,
-											Text = computed(function()
-												local a = {get(color):ToHSV()}
-												for i,v in a do
-													a[i] = math.floor(v*100)/100
-												end
-												return table.concat(a, ", ")
-											end),
-											TextTransparency = animate(function()
-												if not get(isSelected) then
-													return 1
-												end
-												return get(droppedFinished) and 0 or 1
-											end,40,1),
-											TextScaled = true,
-											FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-											ClearTextOnFocus = true,
-											TextXAlignment = Enum.TextXAlignment.Right,
-
-											[ref] = HSVTextBox,
-
-											[onevent "Changed"] = function(changedProperty)
-												local _HSVTextBox = get(HSVTextBox)
-												if changedProperty == "TextBounds" and _HSVTextBox and _HSVTextBox.TextBounds then
-													HSVLength:set(_HSVTextBox.TextBounds.X)
-												end
-											end,
-
-											[onevent "FocusLost"] = function()
-												local _HSVTextBox = get(HSVTextBox)
-												local _hsv = _HSVTextBox.Text:gsub(" ","")
-												local a = {get(color):ToHSV()}
-												for i,v in a do
-													a[i] = math.floor(v*100)/100
-												end
-												local _old = table.concat(a, ", ")
-												local s,result = pcall(function()
-													local b = string.split(_hsv, ",")
-													table.foreach(b, function(i,v)
-														if not tonumber(v) then
-															return nil
-														end
-													end)
-													return Color3.fromHSV(unpack(b))
-												end)
-												if s and result then
-													color:set(result)
-												else
-													_HSVTextBox.Text = _old
-												end
-											end,
-
-											[children] = {
-												UITextSizeConstraint(1,16),
-												new "UISizeConstraint" {
-													MaxSize = Vector2.new(110,16),
-													MinSize = Vector2.new(36,16)
-												},
-												new "Frame"{
-													AnchorPoint = Vector2.new(1,0.5),
-													BackgroundColor3 = theme.text2,
-													BackgroundTransparency = animate(function()
-														if not get(isSelected) then
-															return 1
-														end
-														return get(droppedFinished) and 0.5 or 1
-													end,40,1),
-													Position = UDim2.fromScale(1,1),
-													Size = animate(function()
-														return UDim2.fromOffset(math.clamp(get(HSVLength),36,110),2)
-													end,40,1),
-
-													[children] = {
-														UICorner(0,1)
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			},
-			new "Frame" {
 				Size = UDim2.fromScale(1,1),
 				BackgroundTransparency = 1,
 				[children] = {
@@ -6039,6 +5916,10 @@ return function(property)
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
 
+						[onevent "Activated"] = function()
+							module, setChildren = require(script.Parent.module)(createColorPickerModule())
+						end,
+
 						[children] = {
 							UIPadding(0,8),
 							UICorner(6),
@@ -6049,21 +5930,6 @@ return function(property)
 
 								[children] = {
 									UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Right,VA.Center,UDim.new(0,4)),
-									new "TextLabel" {
-										Visible = dropped,
-										Size = UDim2.new(0,32,0,16),
-										Text = "Hex:",
-										BackgroundTransparency = 1,
-										TextScaled = true,
-										FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-										TextXAlignment = Enum.TextXAlignment.Right,
-										TextTransparency = animate(function()
-											if not get(isSelected) then
-												return 1
-											end
-											return get(droppedFinished) and 0 or 1
-										end,40,1)
-									},
 									new "TextBox" {
 										Interactable = computed(function()
 											if not get(isEnabled) then
@@ -6073,9 +5939,7 @@ return function(property)
 										end),
 										Name = randomString(8),
 										BackgroundTransparency = 1,
-										Size = computed(function()
-											return get(dropped) and UDim2.new(1,0,0,16) or UDim2.new(1,0,0,16)
-										end),
+										Size = UDim2.new(1,0,0,16),
 										PlaceholderText = "Hex",
 										PlaceholderColor3 = theme.text2,
 										TextColor3 = theme.text,
@@ -6172,15 +6036,15 @@ return function(property)
 		if get(hueDown) then
 			local _hue = get(hue)
 			local newHue = UserInputService:GetMouseLocation() - _hue.AbsolutePosition - Vector2.new(0,get(offset.number))
-			newHue = Vector2.new(newHue.X, math.clamp(newHue.Y, 0, _hue.AbsoluteSize.Y))
+			newHue = Vector2.new(math.clamp(newHue.X, 0, _hue.AbsoluteSize.X), 0)
 			local _,_sat,_val = get(color):ToHSV()
-			color:set(Color3.fromHSV((_hue.AbsoluteSize.Y - newHue.Y)/_hue.AbsoluteSize.Y, _sat, _val))
+			color:set(Color3.fromHSV((_hue.AbsoluteSize.X - newHue.X)/_hue.AbsoluteSize.X, _sat, _val))
 		end
 		if get(transparencyDown) then
 			local __transparency = get(transparencyRef)
 			local newTransparency = UserInputService:GetMouseLocation() - __transparency.AbsolutePosition - Vector2.new(0,get(offset.number))
-			newTransparency = Vector2.new(0, math.clamp(newTransparency.Y, 0, __transparency.AbsoluteSize.Y))
-			transparency:set(newTransparency.Y/__transparency.AbsoluteSize.Y)
+			newTransparency = Vector2.new(math.clamp(newTransparency.X, 0, __transparency.AbsoluteSize.X),0)
+			transparency:set(newTransparency.X/__transparency.AbsoluteSize.X)
 		end
 	end))
 
@@ -6210,6 +6074,10 @@ return function(property)
 				_flag.status.transparency:set(get(_transparency))
 			end
 		end)
+		if _flag.private then
+			_flag.status.color:set(get(_color))
+			_flag.status.transparency:set(get(_transparency))
+		end
 	else
 		_flag.status.color:set(get(_color))
 		_flag.status.transparency:set(get(_transparency))
@@ -6820,6 +6688,17 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			if get(multiselect) then
+				if default and #get(default) > 0 then
+					_flag.status.items:set(get(default))
+				end
+			else
+				if default then
+					_flag.status.item:set(get(default))
+				end
+			end
+		end
 	else
 		if get(multiselect) then
 			if default and #get(default) > 0 then
@@ -6989,6 +6868,7 @@ return function(property)
 	local isMobile = data.find("isMobile")
 	local instanceName = data.find("instanceName")
 	local isListening = data.find("isListening")
+	local bindData = data.find("bindData")
 	local keybind = data.add(property)
 
 	-- Properties
@@ -7002,15 +6882,22 @@ return function(property)
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
+		local _bindData = get(bindData.bindData)
 		if table.find(_currentBinds, keycode) then
 			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
 		else
 			table.insert(_currentBinds, keycode)
 			if get(keyCode) then
 				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
+				_bindData[get(keyCode).Name] = nil
 			end
-			currentBinds:update("binds", _currentBinds)
 			keyCode:set(keycode)
+			_bindData[get(keyCode).Name] = {
+				bind = get(keyCode),
+				name = get(name)
+			}
+			bindData:update("bindData", _bindData)
+			currentBinds:update("binds", _currentBinds)
 		end
 	end
 	local flag = property.FLAG or value(keybind.uid)
@@ -7067,6 +6954,14 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
+	local function findKeyCode(keyName)
+		for _,v in Enum.KeyCode do
+			if v.Name and v.Name == keyName then
+				return v
+			end
+		end
+		return nil
+	end
 
 	-- Keybind
 
@@ -7327,6 +7222,11 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			if bind then
+				_flag.status.keycode:set(get(bind).Name)
+			end
+		end
 	else
 		if bind then
 			_flag.status.keycode:set(get(bind).Name)
@@ -7368,11 +7268,17 @@ return function(property)
         local value = fusion.Value
         local computed = fusion.Computed
         local observe = fusion.Observer
+		local onevent = fusion.OnEvent
 
 	local simpleElements = require(darius.simpleElements)
 	local UICorner = simpleElements.UICorner
 	local UIPadding = simpleElements.UIPadding
 	local UITextSizeConstraint = simpleElements.UITextSizeConstraint
+	local UIListLayout = simpleElements.UIListLayout
+	local SO = Enum.SortOrder
+	local FD = Enum.FillDirection
+	local HA = Enum.HorizontalAlignment
+	local VA = Enum.VerticalAlignment
 
     local utilities = require(darius.utilities)
     local get = utilities.get
@@ -7385,6 +7291,7 @@ return function(property)
 	local selectedTab = data.find("selectedTab")
 	local searchText = data.find("searchText")
     local currentBinds = data.find("currentBinds")
+	local bindData = data.find("bindData")
 	local keybindList = data.add(property)
 
 	-- Properties
@@ -7433,10 +7340,43 @@ return function(property)
         end)
         return table.concat(tmp, ", ")
     end
+	local name = value("Active Keybinds")
+
+	local setChildren, module
 
 	-- keybindList
 
-	new "Frame" {
+	module, setChildren = require(script.Parent.module)({
+		Name = name,
+		Children = {}
+	})
+
+	local function updateModule(tbl)
+		local newChildren = {
+			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,5))
+		}
+		local _bindData = get(bindData.bindData)
+		for _,v in get(currentBinds.binds) do
+			local _data = _bindData[v.Name]
+			table.insert(newChildren, new "TextLabel" {
+				Size = UDim2.new(1,0,0,14),
+				BackgroundTransparency = 1,
+				TextColor3 = theme.text,
+				FontFace = customFont("Montserrat", Enum.FontWeight.Regular),
+				TextXAlignment = Enum.TextXAlignment.Left,
+				RichText = true,
+				Text = computed(function()
+					if _data.boolean then
+						return `[{_data.bind.Name}] {_data.name} (<i>{string.upper(tostring(get(_data.boolean)))}</i>)`
+					end
+					return `[{_data.bind.Name}] {_data.name}`
+				end)
+			})
+		end
+		setChildren(newChildren)
+	end
+
+	new "TextButton" {	
 		Visible = computed(function()
 			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) then
 				return false
@@ -7450,6 +7390,18 @@ return function(property)
 			return UDim2.new(1,0,0,36 + get(ySize))
 		end),
 		AutomaticSize = Enum.AutomaticSize.Y,
+
+		[onevent "Activated"] = function()
+			if typeof(module) == "Instance" then
+				module:Destroy()
+				module = nil
+			end
+			module, setChildren = require(script.Parent.module)({
+				Name = name,
+				Children = {}
+			})
+			updateModule(get(currentBinds.binds))
+		end,
 
 		[children] = {
 			UICorner(6),
@@ -7502,6 +7454,11 @@ return function(property)
 			}
 		}
 	}
+	
+	observe(currentBinds.binds):onChange(function()
+		updateModule(get(currentBinds.binds))
+	end)
+	updateModule(get(currentBinds.binds))
 
     body:set(createBody(get(currentBinds.binds)))
     observe(currentBinds.binds):onChange(function()
@@ -7611,6 +7568,175 @@ return function(property)
 end
 end)() end,
     [72] = function()local wax,script,require=ImportGlobals(72)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+return function(property)
+	local Bundles = require(darius.Bundles)
+	local data = Bundles.data
+	local theme = Bundles.themeSystem
+	local icons = Bundles.icons
+	local Fusion = Bundles.Fusion
+		local new = Fusion.New
+		local children = Fusion.Children
+		local value = Fusion.Value
+		local observe = Fusion.Observer
+		local onevent = Fusion.OnEvent
+		local computed = Fusion.Computed
+
+	local utilities = require(darius.utilities)
+	local get = utilities.get
+	local animate = utilities.animate
+	local typecheck = utilities.typecheck
+	local customFont = utilities.customFont
+    local drag = utilities.drag
+    local references = utilities.references
+    local connections = utilities.connections
+
+	local simpleElements = require(darius.simpleElements)
+	local UIListLayout = simpleElements.UIListLayout
+	local UIPadding = simpleElements.UIPadding
+	local UICorner = simpleElements.UICorner
+	local SO = Enum.SortOrder
+	local FD = Enum.FillDirection
+	local HA = Enum.HorizontalAlignment
+	local VA = Enum.VerticalAlignment
+
+	-- Typecheck
+
+	local didPass, failedItems = typecheck(property,{
+		Name = {},
+        Children = {}
+	},{})
+	assert(didPass, table.concat(failedItems, "\n"))
+
+    -- Data
+
+    local instanceName = data.find("instanceName")
+
+    -- Properties
+
+    local name = property.Name
+    local _children = value(property.Children)
+
+    -- Variables
+
+    local screenGui = references.get(get(instanceName.name))
+    local down = value(false)
+
+    -- Module
+
+    local module
+    module = new "TextButton" {
+        Parent = screenGui,
+        Size = UDim2.fromOffset(240,11),
+        Position = UDim2.fromOffset(10,10),
+        BackgroundTransparency = 1,
+
+        [onevent "MouseButton1Down"] = function()
+            down:set(true)
+        end,
+
+        [children] = {
+            new "Frame" {
+                Position = UDim2.new(0.5,-120,0,0),
+                Size = UDim2.fromOffset(240,0),
+                BackgroundColor3 = theme.background2,
+                AutomaticSize = Enum.AutomaticSize.Y,
+
+                [children] = {
+                    UICorner(4),
+                    UIPadding(8),
+                    new "TextButton" {
+                        AnchorPoint = Vector2.new(1,0),
+                        Position = UDim2.fromScale(1,0),
+                        Size = UDim2.fromOffset(32,32),
+                        BackgroundColor3 = theme.selectedTab,
+
+                        [onevent "Activated"] = function()
+                            module:Destroy()
+                        end,
+
+                        [children] = {
+                            UICorner(6),
+                            new "ImageLabel" {
+                                AnchorPoint = Vector2.new(0.5,0.5),
+                                Position = UDim2.fromScale(0.5,0.5),
+                                Size = UDim2.fromOffset(30,30),
+                                BackgroundTransparency = 1,
+                                Image = icons.close,
+                                ImageColor3 = theme.red,
+                                ImageTransparency = 0
+                            }
+                        }
+                    },
+                    new "Frame" {
+                        BackgroundTransparency = 1,
+                        Size = UDim2.new(1,0,0,0),
+                        AutomaticSize = Enum.AutomaticSize.Y,
+
+                        [children] = {
+                            UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,8)),
+                            new "Frame" {
+                                Size = animate(function()
+                                    return get(down) and UDim2.new(0.4,0,0,6) or UDim2.new(0.25,0,0,6)
+                                end,40,1),
+                                BackgroundColor3 = theme.text2,
+                                BackgroundTransparency = animate(function()
+                                    return get(down) and 0 or 0.5
+                                end,40,1),
+
+                                [children] = {
+                                    UICorner(6)
+                                }
+                            },
+                            new "Frame" {
+                                Size = UDim2.new(1,0,0,0),
+                                BackgroundTransparency = 1,
+                                AutomaticSize = Enum.AutomaticSize.Y,
+
+                                [children] = {
+                                    new "TextLabel" {
+                                        Size = UDim2.new(1,-40,0,18),
+                                        BackgroundTransparency = 1,
+                                        FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+                                        TextColor3 = theme.text,
+                                        TextScaled = true,
+                                        Text = name,
+                                        TextXAlignment = Enum.TextXAlignment.Left,
+								        RichText = true
+                                    },
+                                    new "Frame" {
+                                        Size = UDim2.new(1,0,0,0),
+                                        Position = UDim2.fromOffset(0,26),
+                                        BackgroundTransparency = 1,
+                                        AutomaticSize = Enum.AutomaticSize.Y,
+
+                                        [children] = _children
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    local connection, onEnd = drag(module, 15)
+    local connection2 = onEnd:Connect(function()
+        down:set(false)
+    end)
+    connections.add(connection)
+    connections.add(connection2)
+    module.Destroying:Once(function()
+        connection:Disconnect()
+        connection2:Disconnect()
+    end)
+    return module, function(...)
+        _children:set(...)
+    end
+end
+end)() end,
+    [73] = function()local wax,script,require=ImportGlobals(73)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local bundles = require(darius.Bundles)
     local theme = bundles.themeSystem
@@ -7879,7 +8005,7 @@ return function(property)
     end)
 end
 end)() end,
-    [73] = function()local wax,script,require=ImportGlobals(73)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [74] = function()local wax,script,require=ImportGlobals(74)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
     local bundles = require(darius.Bundles)
@@ -8032,7 +8158,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [74] = function()local wax,script,require=ImportGlobals(74)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [75] = function()local wax,script,require=ImportGlobals(75)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
 	local Bundles = require(darius.Bundles)
@@ -8096,8 +8222,6 @@ return function(property)
 
 	local selectedTab = data.find("selectedTab")
 	local useConfig = data.find("useConfig")
-	local flags = data.find("flags")
-	local configLoaded = data.find("configLoaded")
 	local searchText = data.find("searchText")
 	local slider = data.add(property)
 
@@ -8112,7 +8236,10 @@ return function(property)
 	local roundTo = property.DecimalPlace or value(0)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
-	local default = property.Default and value(math.clamp(get(property.Default), get(min), get(max))) or value(get(min))
+	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
+	if not get(default) then
+		default = value(get(min))
+	end
 	local flag = property.FLAG or value(slider.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -8140,7 +8267,7 @@ return function(property)
 		return tonumber(string.format('%.' .. get(roundTo) .. 'f', Value))
 	end
 	local percentage = value(0)
-	
+
 	observe(_flag.status.percentageOf):onChange(function()
 		percentage:set(mapValue(get(_flag.status.percentageOf), get(min), get(max), 0, 1))
 		if not get(isEnabled) then
@@ -8149,8 +8276,8 @@ return function(property)
 		task.spawn(get(callback), get(_flag.status.percentageOf))
 	end)
 	local textbuttonRef = value()
-	local textlabelX = value(10)
-	local textlabelRef = value()
+	local textboxX = value(10)
+	local textBoxRef = value()
 	local button1Down = value(false)
 	UserInputService.InputEnded:Connect(function(input)
 		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and get(button1Down) then
@@ -8260,36 +8387,46 @@ return function(property)
 								[children] = {
 									UICorner(4),
 									UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Right,VA.Center,UDim.new(0,1)),
-									new "TextLabel" {
+									new "TextBox" {
 										FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 										Size = UDim2.new(0,0,0,14),
 										BackgroundTransparency = 1,
 										TextColor3 = theme.text2,
 										TextTransparency = selectedAnimation,
 										TextScaled = true,
+										ClearTextOnFocus = true,
 										AnchorPoint = Vector2.new(1,0.5),
 										Position = UDim2.new(1,0,0.5,0),
 										Text = computed(function()
-											if get(_flag.status.percentageOf) then
-												if get(displayAsPercent) then
-													return tostring(round(get(percentage) * 100)).."%"
-												end
-												return get(_flag.status.percentageOf)
+											if get(displayAsPercent) then
+												return tostring(round(get(percentage) * 100)).."%"
 											end
-											return ""
+											return get(_flag.status.percentageOf) or ""
 										end),
 										TextXAlignment = Enum.TextXAlignment.Right,
 										RichText = true,
 										AutomaticSize = Enum.AutomaticSize.X,
 
 										[onevent "Changed"] = function(changedProperty)
-											local _textlabel = get(textlabelRef)
-											if changedProperty == "AbsoluteSize" and _textlabel and _textlabel.AbsoluteSize then
-												textlabelX:set(_textlabel.AbsoluteSize.X)
+											local textbox = get(textBoxRef)
+											if changedProperty == "AbsoluteSize" and textbox and textbox.AbsoluteSize then
+												textboxX:set(textbox.AbsoluteSize.X)
 											end
 										end,
 
-										[ref] = textlabelRef,
+										[onevent "FocusLost"] = function()
+											local textbox = get(textBoxRef)
+											if tonumber(textbox.Text) then
+												_flag.status.percentageOf:set(math.clamp(tonumber(textbox.Text), get(min), get(max)))
+											else
+												if get(displayAsPercent) then
+													textbox.Text = tostring(round(get(percentage) * 100)).."%"
+												end
+												textbox.Text = get(_flag.status.percentageOf)
+											end
+										end,
+
+										[ref] = textBoxRef,
 
 										[children] = {
 											UIPadding(0,5,0,5)
@@ -8304,7 +8441,7 @@ return function(property)
 											return 1
 										end,40,1),
 										Size = animate(function()
-											return UDim2.fromOffset(get(textlabelX),2)
+											return UDim2.fromOffset(get(textboxX),2)
 										end,40,1),
 
 										[children] = {
@@ -8420,6 +8557,9 @@ return function(property)
 				_flag.status.percentageOf:set(get(default))
 			end
 		end)
+		if _flag.private then
+			_flag.status.percentageOf:set(get(default))
+		end
 	else
 		_flag.status.percentageOf:set(get(default))
 	end
@@ -8446,7 +8586,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [75] = function()local wax,script,require=ImportGlobals(75)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [76] = function()local wax,script,require=ImportGlobals(76)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -8564,7 +8704,7 @@ return function(property)
 	return tab
 end
 end)() end,
-    [76] = function()local wax,script,require=ImportGlobals(76)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [77] = function()local wax,script,require=ImportGlobals(77)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local Bundles = require(darius.Bundles)
     local data = Bundles.data
@@ -8603,7 +8743,7 @@ return function(property)
     }
 end
 end)() end,
-    [77] = function()local wax,script,require=ImportGlobals(77)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [78] = function()local wax,script,require=ImportGlobals(78)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local bundles = require(darius.Bundles)
 	local data = bundles.data
@@ -8701,6 +8841,7 @@ return function(property)
 	local correctText = value("")
 	local lastCorrectText = value(get(_flag.status.correctText))
 	local lastCalled = value("")
+	local largerThanBox = value(false)
 
 	observe(correctText):onChange(function()
 		if get(onlyNumbers) then
@@ -8875,13 +9016,14 @@ return function(property)
 									end
 									return get(isSelected)
 								end),
+								ClipsDescendants = true,
 								Size = UDim2.new(1,-25,1,0),
 								BackgroundTransparency = 1,
 								PlaceholderText = placeHolder,
 								PlaceholderColor3 = theme.text2,
 								TextColor3 = theme.text,
+								TextSize = 16,
 								TextXAlignment = Enum.TextXAlignment.Left,
-								TextScaled = true,
 								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 								Text = lastCorrectText,
 								TextTransparency = selectedAnimation,
@@ -8891,6 +9033,9 @@ return function(property)
 
 								[onevent "Changed"] = function(changedProperty)
 									local _textbox = get(textboxRef)
+									if _textbox.TextBounds.X > _textbox.AbsoluteSize.X then
+										largerThanBox:set(true)
+									end
 									if _textbox and _textbox.Text and changedProperty == "Text" then
 										correctText:set(_textbox.Text)
 									end
@@ -8904,7 +9049,43 @@ return function(property)
 								end,
 
 								[children] = {
-									UITextSizeConstraint(1,16)
+									new "Frame" {
+										Size = UDim2.fromScale(1,1),
+										BackgroundTransparency = 0,
+
+										[children] = {
+											new "UIGradient" {
+												Rotation = 0,
+												Color = animate(function()
+													return ColorSequence.new {
+														ColorSequenceKeypoint.new(0, theme.get("background2")),
+														ColorSequenceKeypoint.new(1, theme.get("background2"))
+													}
+												end,40,1),
+												Transparency = animate(function()
+													if get(largerThanBox) then
+														if get(focused) then
+															return NumberSequence.new {
+																NumberSequenceKeypoint.new(0, 0),
+																NumberSequenceKeypoint.new(0.25, 1),
+																NumberSequenceKeypoint.new(1, 1)
+															}
+														else
+															return NumberSequence.new {
+																NumberSequenceKeypoint.new(0, 1),
+																NumberSequenceKeypoint.new(0.75, 1),
+																NumberSequenceKeypoint.new(1, 0)
+															}
+														end
+													end
+													return NumberSequence.new {
+														NumberSequenceKeypoint.new(0, 1),
+														NumberSequenceKeypoint.new(1, 1)
+													}
+												end,40,1)
+											}
+										}
+									}
 								}
 							}
 						}
@@ -8940,6 +9121,15 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			if get(onLeave) then
+				focused:set(true)
+			end
+			correctText:set(get(default))
+			if get(onLeave) then
+				focused:set(false)
+			end
+		end
 	else
 		if get(onLeave) then
 			focused:set(true)
@@ -8972,7 +9162,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [78] = function()local wax,script,require=ImportGlobals(78)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [79] = function()local wax,script,require=ImportGlobals(79)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -8996,7 +9186,6 @@ return function(property)
 	local connections = utilities.connections
 	local customFont = utilities.customFont
 	local references = utilities.references
-	local randomString = utilities.randomString
 	local drag = utilities.drag
 
 	local simpleElements = require(darius.simpleElements)
@@ -9046,6 +9235,7 @@ return function(property)
 	local instanceName = data.find("instanceName")
 	local isMobile = data.find("isMobile")
 	local isListening = data.find("isListening")
+	local bindData = data.find("bindData")
 	local toggle = data.add(property)
 
 	-- Properties
@@ -9058,20 +9248,6 @@ return function(property)
 	local bind = property.Bind
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
-	local keyCode = value()
-	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
-		local _currentBinds = get(currentBinds.binds)
-		if table.find(_currentBinds, keycode) then
-			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
-		else
-			table.insert(_currentBinds, keycode)
-			if get(keyCode) then
-				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
-			end
-			currentBinds:update("binds", _currentBinds)
-			keyCode:set(keycode)
-		end
-	end
 	local flag = property.FLAG or value(toggle.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -9079,6 +9255,28 @@ return function(property)
 			boolean = value(false),
 			keycode = value(nil)
 		},"toggle", get(flag) == toggle.uid)
+	end
+	local keyCode = value()
+	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
+		local _currentBinds = get(currentBinds.binds)
+		local _bindData = get(bindData.bindData)
+		if table.find(_currentBinds, keycode) then
+			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
+		else
+			table.insert(_currentBinds, keycode)
+			if get(keyCode) then
+				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
+				_bindData[get(keyCode).Name] = nil
+			end
+			keyCode:set(keycode)
+			_bindData[get(keyCode).Name] = {
+				bind = get(keyCode),
+				name = get(name),
+				boolean = _flag.status.boolean
+			}
+			bindData:update("bindData", _bindData)
+			currentBinds:update("binds", _currentBinds)
+		end
 	end
 	observe(_flag.status.boolean):onChange(function()
 		if get(isEnabled) then
@@ -9432,6 +9630,12 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			_flag.status.boolean:set(get(default))
+			if bind then
+				_flag.status.keycode:set(get(bind).Name)
+			end
+		end
 	else
 		_flag.status.boolean:set(get(default))
 		if bind then
@@ -9468,7 +9672,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [79] = function()local wax,script,require=ImportGlobals(79)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [80] = function()local wax,script,require=ImportGlobals(80)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 local title = ""
 
 local returnTable = {}
@@ -9493,7 +9697,7 @@ end)
 
 return returnTable
 end)() end,
-    [80] = function()local wax,script,require=ImportGlobals(80)local ImportGlobals return (function(...)--[[
+    [81] = function()local wax,script,require=ImportGlobals(81)local ImportGlobals return (function(...)--[[
 local darius = require(script.Parent)
 local randomString = require(script.Parent.utilities).randomString
 local lucide = require(script.Parent.Bundles.lucide)
@@ -9520,10 +9724,11 @@ return function(target)
     local window = darius:Window({
         Title = "Darius",
         Description = "What the sigma this isn't Quantum UI",
+        Icon = randomIcon(),
         HideBind = Enum.KeyCode.T,
         UseConfig = true,
         Config = "test",
-        IsMobile = true,
+        IsMobile = false,
         Theme = {
             background = Color3.fromHex("#D6DCE0"),
             text = Color3.fromHex("#2A2C31"),
@@ -9545,7 +9750,7 @@ return function(target)
             toggled = Color3.fromHex("#2A2C31")
         },
 
-        noOffset = true,
+        Offset = 0,
         Parent = target
     })
 
@@ -9563,7 +9768,26 @@ return function(target)
         })
     end
 
-    tab:ColorPicker({
+    tab:TextBox({
+        Name = "Textbox",
+        Callback = function(v)
+            
+        end
+    })
+    tab:Keybind({
+        Name = "Keybind",
+        Callback = function(v)
+            
+        end
+    })
+    tab:Toggle({
+        Name = "Toggle",
+        LinkKeybind = true,
+        Callback = function(v)
+            
+        end
+    })
+    local a = tab:ColorPicker({
         Name = "Colorpicker",
         --Color = Color3.fromHex('#a49ae6'),
         --Transparency = 0.5,
@@ -9572,12 +9796,21 @@ return function(target)
 
         end
     })
-    tab:KeybindList()
-    tab:Keybind({
-        Name = "Hello Hello",
+    tab:Button({
+        Name = "sdfsdf",
         Callback = function()
+            a:Disable()
         end
     })
+    tab:Slider({
+        Name = "Slider",
+        Min = 0,
+        Max = 100,
+        Callback = function(v)
+            
+        end
+    })
+    tab:KeybindList()
     darius:LoadConfig()
     return function()
         darius:Destroy()
@@ -9585,7 +9818,7 @@ return function(target)
 end
 ]]
 end)() end,
-    [82] = function()local wax,script,require=ImportGlobals(82)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [83] = function()local wax,script,require=ImportGlobals(83)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property, bindableEvent)
 	local bundles = require(darius.Bundles)
 	local services = bundles.services
@@ -9642,6 +9875,7 @@ return function(property, bindableEvent)
 	local isVisible = data.find("isVisible")
 	local isMobile = data.find("isMobile")
 	local isListening = data.find("isListening")
+	local bindData = data.find("bindData")
 
 	-- Variables
 
@@ -9677,16 +9911,23 @@ return function(property, bindableEvent)
 	local hasBind = value(false)
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
+		local _bindData = get(bindData.bindData)
 		if table.find(_currentBinds, keycode) then
 			dariusWarn(("Key %s is already in use. %s"):format(keycode.Name, dupeMessage))
 		else
 			table.insert(_currentBinds, keycode)
 			if get(keyCode) then
 				table.remove(_currentBinds, table.find(_currentBinds, get(keyCode)))
+				_bindData[get(keyCode).Name] = nil
 			end
-			currentBinds:update("binds", _currentBinds)
 			keyCode:set(keycode)
 			hasBind:set(true)
+			_bindData[get(keyCode).Name] = {
+				bind = get(keyCode),
+				name = "Toggle Interface"
+			}
+			bindData:update("bindData", _bindData)
+			currentBinds:update("binds", _currentBinds)
 		end
 	end
 	if not get(isMobile.boolean) then
@@ -9698,6 +9939,7 @@ return function(property, bindableEvent)
 		local tabData = data.find(_selectedTab)
 		backTitle:set(get(tabData.Name):upper())
 	end)
+	local icon  = value(property.Icon or "")
 
 	local mobileButton
 	local dragConnection
@@ -9774,24 +10016,49 @@ return function(property, bindableEvent)
 												BackgroundTransparency = 1,
 
 												[children] = {
-													UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
-													new "TextLabel" {
-														Size = UDim2.new(1,0,0.6,0),
-														Text = property.Title,
-														TextColor3 = theme.text,
-														FontFace = customFont("Montserrat", Enum.FontWeight.ExtraBold),
-														TextScaled = true,
+													UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Top,UDim.new(0,5)),
+													new "ImageLabel" {
+														Visible = computed(function()
+															if get(icon) ~= "" then
+																return true
+															end
+															return false
+														end),
+														Size = UDim2.fromOffset(44,44),
 														BackgroundTransparency = 1,
-														TextXAlignment = Enum.TextXAlignment.Left
+														Image = icon,
+														ImageColor3 = theme.text2
 													},
-													new "TextLabel" {
-														Size = UDim2.new(1,0,0.4,-4),
-														Text = property.Description,
-														TextColor3 = theme.text2,
-														FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-														TextScaled = true,
+													new "Frame" {
+														Size = computed(function()
+															if get(icon) ~= "" then
+																return UDim2.new(1,-49,1,0)
+															end
+															return UDim2.new(1,0,1,0)
+														end),
 														BackgroundTransparency = 1,
-														TextXAlignment = Enum.TextXAlignment.Left
+
+														[children] = {
+															UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
+															new "TextLabel" {
+																Size = UDim2.new(1,0,0.6,0),
+																Text = property.Title,
+																TextColor3 = theme.text,
+																FontFace = customFont("Montserrat", Enum.FontWeight.ExtraBold),
+																TextScaled = true,
+																BackgroundTransparency = 1,
+																TextXAlignment = Enum.TextXAlignment.Left
+															},
+															new "TextLabel" {
+																Size = UDim2.new(1,0,0.4,-4),
+																Text = property.Description,
+																TextColor3 = theme.text2,
+																FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+																TextScaled = true,
+																BackgroundTransparency = 1,
+																TextXAlignment = Enum.TextXAlignment.Left
+															}
+														}
 													}
 												}
 											},
@@ -10126,7 +10393,7 @@ return function(property, bindableEvent)
 	drag(references.get("container"), 15)
 end
 end)() end,
-    [83] = function()local wax,script,require=ImportGlobals(83)local ImportGlobals return (function(...)return setmetatable({},{
+    [84] = function()local wax,script,require=ImportGlobals(84)local ImportGlobals return (function(...)return setmetatable({},{
     __index = function(self, key)
         if script:FindFirstChild(key) then
             return require(script[key])
@@ -10136,7 +10403,7 @@ end)() end,
     end
 })
 end)() end,
-    [84] = function()local wax,script,require=ImportGlobals(84)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [85] = function()local wax,script,require=ImportGlobals(85)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 
 return function(AspectRatio:number, AspectType:Enum.AspectType, DominantAxis:Enum.DominantAxis)
     AspectType = AspectType or Enum.AspectType.FitWithinMaxSize
@@ -10148,7 +10415,7 @@ return function(AspectRatio:number, AspectType:Enum.AspectType, DominantAxis:Enu
     }
 end
 end)() end,
-    [85] = function()local wax,script,require=ImportGlobals(85)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [86] = function()local wax,script,require=ImportGlobals(86)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 
 return function(offset, scale)
     scale = scale or 0
@@ -10157,7 +10424,7 @@ return function(offset, scale)
     }
 end
 end)() end,
-    [86] = function()local wax,script,require=ImportGlobals(86)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [87] = function()local wax,script,require=ImportGlobals(87)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 
 return function(SortOrder, FillDirection,HorizontalAlignment,VerticalAlignment,Padding)
     return Fusion.New "UIListLayout" {
@@ -10169,7 +10436,7 @@ return function(SortOrder, FillDirection,HorizontalAlignment,VerticalAlignment,P
     }
 end
 end)() end,
-    [87] = function()local wax,script,require=ImportGlobals(87)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [88] = function()local wax,script,require=ImportGlobals(88)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 
 return function(...)
     local args = {...}
@@ -10204,7 +10471,7 @@ return function(...)
     end
 end
 end)() end,
-    [88] = function()local wax,script,require=ImportGlobals(88)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [89] = function()local wax,script,require=ImportGlobals(89)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 
 return function(MinText:number?, MaxText:number?)
     return Fusion.New "UITextSizeConstraint" {
@@ -10213,7 +10480,7 @@ return function(MinText:number?, MaxText:number?)
     }
 end
 end)() end,
-    [89] = function()local wax,script,require=ImportGlobals(89)local ImportGlobals return (function(...)return setmetatable({},{
+    [90] = function()local wax,script,require=ImportGlobals(90)local ImportGlobals return (function(...)return setmetatable({},{
     __index = function(self, key)
         if script:FindFirstChild(key) then
             return require(script[key])
@@ -10223,14 +10490,14 @@ end)() end,
     end
 })
 end)() end,
-    [90] = function()local wax,script,require=ImportGlobals(90)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [91] = function()local wax,script,require=ImportGlobals(91)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 local computed,spring = Fusion.Computed,Fusion.Spring
 
 return function(callback, speed, damping)
 	return spring(computed(callback), speed, damping)
 end
 end)() end,
-    [91] = function()local wax,script,require=ImportGlobals(91)local ImportGlobals return (function(...)local connections = {}
+    [92] = function()local wax,script,require=ImportGlobals(92)local ImportGlobals return (function(...)local connections = {}
 local connectionsFunction = {}
 
 local services = require(script.Parent.Parent.Bundles.services)
@@ -10251,7 +10518,7 @@ end
 
 return connectionsFunction
 end)() end,
-    [92] = function()local wax,script,require=ImportGlobals(92)local ImportGlobals return (function(...)local fonts = {
+    [93] = function()local wax,script,require=ImportGlobals(93)local ImportGlobals return (function(...)local fonts = {
     ["Inter"] = "rbxassetid://12187365364",
     ["Montserrat"] = "rbxassetid://11702779517"
 }
@@ -10267,7 +10534,7 @@ return function(font:string, weight:Enum.FontWeight?, style:Enum.FontStyle?)
     end
 end
 end)() end,
-    [93] = function()local wax,script,require=ImportGlobals(93)local ImportGlobals return (function(...)local functions = {}
+    [94] = function()local wax,script,require=ImportGlobals(94)local ImportGlobals return (function(...)local functions = {}
 
 local filesystem = {}
 
@@ -10443,7 +10710,7 @@ function functions.listfiles(string:string)
 end
 return functions
 end)() end,
-    [94] = function()local wax,script,require=ImportGlobals(94)local ImportGlobals return (function(...)return function(o,s)
+    [95] = function()local wax,script,require=ImportGlobals(95)local ImportGlobals return (function(...)return function(o,s)
 	local services = require(script.Parent.Parent.Bundles.services)
 	local DRAG_SPEED = s or 10
 	local UserInputService = services.UserInputService
@@ -10453,25 +10720,27 @@ end)() end,
 	local function Lerp(a, b, m)
 		return a + (b - a) * m
 	end
-	
+
+	local onEnd = Instance.new("BindableEvent")
+
 	local function Update(dt)
 		if not (startPos) then return end;
-		
+
 		if not (dragging) and (lastGoalPos) then
 			gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, lastGoalPos.X.Offset, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, lastGoalPos.Y.Offset, dt * DRAG_SPEED))
-			return 
+			return
 		end
-		
+
 		local delta = (lastMousePos - UserInputService:GetMouseLocation())
-		
-		local xGoal = (startPos.X.Offset - delta.X);
-		local yGoal = (startPos.Y.Offset - delta.Y);
-		
+
+		local xGoal = (startPos.X.Offset - delta.X)
+		local yGoal = (startPos.Y.Offset - delta.Y)
+
 		lastGoalPos = UDim2.new(startPos.X.Scale, xGoal, startPos.Y.Scale, yGoal)
-		
+
 		gui.Position = UDim2.new(startPos.X.Scale, Lerp(gui.Position.X.Offset, xGoal, dt * DRAG_SPEED), startPos.Y.Scale, Lerp(gui.Position.Y.Offset, yGoal, dt * DRAG_SPEED))
 	end
-	
+
 	gui.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			dragging = true
@@ -10479,24 +10748,25 @@ end)() end,
 			lastMousePos = UserInputService:GetMouseLocation()
 			input.Changed:Connect(function()
 				if input.UserInputState == Enum.UserInputState.End then
+					onEnd:Fire()
 					dragging = false
 				end
 			end)
 		end
 	end)
 	local connection = runService.Heartbeat:Connect(Update)
-	return connection
+	return connection, onEnd.Event
 end
 
 end)() end,
-    [95] = function()local wax,script,require=ImportGlobals(95)local ImportGlobals return (function(...)return function(value, dependency)
+    [96] = function()local wax,script,require=ImportGlobals(96)local ImportGlobals return (function(...)return function(value, dependency)
 	if typeof(value) == "table" and value.type == "State" then
 		return value:get(dependency)
 	end
 	return value
 end
 end)() end,
-    [96] = function()local wax,script,require=ImportGlobals(96)local ImportGlobals return (function(...)return function(text:string, properties)
+    [97] = function()local wax,script,require=ImportGlobals(97)local ImportGlobals return (function(...)return function(text:string, properties)
     text = text or ""
     local params = Instance.new("GetTextBoundsParams")
     params.Text = text
@@ -10507,7 +10777,7 @@ end)() end,
     return TextService:GetTextBoundsAsync(params)
 end
 end)() end,
-    [97] = function()local wax,script,require=ImportGlobals(97)local ImportGlobals return (function(...)local characters = string.split("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890","")
+    [98] = function()local wax,script,require=ImportGlobals(98)local ImportGlobals return (function(...)local characters = string.split("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890","")
 local function randomString(length)
     if length > 0 then
         return randomString(length - 1) .. characters[math.random(1, #characters)]
@@ -10517,7 +10787,7 @@ local function randomString(length)
 end
 return randomString
 end)() end,
-    [98] = function()local wax,script,require=ImportGlobals(98)local ImportGlobals return (function(...)local references = {}
+    [99] = function()local wax,script,require=ImportGlobals(99)local ImportGlobals return (function(...)local references = {}
 local returnFunctions = {}
 local observe = require(script.Parent.Parent.Bundles.Fusion).Observer
 
@@ -10567,14 +10837,14 @@ end
 
 return returnFunctions
 end)() end,
-    [99] = function()local wax,script,require=ImportGlobals(99)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [100] = function()local wax,script,require=ImportGlobals(100)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 local computed = Fusion.Computed
 
 return function(callback,style)
 	return Fusion.Tween(computed(callback), style)
 end
 end)() end,
-    [100] = function()local wax,script,require=ImportGlobals(100)local ImportGlobals return (function(...)return function(variables:table, correctVariables:table, ignoreList:table?):any
+    [101] = function()local wax,script,require=ImportGlobals(101)local ImportGlobals return (function(...)return function(variables:table, correctVariables:table, ignoreList:table?):any
     ignoreList = ignoreList or {}
     local didPass = true
     local itemsThatFailed = {}
@@ -10599,10 +10869,277 @@ local ObjectTree = {
         },
         {
             {
-                80,
+                64,
+                1,
+                {
+                    "components"
+                },
+                {
+                    {
+                        76,
+                        2,
+                        {
+                            "tabButton"
+                        }
+                    },
+                    {
+                        72,
+                        2,
+                        {
+                            "module"
+                        }
+                    },
+                    {
+                        80,
+                        2,
+                        {
+                            "warn"
+                        }
+                    },
+                    {
+                        79,
+                        2,
+                        {
+                            "toggle"
+                        }
+                    },
+                    {
+                        78,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        77,
+                        2,
+                        {
+                            "tabFrame"
+                        }
+                    },
+                    {
+                        67,
+                        2,
+                        {
+                            "divider"
+                        }
+                    },
+                    {
+                        74,
+                        2,
+                        {
+                            "paragraph"
+                        }
+                    },
+                    {
+                        70,
+                        2,
+                        {
+                            "keybindList"
+                        }
+                    },
+                    {
+                        71,
+                        2,
+                        {
+                            "label"
+                        }
+                    },
+                    {
+                        68,
+                        2,
+                        {
+                            "dropdown"
+                        }
+                    },
+                    {
+                        75,
+                        2,
+                        {
+                            "slider"
+                        }
+                    },
+                    {
+                        73,
+                        2,
+                        {
+                            "notification"
+                        }
+                    },
+                    {
+                        69,
+                        2,
+                        {
+                            "keybind"
+                        }
+                    },
+                    {
+                        66,
+                        2,
+                        {
+                            "colorpicker"
+                        }
+                    },
+                    {
+                        65,
+                        2,
+                        {
+                            "button"
+                        }
+                    }
+                }
+            },
+            {
+                90,
+                2,
+                {
+                    "utilities"
+                },
+                {
+                    {
+                        95,
+                        2,
+                        {
+                            "drag"
+                        }
+                    },
+                    {
+                        101,
+                        2,
+                        {
+                            "typecheck"
+                        }
+                    },
+                    {
+                        97,
+                        2,
+                        {
+                            "getStringBounds"
+                        }
+                    },
+                    {
+                        91,
+                        2,
+                        {
+                            "animate"
+                        }
+                    },
+                    {
+                        94,
+                        2,
+                        {
+                            "customFunctions"
+                        }
+                    },
+                    {
+                        96,
+                        2,
+                        {
+                            "get"
+                        }
+                    },
+                    {
+                        100,
+                        2,
+                        {
+                            "tween"
+                        }
+                    },
+                    {
+                        93,
+                        2,
+                        {
+                            "customFont"
+                        }
+                    },
+                    {
+                        99,
+                        2,
+                        {
+                            "references"
+                        }
+                    },
+                    {
+                        92,
+                        2,
+                        {
+                            "connections"
+                        }
+                    },
+                    {
+                        98,
+                        2,
+                        {
+                            "randomString"
+                        }
+                    }
+                }
+            },
+            {
+                81,
                 2,
                 {
                     "darius.story"
+                }
+            },
+            {
+                82,
+                1,
+                {
+                    "layouts"
+                },
+                {
+                    {
+                        83,
+                        2,
+                        {
+                            "main"
+                        }
+                    }
+                }
+            },
+            {
+                84,
+                2,
+                {
+                    "simpleElements"
+                },
+                {
+                    {
+                        86,
+                        2,
+                        {
+                            "UICorner"
+                        }
+                    },
+                    {
+                        89,
+                        2,
+                        {
+                            "UITextSizeConstraint"
+                        }
+                    },
+                    {
+                        88,
+                        2,
+                        {
+                            "UIPadding"
+                        }
+                    },
+                    {
+                        87,
+                        2,
+                        {
+                            "UIListLayout"
+                        }
+                    },
+                    {
+                        85,
+                        2,
+                        {
+                            "UIAspectRatioConstraint"
+                        }
+                    }
                 }
             },
             {
@@ -10613,57 +11150,6 @@ local ObjectTree = {
                 },
                 {
                     {
-                        60,
-                        2,
-                        {
-                            "lucide"
-                        }
-                    },
-                    {
-                        62,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                63,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        61,
-                        2,
-                        {
-                            "services"
-                        }
-                    },
-                    {
-                        57,
-                        2,
-                        {
-                            "data"
-                        }
-                    },
-                    {
-                        58,
-                        2,
-                        {
-                            "flags"
-                        }
-                    },
-                    {
-                        59,
-                        2,
-                        {
-                            "icons"
-                        }
-                    },
-                    {
                         3,
                         2,
                         {
@@ -10671,59 +11157,89 @@ local ObjectTree = {
                         },
                         {
                             {
-                                49,
+                                33,
                                 1,
                                 {
-                                    "Utility"
+                                    "Logging"
                                 },
                                 {
                                     {
-                                        54,
+                                        34,
                                         2,
                                         {
-                                            "needsDestruction"
+                                            "logError"
                                         }
                                     },
                                     {
-                                        51,
+                                        37,
                                         2,
                                         {
-                                            "cleanup"
+                                            "messages"
                                         }
                                     },
                                     {
-                                        53,
+                                        36,
                                         2,
                                         {
-                                            "isSimilar"
+                                            "logWarn"
                                         }
                                     },
                                     {
-                                        56,
+                                        38,
                                         2,
                                         {
-                                            "xtypeof"
+                                            "parseError"
                                         }
                                     },
                                     {
-                                        55,
+                                        35,
                                         2,
                                         {
-                                            "restrictRead"
+                                            "logErrorNonFatal"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                16,
+                                1,
+                                {
+                                    "Dependencies"
+                                },
+                                {
+                                    {
+                                        21,
+                                        2,
+                                        {
+                                            "useDependency"
                                         }
                                     },
                                     {
-                                        50,
+                                        20,
                                         2,
                                         {
-                                            "None"
+                                            "updateAll"
                                         }
                                     },
                                     {
-                                        52,
+                                        19,
                                         2,
                                         {
-                                            "doNothing"
+                                            "sharedState"
+                                        }
+                                    },
+                                    {
+                                        18,
+                                        2,
+                                        {
+                                            "initDependency"
+                                        }
+                                    },
+                                    {
+                                        17,
+                                        2,
+                                        {
+                                            "captureDependencies"
                                         }
                                     }
                                 }
@@ -10752,24 +11268,10 @@ local ObjectTree = {
                                 },
                                 {
                                     {
-                                        6,
+                                        10,
                                         2,
                                         {
-                                            "SpringScheduler"
-                                        }
-                                    },
-                                    {
-                                        12,
-                                        2,
-                                        {
-                                            "springCoefficients"
-                                        }
-                                    },
-                                    {
-                                        8,
-                                        2,
-                                        {
-                                            "TweenScheduler"
+                                            "lerpType"
                                         }
                                     },
                                     {
@@ -10780,6 +11282,13 @@ local ObjectTree = {
                                         }
                                     },
                                     {
+                                        5,
+                                        2,
+                                        {
+                                            "Spring"
+                                        }
+                                    },
+                                    {
                                         9,
                                         2,
                                         {
@@ -10787,10 +11296,17 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        13,
+                                        8,
                                         2,
                                         {
-                                            "unpackType"
+                                            "TweenScheduler"
+                                        }
+                                    },
+                                    {
+                                        6,
+                                        2,
+                                        {
+                                            "SpringScheduler"
                                         }
                                     },
                                     {
@@ -10801,17 +11317,133 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        10,
+                                        12,
                                         2,
                                         {
-                                            "lerpType"
+                                            "springCoefficients"
                                         }
                                     },
                                     {
-                                        5,
+                                        13,
                                         2,
                                         {
-                                            "Spring"
+                                            "unpackType"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                40,
+                                1,
+                                {
+                                    "State"
+                                },
+                                {
+                                    {
+                                        44,
+                                        2,
+                                        {
+                                            "ForValues"
+                                        }
+                                    },
+                                    {
+                                        42,
+                                        2,
+                                        {
+                                            "ForKeys"
+                                        }
+                                    },
+                                    {
+                                        43,
+                                        2,
+                                        {
+                                            "ForPairs"
+                                        }
+                                    },
+                                    {
+                                        45,
+                                        2,
+                                        {
+                                            "Observer"
+                                        }
+                                    },
+                                    {
+                                        47,
+                                        2,
+                                        {
+                                            "unwrap"
+                                        }
+                                    },
+                                    {
+                                        41,
+                                        2,
+                                        {
+                                            "Computed"
+                                        }
+                                    },
+                                    {
+                                        46,
+                                        2,
+                                        {
+                                            "Value"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                49,
+                                1,
+                                {
+                                    "Utility"
+                                },
+                                {
+                                    {
+                                        55,
+                                        2,
+                                        {
+                                            "restrictRead"
+                                        }
+                                    },
+                                    {
+                                        56,
+                                        2,
+                                        {
+                                            "xtypeof"
+                                        }
+                                    },
+                                    {
+                                        53,
+                                        2,
+                                        {
+                                            "isSimilar"
+                                        }
+                                    },
+                                    {
+                                        50,
+                                        2,
+                                        {
+                                            "None"
+                                        }
+                                    },
+                                    {
+                                        54,
+                                        2,
+                                        {
+                                            "needsDestruction"
+                                        }
+                                    },
+                                    {
+                                        52,
+                                        2,
+                                        {
+                                            "doNothing"
+                                        }
+                                    },
+                                    {
+                                        51,
+                                        2,
+                                        {
+                                            "cleanup"
                                         }
                                     }
                                 }
@@ -10831,70 +11463,12 @@ local ObjectTree = {
                                 }
                             },
                             {
-                                33,
-                                1,
-                                {
-                                    "Logging"
-                                },
-                                {
-                                    {
-                                        35,
-                                        2,
-                                        {
-                                            "logErrorNonFatal"
-                                        }
-                                    },
-                                    {
-                                        34,
-                                        2,
-                                        {
-                                            "logError"
-                                        }
-                                    },
-                                    {
-                                        37,
-                                        2,
-                                        {
-                                            "messages"
-                                        }
-                                    },
-                                    {
-                                        36,
-                                        2,
-                                        {
-                                            "logWarn"
-                                        }
-                                    },
-                                    {
-                                        38,
-                                        2,
-                                        {
-                                            "parseError"
-                                        }
-                                    }
-                                }
-                            },
-                            {
                                 22,
                                 1,
                                 {
                                     "Instances"
                                 },
                                 {
-                                    {
-                                        27,
-                                        2,
-                                        {
-                                            "OnChange"
-                                        }
-                                    },
-                                    {
-                                        31,
-                                        2,
-                                        {
-                                            "applyInstanceProps"
-                                        }
-                                    },
                                     {
                                         30,
                                         2,
@@ -10903,10 +11477,17 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        25,
+                                        26,
                                         2,
                                         {
-                                            "Hydrate"
+                                            "New"
+                                        }
+                                    },
+                                    {
+                                        23,
+                                        2,
+                                        {
+                                            "Children"
                                         }
                                     },
                                     {
@@ -10924,6 +11505,27 @@ local ObjectTree = {
                                         }
                                     },
                                     {
+                                        32,
+                                        2,
+                                        {
+                                            "defaultProps"
+                                        }
+                                    },
+                                    {
+                                        31,
+                                        2,
+                                        {
+                                            "applyInstanceProps"
+                                        }
+                                    },
+                                    {
+                                        27,
+                                        2,
+                                        {
+                                            "OnChange"
+                                        }
+                                    },
+                                    {
                                         28,
                                         2,
                                         {
@@ -10931,390 +11533,65 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        23,
+                                        25,
                                         2,
                                         {
-                                            "Children"
-                                        }
-                                    },
-                                    {
-                                        26,
-                                        2,
-                                        {
-                                            "New"
-                                        }
-                                    },
-                                    {
-                                        32,
-                                        2,
-                                        {
-                                            "defaultProps"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                40,
-                                1,
-                                {
-                                    "State"
-                                },
-                                {
-                                    {
-                                        47,
-                                        2,
-                                        {
-                                            "unwrap"
-                                        }
-                                    },
-                                    {
-                                        42,
-                                        2,
-                                        {
-                                            "ForKeys"
-                                        }
-                                    },
-                                    {
-                                        46,
-                                        2,
-                                        {
-                                            "Value"
-                                        }
-                                    },
-                                    {
-                                        45,
-                                        2,
-                                        {
-                                            "Observer"
-                                        }
-                                    },
-                                    {
-                                        41,
-                                        2,
-                                        {
-                                            "Computed"
-                                        }
-                                    },
-                                    {
-                                        43,
-                                        2,
-                                        {
-                                            "ForPairs"
-                                        }
-                                    },
-                                    {
-                                        44,
-                                        2,
-                                        {
-                                            "ForValues"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                16,
-                                1,
-                                {
-                                    "Dependencies"
-                                },
-                                {
-                                    {
-                                        19,
-                                        2,
-                                        {
-                                            "sharedState"
-                                        }
-                                    },
-                                    {
-                                        21,
-                                        2,
-                                        {
-                                            "useDependency"
-                                        }
-                                    },
-                                    {
-                                        18,
-                                        2,
-                                        {
-                                            "initDependency"
-                                        }
-                                    },
-                                    {
-                                        17,
-                                        2,
-                                        {
-                                            "captureDependencies"
-                                        }
-                                    },
-                                    {
-                                        20,
-                                        2,
-                                        {
-                                            "updateAll"
+                                            "Hydrate"
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                }
-            },
-            {
-                83,
-                2,
-                {
-                    "simpleElements"
-                },
-                {
+                    },
                     {
-                        87,
+                        59,
                         2,
                         {
-                            "UIPadding"
+                            "icons"
                         }
                     },
                     {
-                        86,
+                        62,
                         2,
                         {
-                            "UIListLayout"
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                63,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
                         }
                     },
                     {
-                        88,
+                        58,
                         2,
                         {
-                            "UITextSizeConstraint"
+                            "flags"
                         }
                     },
                     {
-                        84,
+                        61,
                         2,
                         {
-                            "UIAspectRatioConstraint"
+                            "services"
                         }
                     },
                     {
-                        85,
+                        60,
                         2,
                         {
-                            "UICorner"
-                        }
-                    }
-                }
-            },
-            {
-                81,
-                1,
-                {
-                    "layouts"
-                },
-                {
-                    {
-                        82,
-                        2,
-                        {
-                            "main"
-                        }
-                    }
-                }
-            },
-            {
-                89,
-                2,
-                {
-                    "utilities"
-                },
-                {
-                    {
-                        91,
-                        2,
-                        {
-                            "connections"
+                            "lucide"
                         }
                     },
                     {
-                        96,
+                        57,
                         2,
                         {
-                            "getStringBounds"
-                        }
-                    },
-                    {
-                        99,
-                        2,
-                        {
-                            "tween"
-                        }
-                    },
-                    {
-                        97,
-                        2,
-                        {
-                            "randomString"
-                        }
-                    },
-                    {
-                        94,
-                        2,
-                        {
-                            "drag"
-                        }
-                    },
-                    {
-                        93,
-                        2,
-                        {
-                            "customFunctions"
-                        }
-                    },
-                    {
-                        98,
-                        2,
-                        {
-                            "references"
-                        }
-                    },
-                    {
-                        100,
-                        2,
-                        {
-                            "typecheck"
-                        }
-                    },
-                    {
-                        95,
-                        2,
-                        {
-                            "get"
-                        }
-                    },
-                    {
-                        90,
-                        2,
-                        {
-                            "animate"
-                        }
-                    },
-                    {
-                        92,
-                        2,
-                        {
-                            "customFont"
-                        }
-                    }
-                }
-            },
-            {
-                64,
-                1,
-                {
-                    "components"
-                },
-                {
-                    {
-                        72,
-                        2,
-                        {
-                            "notification"
-                        }
-                    },
-                    {
-                        71,
-                        2,
-                        {
-                            "label"
-                        }
-                    },
-                    {
-                        68,
-                        2,
-                        {
-                            "dropdown"
-                        }
-                    },
-                    {
-                        70,
-                        2,
-                        {
-                            "keybindList"
-                        }
-                    },
-                    {
-                        78,
-                        2,
-                        {
-                            "toggle"
-                        }
-                    },
-                    {
-                        77,
-                        2,
-                        {
-                            "textbox"
-                        }
-                    },
-                    {
-                        73,
-                        2,
-                        {
-                            "paragraph"
-                        }
-                    },
-                    {
-                        65,
-                        2,
-                        {
-                            "button"
-                        }
-                    },
-                    {
-                        69,
-                        2,
-                        {
-                            "keybind"
-                        }
-                    },
-                    {
-                        74,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        79,
-                        2,
-                        {
-                            "warn"
-                        }
-                    },
-                    {
-                        76,
-                        2,
-                        {
-                            "tabFrame"
-                        }
-                    },
-                    {
-                        75,
-                        2,
-                        {
-                            "tabButton"
-                        }
-                    },
-                    {
-                        66,
-                        2,
-                        {
-                            "colorpicker"
-                        }
-                    },
-                    {
-                        67,
-                        2,
-                        {
-                            "divider"
+                            "data"
                         }
                     }
                 }
@@ -11326,96 +11603,97 @@ local ObjectTree = {
 -- Line offsets for debugging (only included when minifyTables is false)
 local LineOffsets = {
     8,
-    236,
-    246,
-    [5] = 320,
-    [6] = 538,
-    [7] = 631,
-    [8] = 767,
-    [9] = 842,
-    [10] = 885,
-    [11] = 1047,
-    [12] = 1146,
-    [13] = 1232,
-    [15] = 1321,
-    [17] = 1376,
-    [18] = 1433,
-    [19] = 1462,
-    [20] = 1486,
-    [21] = 1546,
-    [23] = 1576,
-    [24] = 1725,
-    [25] = 1746,
-    [26] = 1766,
-    [27] = 1802,
-    [28] = 1837,
-    [29] = 1874,
-    [30] = 1918,
-    [31] = 1948,
-    [32] = 2075,
-    [34] = 2186,
-    [35] = 2219,
-    [36] = 2254,
-    [37] = 2278,
-    [38] = 2324,
-    [39] = 2347,
-    [41] = 2494,
-    [42] = 2608,
-    [43] = 2857,
-    [44] = 3167,
-    [45] = 3414,
-    [46] = 3498,
-    [47] = 3561,
-    [48] = 3577,
-    [50] = 3724,
-    [51] = 3738,
-    [52] = 3792,
-    [53] = 3803,
-    [54] = 3821,
-    [55] = 3834,
-    [56] = 3863,
-    [57] = 3883,
-    [58] = 3957,
-    [59] = 4190,
-    [60] = 4208,
-    [61] = 5032,
-    [62] = 5044,
-    [63] = 5106,
-    [65] = 5132,
-    [66] = 5323,
-    [67] = 6246,
-    [68] = 6297,
-    [69] = 6928,
-    [70] = 7358,
-    [71] = 7512,
-    [72] = 7613,
-    [73] = 7882,
-    [74] = 8035,
-    [75] = 8449,
-    [76] = 8567,
-    [77] = 8606,
-    [78] = 8975,
-    [79] = 9471,
-    [80] = 9496,
-    [82] = 9588,
-    [83] = 10129,
-    [84] = 10139,
-    [85] = 10151,
-    [86] = 10160,
-    [87] = 10172,
-    [88] = 10207,
-    [89] = 10216,
-    [90] = 10226,
-    [91] = 10233,
-    [92] = 10254,
-    [93] = 10270,
-    [94] = 10446,
-    [95] = 10492,
-    [96] = 10499,
-    [97] = 10510,
-    [98] = 10520,
-    [99] = 10570,
-    [100] = 10577
+    239,
+    249,
+    [5] = 323,
+    [6] = 541,
+    [7] = 634,
+    [8] = 770,
+    [9] = 845,
+    [10] = 888,
+    [11] = 1050,
+    [12] = 1149,
+    [13] = 1235,
+    [15] = 1324,
+    [17] = 1379,
+    [18] = 1436,
+    [19] = 1465,
+    [20] = 1489,
+    [21] = 1549,
+    [23] = 1579,
+    [24] = 1728,
+    [25] = 1749,
+    [26] = 1769,
+    [27] = 1805,
+    [28] = 1840,
+    [29] = 1877,
+    [30] = 1921,
+    [31] = 1951,
+    [32] = 2078,
+    [34] = 2189,
+    [35] = 2222,
+    [36] = 2257,
+    [37] = 2281,
+    [38] = 2327,
+    [39] = 2350,
+    [41] = 2497,
+    [42] = 2611,
+    [43] = 2860,
+    [44] = 3170,
+    [45] = 3417,
+    [46] = 3501,
+    [47] = 3564,
+    [48] = 3580,
+    [50] = 3727,
+    [51] = 3741,
+    [52] = 3795,
+    [53] = 3806,
+    [54] = 3824,
+    [55] = 3837,
+    [56] = 3866,
+    [57] = 3886,
+    [58] = 3960,
+    [59] = 4193,
+    [60] = 4211,
+    [61] = 5035,
+    [62] = 5047,
+    [63] = 5109,
+    [65] = 5135,
+    [66] = 5326,
+    [67] = 6114,
+    [68] = 6165,
+    [69] = 6807,
+    [70] = 7258,
+    [71] = 7469,
+    [72] = 7570,
+    [73] = 7739,
+    [74] = 8008,
+    [75] = 8161,
+    [76] = 8589,
+    [77] = 8707,
+    [78] = 8746,
+    [79] = 9165,
+    [80] = 9675,
+    [81] = 9700,
+    [83] = 9821,
+    [84] = 10396,
+    [85] = 10406,
+    [86] = 10418,
+    [87] = 10427,
+    [88] = 10439,
+    [89] = 10474,
+    [90] = 10483,
+    [91] = 10493,
+    [92] = 10500,
+    [93] = 10521,
+    [94] = 10537,
+    [95] = 10713,
+    [96] = 10762,
+    [97] = 10769,
+    [98] = 10780,
+    [99] = 10790,
+    [100] = 10840,
+    [101] = 10847
 }
 
 -- Misc AOT variable imports

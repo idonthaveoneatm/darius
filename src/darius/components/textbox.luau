@@ -96,6 +96,7 @@ return function(property)
 	local correctText = value("")
 	local lastCorrectText = value(get(_flag.status.correctText))
 	local lastCalled = value("")
+	local largerThanBox = value(false)
 
 	observe(correctText):onChange(function()
 		if get(onlyNumbers) then
@@ -270,13 +271,14 @@ return function(property)
 									end
 									return get(isSelected)
 								end),
+								ClipsDescendants = true,
 								Size = UDim2.new(1,-25,1,0),
 								BackgroundTransparency = 1,
 								PlaceholderText = placeHolder,
 								PlaceholderColor3 = theme.text2,
 								TextColor3 = theme.text,
+								TextSize = 16,
 								TextXAlignment = Enum.TextXAlignment.Left,
-								TextScaled = true,
 								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 								Text = lastCorrectText,
 								TextTransparency = selectedAnimation,
@@ -286,6 +288,9 @@ return function(property)
 
 								[onevent "Changed"] = function(changedProperty)
 									local _textbox = get(textboxRef)
+									if _textbox.TextBounds.X > _textbox.AbsoluteSize.X then
+										largerThanBox:set(true)
+									end
 									if _textbox and _textbox.Text and changedProperty == "Text" then
 										correctText:set(_textbox.Text)
 									end
@@ -299,7 +304,43 @@ return function(property)
 								end,
 
 								[children] = {
-									UITextSizeConstraint(1,16)
+									new "Frame" {
+										Size = UDim2.fromScale(1,1),
+										BackgroundTransparency = 0,
+
+										[children] = {
+											new "UIGradient" {
+												Rotation = 0,
+												Color = animate(function()
+													return ColorSequence.new {
+														ColorSequenceKeypoint.new(0, theme.get("background2")),
+														ColorSequenceKeypoint.new(1, theme.get("background2"))
+													}
+												end,40,1),
+												Transparency = animate(function()
+													if get(largerThanBox) then
+														if get(focused) then
+															return NumberSequence.new {
+																NumberSequenceKeypoint.new(0, 0),
+																NumberSequenceKeypoint.new(0.25, 1),
+																NumberSequenceKeypoint.new(1, 1)
+															}
+														else
+															return NumberSequence.new {
+																NumberSequenceKeypoint.new(0, 1),
+																NumberSequenceKeypoint.new(0.75, 1),
+																NumberSequenceKeypoint.new(1, 0)
+															}
+														end
+													end
+													return NumberSequence.new {
+														NumberSequenceKeypoint.new(0, 1),
+														NumberSequenceKeypoint.new(1, 1)
+													}
+												end,40,1)
+											}
+										}
+									}
 								}
 							}
 						}
@@ -335,6 +376,15 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.private then
+			if get(onLeave) then
+				focused:set(true)
+			end
+			correctText:set(get(default))
+			if get(onLeave) then
+				focused:set(false)
+			end
+		end
 	else
 		if get(onLeave) then
 			focused:set(true)
