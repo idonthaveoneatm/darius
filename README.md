@@ -30,6 +30,7 @@ local window = darius:Window({
     Description = "What the sigma this isn't Quantum UI",
 
     -- Optional
+    Icon = "",
     HideBind = Enum.KeyCode.T,
     Parent = target, -- Defaults to game.CoreGui
     UseConfig = false,
