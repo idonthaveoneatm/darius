@@ -40,13 +40,15 @@ return function(property)
         Callback = function()end,
         Items = {},
         Multiselect = true,
-        Regex = function()end
+        Regex = function()end,
+		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
+		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -76,6 +78,7 @@ return function(property)
 	local items = value({})
 	local multiselect = property.Multiselect or value(false)
 	local default = property.Default
+	local ignoreConfig = property.IgnoreConfig or value(false)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
@@ -87,6 +90,7 @@ return function(property)
 			item = value(""),
 			multiselect = get(multiselect)
 		},"dropdown", get(flag) == dropdown.uid)
+		_flag.user.Value = get(multiselect) and get(_flag.status.items) or  get(_flag.status.item)
 	end
 
 	-- Variables
@@ -109,10 +113,12 @@ return function(property)
 		for _,v in get(_flag.status.items) do
 			table.insert(_cbTable, get(regex)(v))
 		end
+		task.wait()
 		task.spawn(get(callback), _cbTable)
 		lastReturnedValue:set(get(_flag.status.items))
 	end)
 	observe(_flag.status.item):onChange(function()
+		task.wait()
 		task.spawn(get(callback), get(regex)(get(_flag.status.item)))
 		lastReturnedValue:set(get(regex)(get(_flag.status.item)))
 	end)
@@ -500,7 +506,7 @@ return function(property)
 
 	items:set(get(property.Items))
 
-	if get(useConfig.boolean) then
+	if get(useConfig.boolean) and not get(ignoreConfig) then
 		observe(_flag.file):onChange(function()
 			local file = get(_flag.file)
 			local noChange = true

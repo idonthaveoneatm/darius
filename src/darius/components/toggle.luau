@@ -45,13 +45,15 @@ return function(property)
         IsEnabled = false,
 		Default = false,
         Callback = function()end,
-		LinkKeybind = true
+		LinkKeybind = true,
+		IgnoreConfig = true,
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Default and "" or "Default",
-		property.LinkKeybind and "" or "LinkKeybind"
+		property.LinkKeybind and "" or "LinkKeybind",
+		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -72,6 +74,7 @@ return function(property)
 	local isMobile = data.find("isMobile")
 	local isListening = data.find("isListening")
 	local bindData = data.find("bindData")
+	local toggles = data.find("toggles")
 	local toggle = data.add(property)
 
 	-- Properties
@@ -82,6 +85,7 @@ return function(property)
 	local default = property.Default or value(false)
 	local isEnabled = property.IsEnabled or value(true)
 	local bind = property.Bind
+	local ignoreConfig = property.IgnoreConfig or value(false)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
 	local flag = property.FLAG or value(toggle.uid)
@@ -91,6 +95,7 @@ return function(property)
 			boolean = value(false),
 			keycode = value(nil)
 		},"toggle", get(flag) == toggle.uid)
+		_flag.user.Value = get(_flag.status.boolean)
 	end
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
@@ -127,6 +132,7 @@ return function(property)
 			checkKeyCode(result, "RAHHH")
 		end
 	end)
+	table.insert(toggles.list, _flag.status.boolean)
 
 	-- Variables
 
@@ -444,7 +450,7 @@ return function(property)
 
 	-- Closure
 
-	if get(useConfig.boolean) then
+	if get(useConfig.boolean) and not get(ignoreConfig) then
 		observe(_flag.file):onChange(function()
 			local file = get(_flag.file)
 			local noBoolean = true

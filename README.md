@@ -73,6 +73,11 @@ red
 orange
 ]]
 ```
+### Exporting Themes
+Soon there will be a theme/config manager but for the time being this exists (and will stay). It returns a JSON
+```lua
+daris:ExportTheme(true) --> true = JSON false/nothing = LUAU
+```
 ### Notify a User
 ```lua
 darius:Notify({

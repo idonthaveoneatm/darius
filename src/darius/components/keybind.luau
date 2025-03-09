@@ -44,12 +44,14 @@ return function(property)
         FLAG = "",
         IsEnabled = false,
         Callback = function()end,
-		Bind = Enum.KeyCode.Q
+		Bind = Enum.KeyCode.Q,
+		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Bind and "" or "Bind",
+		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -73,6 +75,7 @@ return function(property)
 	local bind = property.Bind
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local ignoreConfig = property.IgnoreConfig or value(false)
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -102,6 +105,7 @@ return function(property)
 			keycode = value(nil),
 			mobile = get(isMobile.boolean)
 		},"keybind", get(flag) == keybind.uid)
+		_flag.user.Value = get(isMobile.boolean) and get(_flag.status.coordinate) or get(_flag.status.keycode)
 	end
 
 	observe(_flag.status.keycode):onChange(function()
@@ -402,7 +406,7 @@ return function(property)
 
 	-- Closure
 
-	if get(useConfig.boolean) then
+	if get(useConfig.boolean) and not get(ignoreConfig)  then
 		observe(_flag.file):onChange(function()
 			local file = get(_flag.file)
 			local noKeyCode = true

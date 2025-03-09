@@ -45,7 +45,8 @@ return function(property)
 		Min = 0,
         Max = 0,
 		DisplayAsPercent = false,
-		DecimalPlace = 0
+		DecimalPlace = 0,
+		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
@@ -55,6 +56,7 @@ return function(property)
 		property.Max and "" or "Max",
 		property.DisplayAsPercent and "" or "DisplayAsPercent",
 		property.DecimalPlace and "" or "DecimalPlace",
+		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -76,6 +78,7 @@ return function(property)
 	local roundTo = property.DecimalPlace or value(0)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local ignoreConfig = property.IgnoreConfig or value(false)
 	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
 	if not get(default) then
 		default = value(get(min))
@@ -84,8 +87,9 @@ return function(property)
 	local _flag
 	if get(flag) ~= "" then
 		_flag = flagCreator.register(get(flag), {
-			percentageOf = value(nil)
+			percentageOf = value(get(min))
 		},"slider", get(flag) == slider.uid)
+		_flag.user.Value = get(_flag.status.percentageOf)
 	end
 
 	-- Variables
@@ -385,7 +389,7 @@ return function(property)
 
 	-- Closure
 
-	if get(useConfig.boolean) then
+	if get(useConfig.boolean) and not get(ignoreConfig) then
 		observe(_flag.file):onChange(function()
 			local file = get(_flag.file)
 			local noPercentageOf = true

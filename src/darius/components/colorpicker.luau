@@ -44,13 +44,15 @@ return function(property)
         Callback = function()end,
 		FLAG = "",
 		Color = Color3.new(),
-		Transparency = 0
+		Transparency = 0,
+		IgnoreConfig = true
 	},{
 		property.IsEnabled and "" or "IsEnabled",
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
 		property.Color and "" or "Color",
-		property.Transparency and "" or "Transparency"
+		property.Transparency and "" or "Transparency",
+		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -59,7 +61,8 @@ return function(property)
 	local selectedTab = data.find("selectedTab")
 	local searchText = data.find("searchText")
 	local useConfig = data.find("useConfig")
-	local offset = data.find("offset")
+	local offset = data.find("absoluteOffset")
+	local currentPicker = data.find("currentPicker")
 	local colorpicker = data.add(property)
 
 	-- Properties
@@ -70,6 +73,7 @@ return function(property)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local _color = property.Color or value(Color3.new(1))
+	local ignoreConfig = property.IgnoreConfig or value(false)
 	local _transparency = property.Transparency or value(0)
 	local flag = property.FLAG or value(colorpicker.uid)
 	local _flag
@@ -78,19 +82,21 @@ return function(property)
 			color = value(Color3.new(1)),
 			transparency = value(0)
 		},"colorpicker", get(flag) == colorpicker.uid)
+		_flag.user.Value = {get(_flag.status.color),get(_flag.status.transparency)}
 	end
-	observe(_flag.status.color):onChange(function()
-		if get(isEnabled) then
-			task.spawn(get(callback), get(_flag.status.color), get(_flag.status.transparency))
-		end
-	end)
-	observe(_flag.status.transparency):onChange(function()
-		if get(isEnabled) then
-			task.spawn(get(callback), get(_flag.status.color), get(_flag.status.transparency))
-		end
-	end)
 	local color = _flag.status.color
 	local transparency = _flag.status.transparency
+
+	observe(color):onChange(function()
+		if get(isEnabled) then
+			task.spawn(get(callback), get(color), get(transparency))
+		end
+	end)
+	observe(transparency):onChange(function()
+		if get(isEnabled) then
+			task.spawn(get(callback), get(color), get(transparency))
+		end
+	end)
 
 	-- Variables
 
@@ -122,6 +128,10 @@ return function(property)
 
 	local module, setChildren
 
+	local hueAmount = value(0)
+	local saturationAmount = value(0)
+	local valueAmount = value(0)
+
 	-- Colorpicker
 
 	local function createColorPickerModule()
@@ -131,9 +141,9 @@ return function(property)
 				UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,5)),
 				new "TextButton" { -- Saturation and Value
 					Size = UDim2.fromOffset(224,224),
-	
+
 					[ref] = saturationValue,
-	
+
 					[onevent "InputBegan"] = function(input)
 						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 							return
@@ -147,19 +157,19 @@ return function(property)
 							end
 						end)
 					end,
-	
+
 					[children] = {
 						new "UIGradient" {
 							Color = computed(function()
 								return ColorSequence.new {
 									ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-									ColorSequenceKeypoint.new(1, Color3.fromHSV(({get(color):ToHSV()})[1],1,1)),
-									}
+									ColorSequenceKeypoint.new(1, Color3.fromHSV(get(hueAmount),1,1)),
+								}
 							end)
 						},
 						new "Frame" {
 							Size = UDim2.fromScale(1,1),
-	
+
 							[children] = {
 								new "UIGradient" {
 									Rotation = 270,
@@ -176,24 +186,39 @@ return function(property)
 								}
 							}
 						},
-						new "Frame" {
+						new "ImageLabel" {
 							ZIndex = 2,
 							AnchorPoint = Vector2.new(0.5,0.5),
-							BackgroundColor3 = computed(function()
-								local _,_,_val = get(color):ToHSV()
-								return Color3.fromHSV(0,0,1-_val)
+							BackgroundTransparency = 1,
+							Image = icons.circle,
+							Size = UDim2.fromOffset(10,10),
+							ImageColor3 = computed(function()
+								return Color3.fromHSV(0,0,1-get(valueAmount))
 							end),
-							Size = UDim2.fromOffset(4,4),
 							Position = computed(function()
-								local _,_sat,_val = get(color):ToHSV()
-								return UDim2.fromScale(_sat, 1-_val)
-							end)
+								return UDim2.fromScale(get(saturationAmount), 1-get(valueAmount))
+							end),
+
+							[children] = {
+								new "ImageLabel" {
+									ZIndex = 2,
+									AnchorPoint = Vector2.new(0.5,0.5),
+									BackgroundTransparency = 1,
+									Image = icons.circle,
+									Size = UDim2.fromScale(0.9,0.9),
+									ImageColor3 = computed(function()
+										return Color3.fromHSV(get(hueAmount),1,1)
+									end),
+									Position = UDim2.fromScale(0.5,0.5)
+
+								}
+							}
 						}
 					}
 				},
 				new "TextButton" { -- Hue
 					Size = UDim2.new(1,0,0,24),
-	
+
 					[onevent "InputBegan"] = function(input)
 						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 							return
@@ -207,9 +232,9 @@ return function(property)
 							end
 						end)
 					end,
-	
+
 					[ref] = hue,
-	
+
 					[children] = {
 						new "UIGradient" {
 							Color = ColorSequence.new {
@@ -232,7 +257,7 @@ return function(property)
 							Size = UDim2.new(0,2,1,0),
 							Position = computed(function()
 								local _hue = get(color):ToHSV()
-								return UDim2.fromScale(1 - _hue,0.5)
+								return UDim2.fromScale(1 - get(hueAmount),0.5)
 							end)
 						}
 					}
@@ -243,7 +268,7 @@ return function(property)
 					BackgroundTransparency = 1,
 					Image = "rbxassetid://15612242981",
 					ScaleType = Enum.ScaleType.Crop,
-	
+
 					[onevent "InputBegan"] = function(input)
 						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 							return
@@ -257,13 +282,13 @@ return function(property)
 							end
 						end)
 					end,
-	
+
 					[ref] = transparencyRef,
-	
+
 					[children] = {
 						new "Frame" {
 							Size = UDim2.fromScale(1,1),
-	
+
 							[children] = {
 								new "UIGradient" {
 									Color = computed(function()
@@ -294,7 +319,7 @@ return function(property)
 				new "Frame" { -- RGB
 					Size = UDim2.new(1,0,0,16),
 					BackgroundTransparency = 1,
-	
+
 					[children] = {
 						UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4)),
 						{
@@ -327,16 +352,16 @@ return function(property)
 								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 								ClearTextOnFocus = true,
 								TextXAlignment = Enum.TextXAlignment.Right,
-	
+
 								[ref] = RGBTextBox,
-	
+
 								[onevent "Changed"] = function(changedProperty)
 									local _RGBTextBox = get(RGBTextBox)
 									if changedProperty == "TextBounds" and _RGBTextBox and _RGBTextBox.TextBounds then
 										RGBLength:set(_RGBTextBox.TextBounds.X)
 									end
 								end,
-	
+
 								[onevent "FocusLost"] = function()
 									local _RGBTextBox = get(RGBTextBox)
 									local _rgb = _RGBTextBox.Text:gsub(" ","")
@@ -357,11 +382,14 @@ return function(property)
 									end)
 									if s and result then
 										color:set(result)
+										hueAmount:set(({get(color):ToHSV()})[1])
+										saturationAmount:set(({get(color):ToHSV()})[2])
+										valueAmount:set(({get(color):ToHSV()})[3])
 									else
 										_RGBTextBox.Text = _old
 									end
 								end,
-	
+
 								[children] = {
 									UITextSizeConstraint(1,16),
 									new "UISizeConstraint" {
@@ -375,7 +403,7 @@ return function(property)
 										Size = animate(function()
 											return UDim2.fromOffset(math.clamp(get(RGBLength),0,110),2)
 										end,40,1),
-	
+
 										[children] = {
 											UICorner(0,1)
 										}
@@ -388,7 +416,7 @@ return function(property)
 				new "Frame" { -- HSV
 					Size = UDim2.new(1,0,0,16),
 					BackgroundTransparency = 1,
-	
+
 					[children] = {
 						UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,5)),
 						{
@@ -421,16 +449,16 @@ return function(property)
 								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
 								ClearTextOnFocus = true,
 								TextXAlignment = Enum.TextXAlignment.Right,
-	
+
 								[ref] = HSVTextBox,
-	
+
 								[onevent "Changed"] = function(changedProperty)
 									local _HSVTextBox = get(HSVTextBox)
 									if changedProperty == "TextBounds" and _HSVTextBox and _HSVTextBox.TextBounds then
 										HSVLength:set(_HSVTextBox.TextBounds.X)
 									end
 								end,
-	
+
 								[onevent "FocusLost"] = function()
 									local _HSVTextBox = get(HSVTextBox)
 									local _hsv = _HSVTextBox.Text:gsub(" ","")
@@ -450,11 +478,14 @@ return function(property)
 									end)
 									if s and result then
 										color:set(result)
+										hueAmount:set(({get(color):ToHSV()})[1])
+										saturationAmount:set(({get(color):ToHSV()})[2])
+										valueAmount:set(({get(color):ToHSV()})[3])
 									else
 										_HSVTextBox.Text = _old
 									end
 								end,
-	
+
 								[children] = {
 									UITextSizeConstraint(1,16),
 									new "UISizeConstraint" {
@@ -468,7 +499,7 @@ return function(property)
 										Size = animate(function()
 											return UDim2.fromOffset(math.clamp(get(HSVLength),36,110),2)
 										end,40,1),
-	
+
 										[children] = {
 											UICorner(0,1)
 										}
@@ -592,7 +623,11 @@ return function(property)
 						BackgroundTransparency = selectedAnimation,
 
 						[onevent "Activated"] = function()
+							if typeof(get(currentPicker.module)) == "Instance" then
+								get(currentPicker.module):Destroy()
+							end
 							module, setChildren = require(script.Parent.module)(createColorPickerModule())
+							currentPicker:update("module", module)
 						end,
 
 						[children] = {
@@ -705,15 +740,16 @@ return function(property)
 			local _saturationValue = get(saturationValue)
 			local newSV = UserInputService:GetMouseLocation() - _saturationValue.AbsolutePosition - Vector2.new(0,get(offset.number))
 			newSV = Vector2.new(math.clamp(newSV.X, 0, _saturationValue.AbsoluteSize.X), math.clamp(newSV.Y, 0, _saturationValue.AbsoluteSize.Y))
-			local _hue = get(color):ToHSV()
-			color:set(Color3.fromHSV(_hue, newSV.X/_saturationValue.AbsoluteSize.X,(_saturationValue.AbsoluteSize.Y - newSV.Y)/_saturationValue.AbsoluteSize.Y))
+			saturationAmount:set(newSV.X/_saturationValue.AbsoluteSize.X)
+			valueAmount:set((_saturationValue.AbsoluteSize.Y - newSV.Y)/_saturationValue.AbsoluteSize.Y)
+			color:set(Color3.fromHSV(get(hueAmount), get(saturationAmount), get(valueAmount)))
 		end
 		if get(hueDown) then
 			local _hue = get(hue)
 			local newHue = UserInputService:GetMouseLocation() - _hue.AbsolutePosition - Vector2.new(0,get(offset.number))
 			newHue = Vector2.new(math.clamp(newHue.X, 0, _hue.AbsoluteSize.X), 0)
-			local _,_sat,_val = get(color):ToHSV()
-			color:set(Color3.fromHSV((_hue.AbsoluteSize.X - newHue.X)/_hue.AbsoluteSize.X, _sat, _val))
+			hueAmount:set((_hue.AbsoluteSize.X - newHue.X)/_hue.AbsoluteSize.X)
+			color:set(Color3.fromHSV(get(hueAmount), get(saturationAmount), get(valueAmount)))
 		end
 		if get(transparencyDown) then
 			local __transparency = get(transparencyRef)
@@ -725,7 +761,7 @@ return function(property)
 
 	-- Closure
 
-	if get(useConfig.boolean) then
+	if get(useConfig.boolean) and not get(ignoreConfig) then
 		observe(_flag.file):onChange(function()
 			local file = get(_flag.file)
 			local noColor = true
@@ -748,6 +784,9 @@ return function(property)
 			if noTransparency then
 				_flag.status.transparency:set(get(_transparency))
 			end
+			hueAmount:set(({get(color):ToHSV()})[1])
+			saturationAmount:set(({get(color):ToHSV()})[2])
+			valueAmount:set(({get(color):ToHSV()})[3])
 		end)
 		if _flag.private then
 			_flag.status.color:set(get(_color))
@@ -757,6 +796,10 @@ return function(property)
 		_flag.status.color:set(get(_color))
 		_flag.status.transparency:set(get(_transparency))
 	end
+
+	hueAmount:set(({get(color):ToHSV()})[1])
+	saturationAmount:set(({get(color):ToHSV()})[2])
+	valueAmount:set(({get(color):ToHSV()})[3])
 
 	local returnFunctions = {}
 	function returnFunctions:SetName(newText)

@@ -42,7 +42,8 @@ return function(property)
         Default = "",
         FLAG = "",
         IsEnabled = false,
-        Callback = function()end
+        Callback = function()end,
+		IgnoreConfig = true
 	},{
 		property.Placeholder and "" or "Placeholder",
 		property.IsEnabled and "" or "IsEnabled",
@@ -51,7 +52,8 @@ return function(property)
 		property.OnLeave and "" or "OnLeave",
 		property.Default and "" or "Default",
 		property.FLAG and "" or "FLAG",
-		property.DisabledText and "" or "DisabledText"
+		property.DisabledText and "" or "DisabledText",
+		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -73,6 +75,7 @@ return function(property)
 	local default = property.Default or value("")
 	local onLeave = property.OnLeave or value(false)
 	local clearTextOnFocus = property.ClearTextOnFocus or value(false)
+	local ignoreConfig = property.IgnoreConfig or value(false)
 	local placeHolder = property.Placeholder or value("")
 	local flag = property.FLAG or value(textbox.uid)
 	local _flag
@@ -80,6 +83,7 @@ return function(property)
 		_flag = flagCreator.register(get(flag), {
 			correctText = value(""),
 		},"textbox", get(flag) == textbox.uid)
+		_flag.user.Value = get(_flag.status.correctText)
 	end
 
 	-- Variables
@@ -318,17 +322,24 @@ return function(property)
 													}
 												end,40,1),
 												Transparency = animate(function()
+													if not get(isSelected) then
+														return NumberSequence.new {
+															NumberSequenceKeypoint.new(0, 1),
+															NumberSequenceKeypoint.new(0.5, 1),
+															NumberSequenceKeypoint.new(1, 1)
+														}
+													end
 													if get(largerThanBox) then
 														if get(focused) then
 															return NumberSequence.new {
 																NumberSequenceKeypoint.new(0, 0),
-																NumberSequenceKeypoint.new(0.25, 1),
+																NumberSequenceKeypoint.new(0.1, 1),
 																NumberSequenceKeypoint.new(1, 1)
 															}
 														else
 															return NumberSequence.new {
 																NumberSequenceKeypoint.new(0, 1),
-																NumberSequenceKeypoint.new(0.75, 1),
+																NumberSequenceKeypoint.new(0.9, 1),
 																NumberSequenceKeypoint.new(1, 0)
 															}
 														end
@@ -352,7 +363,7 @@ return function(property)
 
 	-- Closure
 
-	if get(useConfig.boolean) then
+	if get(useConfig.boolean) and not get(ignoreConfig) then
 		observe(_flag.file):onChange(function()
 			local file = get(_flag.file)
 			local noCorrectText = true

@@ -89,10 +89,12 @@ function darius:Window(windowProperty)
 	data.add({binds = {}}, "currentBinds")
 	data.add({bindData = {}}, "bindData")
 	data.add({string = ""}, "searchText")
+	local toggles = data.add({list = {}}, "toggles", true)
+	data.add({module = function()end}, "currentPicker")
 	data.add({boolean = true}, "isVisible")
 	data.add({boolean = windowProperty.IsMobile}, "isMobile")
 	data.add({boolean = false}, "isListening")
-	data.add({number = windowProperty.Offset or 58}, "offset")
+	local destroyFunc = data.add({func = function()end}, "destroyFunc")
 	local flags = data.find("flags")
 	local configLoaded = data.add({boolean = false}, "configLoaded")
 	local useConfig = data.add({boolean = false}, "useConfig")
@@ -141,6 +143,20 @@ function darius:Window(windowProperty)
 	mainLayout(windowProperty, bindableEvent)
 	local tabButtonList = references.get("tabButtonList")
 	local tabFrameList = references.get("tabFrameList")
+
+	-- Destruction
+
+	destroyFunc:update("func", function()
+		darius.Destroyed = true
+		bindableEvent:Fire()
+		for _,toggle in toggles.list do
+			toggle:set(false)
+		end
+		task.wait(0.1)
+		connections:deleteConnections()
+		references:clear()
+		bindableEvent:Destroy()
+	end)
 
 	-- Tabs
 
@@ -202,6 +218,10 @@ function darius:Window(windowProperty)
 	function darius:Destroy()
 		darius.Destroyed = true
 		bindableEvent:Fire()
+		for _,toggle in toggles.list do
+			toggle:set(false)
+		end
+		task.wait(0.1)
 		connections:deleteConnections()
 		references:clear()
 		bindableEvent:Destroy()
@@ -218,6 +238,19 @@ function darius:Window(windowProperty)
 		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 		theme.create(newTheme)
+	end
+	function darius:ExportTheme(json)
+		local currentTheme = theme.getTheme()
+		if json and typeof(json) == "boolean" and json == true then
+			local _string = "{"
+			for name,color in currentTheme do
+				_string = _string..`\n\t[{name}] = Color3.new({tostring(color)})`
+			end
+			_string = _string.."\n}"
+			return _string
+		else
+			return HttpService:JSONEncode(currentTheme)
+		end
 	end
 
 	if customFunctions.getgenv then

@@ -56,6 +56,7 @@ return function(property, bindableEvent)
 	local isMobile = data.find("isMobile")
 	local isListening = data.find("isListening")
 	local bindData = data.find("bindData")
+	local destroyFunc = data.find("destroyFunc").func
 
 	-- Variables
 
@@ -123,7 +124,7 @@ return function(property, bindableEvent)
 
 	local mobileButton
 	local dragConnection
-	new "ScreenGui" {
+	local inst = new "ScreenGui" {
 		Name = get(instanceName.name),
 		Parent = property.Parent or services.CoreGui,
 		ResetOnSpawn = false,
@@ -133,12 +134,15 @@ return function(property, bindableEvent)
 
 		[children] = {
 			new "Frame" {
+				Name = "screenSize",
+				Size = UDim2.fromScale(1,1),
+				BackgroundTransparency = 1,
+			},
+			new "Frame" {
 				Name = "container",
 				Visible = isVisible.boolean,
 				AnchorPoint = Vector2.new(0.5,0.5),
-				Position = computed(function()
-					return UDim2.new(0.5,0,0.5, get(absoluteOffset.number))
-				end),
+				Position = UDim2.new(0.5,0,0.5,get(absoluteOffset.number)),
 				Size = animate(function()
 					return UDim2.fromOffset(get(x),get(y))
 				end,30,1),
@@ -450,10 +454,7 @@ return function(property, bindableEvent)
 								BackgroundColor3 = theme.selectedTab,
 
 								[onevent "Activated"] = function()
-									bindableEvent:Fire()
-									bindableEvent:Destroy()
-									connections:deleteConnections()
-									references:clear()
+									get(destroyFunc)()
 								end,
 
 								[children] = {
@@ -506,6 +507,13 @@ return function(property, bindableEvent)
 			}
 		}
 	}
+
+	if inst.screenSize.AbsoluteSize.X < get(x) then
+		x:set(inst.screenSize.AbsoluteSize.X * 0.9)
+	end
+	if inst.screenSize.AbsoluteSize.Y < get(y) then
+		y:set(inst.screenSize.AbsoluteSize.Y * 0.9)
+	end
 
 	mobileButton = new "TextButton" {
 		Visible = computed(function()
@@ -570,5 +578,30 @@ return function(property, bindableEvent)
 	end)
 	connections.add(keybindConnection)
 
-	drag(references.get("container"), 15)
+	local _currentDrag = drag(references.get("container"), 15)
+
+	connections.add(references.get("container"):GetPropertyChangedSignal("Position"):Connect(function()
+		local _container = references.get("container")
+		local correctPosition = _container.AbsolutePosition + Vector2.new(get(x)/2,get(y)/2)
+		if (correctPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) > 0.435 then
+			_currentDrag:Disconnect()
+			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
+			_currentDrag = drag(references.get("container"), 15)
+		end
+		if -((correctPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) + 1) > 0.8 then
+			_currentDrag:Disconnect()
+			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
+			_currentDrag = drag(references.get("container"), 15)
+		end
+		if (correctPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) > 0.32 then
+			_currentDrag:Disconnect()
+			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
+			_currentDrag = drag(references.get("container"), 15)
+		end
+		if -((correctPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) + 1) > 0.935 then
+			_currentDrag:Disconnect()
+			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
+			_currentDrag = drag(references.get("container"), 15)
+		end
+	end))
 end

@@ -48,7 +48,6 @@ local window = darius:Window({
         toggled = Color3.fromHex("#2A2C31")
     },
 
-    noOffset = true,
     Parent = game.Players.LocalPlayer.PlayerGui
 })
 

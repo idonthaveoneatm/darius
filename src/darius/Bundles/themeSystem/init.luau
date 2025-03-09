@@ -58,4 +58,8 @@ function themeSystem.onChange(func)
     table.insert(functionsOnChange, func)
 end
 
+function themeSystem.getTheme()
+    return get(currentTheme)
+end
+
 return themeSystem

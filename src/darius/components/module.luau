@@ -41,6 +41,7 @@ return function(property)
     -- Data
 
     local instanceName = data.find("instanceName")
+    local absoluteOffset = data.find("absoluteOffset")
 
     -- Properties
 
@@ -58,7 +59,7 @@ return function(property)
     module = new "TextButton" {
         Parent = screenGui,
         Size = UDim2.fromOffset(240,11),
-        Position = UDim2.fromOffset(10,10),
+        Position = UDim2.fromOffset(10,10 + get(absoluteOffset.number)),
         BackgroundTransparency = 1,
 
         [onevent "MouseButton1Down"] = function()
