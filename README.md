@@ -133,6 +133,11 @@ darius:Destroy()
 print(darius.Destroyed) --> true
 -- In console it would print "Destroying Darius"
 ```
+### Settings Page
+Adding this function **after** you create your tabs adds a "⚙️ Settings" tab with a theme manager. (config manager soon)
+```lua
+darius:CreateSettings()
+```
 ### Exporting Theme
 If you want to export the current theme you can use this.
 ```lua
