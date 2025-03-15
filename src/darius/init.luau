@@ -247,18 +247,16 @@ function darius:Window(windowProperty)
 		assert(_didPass, table.concat(_failedItems, "\n"))
 		--theme.set(newTheme)
 	end
-	function darius:ExportTheme(json)
-		local currentTheme = theme.getTheme()
-		if json and typeof(json) == "boolean" and json == true then
-			local _string = "{"
-			for name,color in currentTheme do
-				_string = _string..`\n\t[{name}] = Color3.new({tostring(color)})`
-			end
-			_string = _string.."\n}"
-			return _string
-		else
-			return HttpService:JSONEncode(currentTheme)
+	function darius:ExportTheme()
+		local _currentTheme = theme.getTheme()
+		local ctheme = {}
+		ctheme.name = _currentTheme.name
+		ctheme.uid = _currentTheme.uid
+		ctheme.palette = {}
+		for i,v in _currentTheme.palette do
+			ctheme.palette[i] = v:ToHex()
 		end
+		return HttpService:JSONEncode(ctheme)
 	end
 	function darius:CreateSettings()
 		local _settings = tabs:Tab({

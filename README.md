@@ -133,6 +133,11 @@ darius:Destroy()
 print(darius.Destroyed) --> true
 -- In console it would print "Destroying Darius"
 ```
+### Exporting Theme
+If you want to export the current theme you can use this.
+```lua
+darius:ExportTheme() --> "{}" is a JSON table of the current theme
+```
 ## Create a Tab
 ```lua
 local tab = window:Tab({
@@ -181,6 +186,7 @@ local dropdown = tab:Dropdown({
     -- Optional
     Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
+    Alphabetical = true, -- Defaults false
     DisabledText = "Hey you cant use this!",
     FLAG = "dropdown_SingleSelection",
     Default = "" or {}, -- Table if Multiselect and string if not
@@ -299,6 +305,7 @@ local colorpicker = tab:ColorPicker({
 
     -- Optional
     Visible = false, -- Defaults true
+    HideTransparency = true, -- Defaults false
     IsEnabled = false,
     DisabledText = "Hey you cant use this!",
     FLAG = "colorpicker",
