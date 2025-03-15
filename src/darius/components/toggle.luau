@@ -44,6 +44,7 @@ return function(property)
         FLAG = "",
         IsEnabled = false,
 		Default = false,
+		Visible = false,
         Callback = function()end,
 		LinkKeybind = true,
 		IgnoreConfig = true,
@@ -52,7 +53,9 @@ return function(property)
 		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Default and "" or "Default",
+		property.Visible and "" or "Visible",
 		property.LinkKeybind and "" or "LinkKeybind",
+		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -84,6 +87,7 @@ return function(property)
 	local callback = property.Callback
 	local default = property.Default or value(false)
 	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local disabledText = property.DisabledText or value("Component Disabled")
@@ -215,7 +219,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -510,6 +514,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

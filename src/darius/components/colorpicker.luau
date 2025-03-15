@@ -43,15 +43,19 @@ return function(property)
         IsEnabled = false,
         Callback = function()end,
 		FLAG = "",
+		Visible = false,
 		Color = Color3.new(),
 		Transparency = 0,
+		HideTransparency = true,
 		IgnoreConfig = true
 	},{
 		property.IsEnabled and "" or "IsEnabled",
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
 		property.Color and "" or "Color",
+		property.Visible and "" or "Visible",
 		property.Transparency and "" or "Transparency",
+		property.HideTransparency and "" or "HideTransparency",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -75,6 +79,8 @@ return function(property)
 	local _color = property.Color or value(Color3.new(1))
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local _transparency = property.Transparency or value(0)
+	local visible = property.Visible or value(true)
+	local hideTransparency = property.HideTransparency or value(false)
 	local flag = property.FLAG or value(colorpicker.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -256,13 +262,13 @@ return function(property)
 							BackgroundColor3 = theme.colorpickerBar,
 							Size = UDim2.new(0,2,1,0),
 							Position = computed(function()
-								local _hue = get(color):ToHSV()
 								return UDim2.fromScale(1 - get(hueAmount),0.5)
 							end)
 						}
 					}
 				},
 				new "ImageButton" { -- Transparency
+					Visible = not get(hideTransparency),
 					ZIndex = 2,
 					Size = UDim2.new(1,0,0,24),
 					BackgroundTransparency = 1,
@@ -526,7 +532,7 @@ return function(property)
 			return get(isSelected)
 		end),
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -771,30 +777,30 @@ return function(property)
 				table.foreach(a, function(i,v)
 					a[i] = tonumber(v)
 				end)
-				_flag.status.color:set(Color3.new(unpack(a)))
+				color:set(Color3.new(unpack(a)))
 				noColor = false
 			end
 			if file.transparency ~= nil then
-				_flag.status.transparency:set(tonumber(file.transparency))
+				transparency:set(tonumber(file.transparency))
 				noTransparency = false
 			end
 			if noColor then
-				_flag.status.color:set(get(_color))
+				color:set(get(_color))
 			end
 			if noTransparency then
-				_flag.status.transparency:set(get(_transparency))
+				transparency:set(get(_transparency))
 			end
 			hueAmount:set(({get(color):ToHSV()})[1])
 			saturationAmount:set(({get(color):ToHSV()})[2])
 			valueAmount:set(({get(color):ToHSV()})[3])
 		end)
 		if _flag.private then
-			_flag.status.color:set(get(_color))
-			_flag.status.transparency:set(get(_transparency))
+			color:set(get(_color))
+			transparency:set(get(_transparency))
 		end
 	else
-		_flag.status.color:set(get(_color))
-		_flag.status.transparency:set(get(_transparency))
+		color:set(get(_color))
+		transparency:set(get(_transparency))
 	end
 
 	hueAmount:set(({get(color):ToHSV()})[1])
@@ -812,19 +818,29 @@ return function(property)
 		local _didPass, _failedItems = typecheck({['SetColor'] = newColor}, {SetColor = Color3.new()})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.color:set(newColor)
+		color:set(newColor)
+
+		hueAmount:set(({get(color):ToHSV()})[1])
+		saturationAmount:set(({get(color):ToHSV()})[2])
+		valueAmount:set(({get(color):ToHSV()})[3])
 	end
 	function returnFunctions:SetTransparency(newTransparency)
 		local _didPass, _failedItems = typecheck({['SetTransparency'] = newTransparency}, {SetTransparency = 0})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.transparency:set(newTransparency)
+		transparency:set(newTransparency)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

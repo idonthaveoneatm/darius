@@ -36,19 +36,23 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         FLAG = "",
+		Visible = false,
         IsEnabled = false,
         Callback = function()end,
         Items = {},
         Multiselect = true,
         Regex = function()end,
-		IgnoreConfig = true
+		IgnoreConfig = true,
+		Alphabetical = true
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
+		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
-		property.IgnoreConfig and "" or "IgnoreConfig"
+		property.IgnoreConfig and "" or "IgnoreConfig",
+		property.Alphabetical and "" or "Alphabetical"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -78,8 +82,10 @@ return function(property)
 	local items = value({})
 	local multiselect = property.Multiselect or value(false)
 	local default = property.Default
+	local visible = property.Visible or value(true)
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local isEnabled = property.IsEnabled or value(true)
+	local alphabetical = property.Alphabetical or value(false)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
 	local flag = property.FLAG or value(dropdown.uid)
@@ -101,6 +107,7 @@ return function(property)
 	local isDropped = value(false)
 	local lastReturnedValue = value(get(multiselect) and {} or "")
 	local itemElements = value({})
+	local displayValues = {}
 	local hasSelectedAll = value(false)
 
 	observe(_flag.status.items):onChange(function()
@@ -135,7 +142,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -244,7 +251,10 @@ return function(property)
 									if typeof(get(lastReturnedValue)) == "table" then
 										return get(name)
 									end
-									return get(name)..": "..get(lastReturnedValue)
+									if displayValues[get(lastReturnedValue)] then
+										return `{get(name)}: {displayValues[get(lastReturnedValue)]}`
+									end
+									return `{get(name)}: {get(lastReturnedValue)}`
 								end),
 								TextTransparency = selectedAnimation,
 								TextXAlignment = Enum.TextXAlignment.Left,
@@ -359,7 +369,9 @@ return function(property)
 			},
 			new "ScrollingFrame" {
 				ZIndex = 3,
-				Size = UDim2.new(1,0,0,136),
+				Size = computed(function()
+					return UDim2.new(1,0,0,math.clamp((#get(items)*34), 34, 136))
+				end),
 				BackgroundTransparency = 1,
 				ScrollBarThickness = 0,
 				CanvasSize = UDim2.new(0,0,0,0),
@@ -367,7 +379,7 @@ return function(property)
 
 				[children] = {
 					UIPadding(6,6,0,6),
-					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
+					UIListLayout(get(alphabetical) and SO.Name or SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
 					itemElements
 				}
 			}
@@ -377,14 +389,15 @@ return function(property)
 	observe(items):onChange(function()
 		local tableOfElements = {}
 		for _,item in get(items) do
-			local itemValue, itemImage
+			local itemValue, itemImage, itemDisplayValue
 			local isItemSelected = value(false)
 			if typeof(item) == "table" then
-				local _didPass, _failedItems = typecheck(item, {Value = "",Image = ""},{item.Image and "" or "Image"})
+				local _didPass, _failedItems = typecheck(item, {DisplayValue = "", Value = "",Image = ""},{item.Image and "" or "Image", item.DisplayValue and "" or "DisplayValue"})
 				assert(_didPass, table.concat(_failedItems, "\n"))
 
 				itemValue = item.Value
 				itemImage = item.Image or nil
+				itemDisplayValue = item.DisplayValue or nil
 			else
 				local _didPass, _failedItems = typecheck({['Item'] = item}, {Item = "",})
 				assert(_didPass, table.concat(_failedItems, "\n"))
@@ -392,6 +405,9 @@ return function(property)
 				itemValue = item
 			end
 			local cleanedItem = get(regex)(itemValue)
+			if itemDisplayValue then
+				displayValues[itemValue] = itemDisplayValue
+			end
 
 			observe(_flag.status.items):onChange(function()
 				if table.find(get(_flag.status.items), cleanedItem) then
@@ -409,7 +425,7 @@ return function(property)
 			end)
 
 			local itemElement = new "TextButton" {
-				Name = itemValue,
+				Name = `{itemDisplayValue ~= nil and itemDisplayValue or itemValue}`,
 				Size = UDim2.new(1,0,0,28),
 				BackgroundTransparency = selectedAnimation,
 				BackgroundColor3 = theme.background,
@@ -489,7 +505,7 @@ return function(property)
 						TextScaled = true,
 						AnchorPoint = Vector2.new(0,0.5),
 						Position = UDim2.new(0,0,0.5,0),
-						Text = itemValue,
+						Text = itemDisplayValue or itemValue,
 						TextTransparency = selectedAnimation,
 						TextXAlignment = Enum.TextXAlignment.Left,
 						RichText = true
@@ -537,7 +553,13 @@ return function(property)
 				end
 			else
 				if default then
-					_flag.status.item:set(get(default))
+					for _,v in get(items) do
+						if typeof(v) == "table" and v.Value == get(default) then
+							_flag.status.item:set(get(default))
+						elseif v == get(default) then
+							_flag.status.item:set(get(default))
+						end
+					end
 				end
 			end
 		end
@@ -642,6 +664,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

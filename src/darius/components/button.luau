@@ -28,9 +28,11 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
+		Visible = false,
         Callback = function()end
 	},{
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
 		property.DisabledText and "" or "DisabledText"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -48,6 +50,7 @@ return function(property)
 	local callback = property.Callback
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local visible = property.Visible or value(true)
 
 	-- Variables
 
@@ -69,7 +72,7 @@ return function(property)
 			return get(isSelected)
 		end),
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -185,6 +188,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

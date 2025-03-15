@@ -1,5 +1,6 @@
 local Bundles = require(script.Bundles)
 local data = Bundles.data
+local icons = Bundles.icons
 local theme = Bundles.themeSystem
 local services = Bundles.services
 	local HttpService = services.HttpService
@@ -78,7 +79,16 @@ function darius:Window(windowProperty)
 
 	-- Theme
 
-	theme.create(windowProperty.Theme or {})
+	theme.init()
+	local defaultTheme = theme.getTheme().uid
+	if windowProperty.Theme then
+		didPass, failedItems = typecheck(windowProperty.Theme, {
+			Name = "",
+			Colors = {}
+		})
+		assert(didPass, table.concat(failedItems, "\n"))
+		theme.set(theme.create(windowProperty.Theme.Name, windowProperty.Theme.Colors))
+	end
 
 	-- Data
 
@@ -90,6 +100,7 @@ function darius:Window(windowProperty)
 	data.add({bindData = {}}, "bindData")
 	data.add({string = ""}, "searchText")
 	local toggles = data.add({list = {}}, "toggles", true)
+	data.add({module = function()end}, "currentPicker")
 	data.add({module = function()end}, "currentPicker")
 	data.add({boolean = true}, "isVisible")
 	data.add({boolean = windowProperty.IsMobile}, "isMobile")
@@ -206,9 +217,6 @@ function darius:Window(windowProperty)
 			property.tab = tab
 			return addComponent("colorpicker", tabFrame, property)
 		end
-		function components:KeybindList()
-			return addComponent("keybindList", tabFrame, {tab = tab})
-		end
 		return tabs[tab.uid]
 	end
 	darius.Destroyed = false
@@ -237,7 +245,7 @@ function darius:Window(windowProperty)
 	function darius:SetTheme(newTheme)
 		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-		theme.create(newTheme)
+		--theme.set(newTheme)
 	end
 	function darius:ExportTheme(json)
 		local currentTheme = theme.getTheme()
@@ -251,6 +259,150 @@ function darius:Window(windowProperty)
 		else
 			return HttpService:JSONEncode(currentTheme)
 		end
+	end
+	function darius:CreateSettings()
+		local _settings = tabs:Tab({
+			Name = "⚙️ Settings"
+		})
+		local themeTable = theme.getTheme().palette
+		local cachedTheme = {}
+		local colorNames = {}
+		local savedThemesNames = {}
+		table.foreach(themeTable,function(i)
+			table.insert(colorNames, i)
+		end)
+		table.foreach(theme.getThemes(), function(_, _theme)
+			table.insert(savedThemesNames, {
+				DisplayValue = _theme.name,
+				Value = _theme.uid
+			})
+		end)
+
+		local _name = ""
+		local _themeName = ""
+		local _colorPicker,_reset,_deleteThemeA,_deleteThemeB
+
+		local savedThemesDD = _settings:Dropdown({
+			Name = "Current Theme",
+			Items = savedThemesNames,
+			Default = theme.getTheme().uid,
+			Callback = function(name)
+				if defaultTheme == name and _deleteThemeA then
+					_deleteThemeA:Invisible()
+				elseif defaultTheme ~= name and _deleteThemeA then
+					_deleteThemeA:Visible()
+				end
+				theme.set(name)
+				themeTable = theme.getTheme().palette
+				table.clear(cachedTheme)
+				table.foreach(themeTable, function(i,v)
+					cachedTheme[i] = v
+				end)
+				if _colorPicker and _name ~= "" then
+					_colorPicker:SetColor(theme.get(_name))
+				end
+			end
+		})
+		_deleteThemeA = _settings:Toggle({
+			Name = "Do you want to delete this theme?",
+			Visible = false,
+			Callback = function(value)
+				if value then
+					_deleteThemeB:Visible()
+				else
+					_deleteThemeB:Invisible()
+				end
+			end
+		})
+		_deleteThemeB = _settings:Button({
+			Name = "Delete Theme",
+			Visible = false,
+			DisabledText = "Check the box above first!",
+			Callback = function()
+				theme.delete(theme.getTheme().uid)
+				_deleteThemeA:SetValue(false)
+				table.clear(savedThemesNames)
+				table.foreach(theme.getThemes(), function(_, _theme)
+					table.insert(savedThemesNames, {
+						DisplayValue = _theme.name,
+						Value = _theme.uid
+					})
+				end)
+				savedThemesDD:SetItems(savedThemesNames)
+				savedThemesDD:SelectItem(defaultTheme)
+			end
+		})
+		_settings:Label("Edit Theme:")
+		_settings:Dropdown({
+			Name = "Theme Colors",
+			Items = colorNames,
+			Alphabetical = true,
+			Callback = function(name)
+				_name = name
+				_colorPicker:Enable()
+				_colorPicker:SetName(`Editing Color: {_name}`)
+				_colorPicker:SetColor(theme.get(_name))
+			end
+		})
+		_colorPicker = _settings:ColorPicker({
+			Name = "Editing Color: ",
+			IsEnabled = false,
+			DisabledText = "Select Color First!",
+			HideTransparency = true,
+			Callback = function(color)
+				local currentTheme = theme.getTheme().palette
+				if currentTheme[_name].R ~= color.R or currentTheme[_name].G ~= color.G or currentTheme[_name].B ~= color.B then
+					_reset:Visible()
+				end
+				theme.edit(_name, color)
+			end
+		})
+		_reset = _settings:Button({
+			Name = "Reset Color",
+			Visible = false,
+			Callback = function()
+				_colorPicker:SetColor(cachedTheme[_name])
+				_reset:Invisible()
+			end
+		})
+		_settings:TextBox({
+			Name = "Name Your Theme",
+			Callback = function(text)
+				_themeName = text
+			end
+		})
+		_settings:Button({
+			Name = "Save and Set New Theme",
+			Callback = function()
+				if _themeName == "" then
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = "Theme name cannot be empty!",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+					return
+				end
+				local newTheme = theme.create(_themeName, theme.getColors())
+				local response = {theme.set(newTheme)}
+
+				if response[1] then
+					table.clear(savedThemesNames)
+					table.foreach(theme.getThemes(), function(_, _theme)
+						table.insert(savedThemesNames, {
+							DisplayValue = _theme.name,
+							Value = _theme.uid
+						})
+					end)
+					savedThemesDD:SetItems(savedThemesNames)
+					savedThemesDD:SelectItem(newTheme)
+				end
+				theme.export()
+				customFunctions.printFileSystem()
+			end
+		})
+		_settings:Divider()
 	end
 
 	if customFunctions.getgenv then

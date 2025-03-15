@@ -11,6 +11,7 @@ local fakeData = {
 }
 customFunctions.makefolder("darius")
 customFunctions.makefolder("darius/test")
+customFunctions.makefolder("darius/themes")
 customFunctions.writefile("darius/test/config.json", HttpService:JSONEncode(fakeData))
 
 local randomIcons = {}
@@ -21,43 +22,46 @@ local function randomIcon():string
     return randomIcons[math.floor(math.random(1,#randomIcons))]
 end
 
+
+local ripFile = [[{"palette":{"disabledText":"d6dce0","text2":"b7a6d4","mobileButtonText":"2c2f33","disabledBackground":"2a2c31","mobileButtonImage":"2c2f33","text":"edebf2","background2":"0f0c15","notificationButton":"222427","orange":"b7a6d4","toggled":"b7a6d4","mobileButtonBackground":"dce1e5","colorpickerBar":"dce1e5","background":"1c1726","selectedTab":"1d1827","red":"b7a6d4"},"uid":"APunF","name":"rip"}]]
+--[[customFunctions.writefile("darius/themes/rip-APunF.json", ripFile)
+
 return function(target)
-    task.spawn(function()
         local window = darius:Window({
             Title = "Darius",
             Description = "What the sigma this isn't Quantum UI",
-            Icon = randomIcon(),
             HideBind = Enum.KeyCode.T,
             UseConfig = true,
             Config = "test",
             IsMobile = false,
-
             Theme = {
-                background = Color3.fromHex("#1C1726"),
-                background2 = Color3.fromHex("#0F0C15"),
-
-                text = Color3.fromHex("#EDEBF2"),
-                text2 = Color3.fromHex("#B7A6D4"),
-
-                selectedTab = Color3.fromHex("#1D1827"),
-
-                colorpickerBar = Color3.fromHex("#DCE1E5"),
-
-                notificationButton = Color3.fromHex("#222427"),
-
-                mobileButtonBackground = Color3.fromHex("#DCE1E5"),
-                mobileButtonText = Color3.fromHex("#2C2F33"),
-                mobileButtonImage = Color3.fromHex("#2C2F33"),
-
-                disabledBackground = Color3.fromHex("#2A2C31"),
-                disabledText = Color3.fromHex("#D6DCE0"),
-
-                toggled = Color3.fromHex("#B7A6D4"),
-
-                red = Color3.fromHex("#B7A6D4"),
-                orange = Color3.fromHex("#B7A6D4")
+                Name = "apple cider",
+                Colors = {
+                    background = Color3.fromHex("#1C1726"),
+                    background2 = Color3.fromHex("#0F0C15"),
+    
+                    text = Color3.fromHex("#EDEBF2"),
+                    text2 = Color3.fromHex("#B7A6D4"),
+    
+                    selectedTab = Color3.fromHex("#1D1827"),
+    
+                    colorpickerBar = Color3.fromHex("#DCE1E5"),
+    
+                    notificationButton = Color3.fromHex("#222427"),
+    
+                    mobileButtonBackground = Color3.fromHex("#DCE1E5"),
+                    mobileButtonText = Color3.fromHex("#2C2F33"),
+                    mobileButtonImage = Color3.fromHex("#2C2F33"),
+    
+                    disabledBackground = Color3.fromHex("#2A2C31"),
+                    disabledText = Color3.fromHex("#D6DCE0"),
+    
+                    toggled = Color3.fromHex("#B7A6D4"),
+    
+                    red = Color3.fromHex("#B7A6D4"),
+                    orange = Color3.fromHex("#B7A6D4")
+                }
             },
-
             noOffset = true,
             Parent = target
         })
@@ -65,93 +69,24 @@ return function(target)
         local tab = window:Tab({
             Name = "Main",
         })
-        local tab2 = window:Tab({
-            Name = randomString(16),
-            Image = randomIcon()
-        })
-        for i=1,10 do
-            window:Tab({
-                Name = randomString(6),
-                Image = randomIcon()
-            })
-        end
 
         tab:TextBox({
             Name = "Textbox",
+            PlaceHolderText = "Hello!",
             Callback = function(v)
 
             end
         })
-        tab:Keybind({
-            Name = "Keybind",
+        tab:TextBox({
+            Name = "Much larger text box title",
             Callback = function(v)
 
             end
         })
-        tab:Toggle({
-            Name = "Toggle",
-            LinkKeybind = true,
-            Callback = function(v)
-                print(v)
-            end
-        })
-        tab:Dropdown({
-            Name = "Dropdown",
-            Items = {"1","2","3"},
-            Default = "1",
-            FLAG = "dropdown",
-            Callback = function()
+        darius:CreateSettings()
 
-            end
-        })
-        print(`dropdown flag: "{darius.flags.dropdown.Value}"`)
-        tab:Dropdown({
-            Name = "Dropdown",
-            Items = {"1","2","3"},
-            FLAG = "dropdown_m",
-            --IgnoreConfig = true,
-            Multiselect = true,
-            Callback = function(v)
-                print(v)
-                print(darius.flags.dropdown_m.Value)
-            end
-        })
-        print(darius.flags.dropdown_m.Value)
-        local a = tab:ColorPicker({
-            Name = "Colorpicker",
-            --Color = Color3.fromHex('#a49ae6'),
-            --Transparency = 0.5,
-            FLAG = "colorpicker",
-            Callback = function(color,transparency)
-
-            end
-        })
-        local b = tab:ColorPicker({
-            Name = "Colorpicker",
-            --Color = Color3.fromHex('#a49ae6'),
-            --Transparency = 0.5,
-            --FLAG = "colorpicker",
-            Callback = function(color,transparency)
-
-            end
-        })
-        tab:Button({
-            Name = "sdfsdf",
-            Callback = function()
-                a:Disable()
-            end
-        })
-        tab:Slider({
-            Name = "Slider",
-            Min = 0,
-            Max = 100,
-            Callback = function(v)
-
-            end
-        })
-        tab:KeybindList()
         darius:LoadConfig()
-    end)
+
     return function()
         task.spawn(function()
             darius:Destroy()

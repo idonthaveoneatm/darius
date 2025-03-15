@@ -42,6 +42,7 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         FLAG = "",
+		Visible = false,
         IsEnabled = false,
         Callback = function()end,
 		Bind = Enum.KeyCode.Q,
@@ -49,6 +50,7 @@ return function(property)
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
+		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Bind and "" or "Bind",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -73,6 +75,7 @@ return function(property)
 	local name = property.Name
 	local callback = property.Callback
 	local bind = property.Bind
+	local visible = property.Visible or value(true)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local ignoreConfig = property.IgnoreConfig or value(false)
@@ -214,7 +217,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -449,6 +452,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

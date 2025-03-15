@@ -7,6 +7,7 @@ local ImportGlobals
 local ClosureBindings = {
     function()local wax,script,require=ImportGlobals(1)local ImportGlobals return (function(...)local Bundles = require(script.Bundles)
 local data = Bundles.data
+local icons = Bundles.icons
 local theme = Bundles.themeSystem
 local services = Bundles.services
 	local HttpService = services.HttpService
@@ -85,7 +86,16 @@ function darius:Window(windowProperty)
 
 	-- Theme
 
-	theme.create(windowProperty.Theme or {})
+	theme.init()
+	local defaultTheme = theme.getTheme().uid
+	if windowProperty.Theme then
+		didPass, failedItems = typecheck(windowProperty.Theme, {
+			Name = "",
+			Colors = {}
+		})
+		assert(didPass, table.concat(failedItems, "\n"))
+		theme.set(theme.create(windowProperty.Theme.Name, windowProperty.Theme.Colors))
+	end
 
 	-- Data
 
@@ -97,6 +107,7 @@ function darius:Window(windowProperty)
 	data.add({bindData = {}}, "bindData")
 	data.add({string = ""}, "searchText")
 	local toggles = data.add({list = {}}, "toggles", true)
+	data.add({module = function()end}, "currentPicker")
 	data.add({module = function()end}, "currentPicker")
 	data.add({boolean = true}, "isVisible")
 	data.add({boolean = windowProperty.IsMobile}, "isMobile")
@@ -213,9 +224,6 @@ function darius:Window(windowProperty)
 			property.tab = tab
 			return addComponent("colorpicker", tabFrame, property)
 		end
-		function components:KeybindList()
-			return addComponent("keybindList", tabFrame, {tab = tab})
-		end
 		return tabs[tab.uid]
 	end
 	darius.Destroyed = false
@@ -244,7 +252,7 @@ function darius:Window(windowProperty)
 	function darius:SetTheme(newTheme)
 		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-		theme.create(newTheme)
+		--theme.set(newTheme)
 	end
 	function darius:ExportTheme(json)
 		local currentTheme = theme.getTheme()
@@ -258,6 +266,150 @@ function darius:Window(windowProperty)
 		else
 			return HttpService:JSONEncode(currentTheme)
 		end
+	end
+	function darius:CreateSettings()
+		local _settings = tabs:Tab({
+			Name = "⚙️ Settings"
+		})
+		local themeTable = theme.getTheme().palette
+		local cachedTheme = {}
+		local colorNames = {}
+		local savedThemesNames = {}
+		table.foreach(themeTable,function(i)
+			table.insert(colorNames, i)
+		end)
+		table.foreach(theme.getThemes(), function(_, _theme)
+			table.insert(savedThemesNames, {
+				DisplayValue = _theme.name,
+				Value = _theme.uid
+			})
+		end)
+
+		local _name = ""
+		local _themeName = ""
+		local _colorPicker,_reset,_deleteThemeA,_deleteThemeB
+
+		local savedThemesDD = _settings:Dropdown({
+			Name = "Current Theme",
+			Items = savedThemesNames,
+			Default = theme.getTheme().uid,
+			Callback = function(name)
+				if defaultTheme == name and _deleteThemeA then
+					_deleteThemeA:Invisible()
+				elseif defaultTheme ~= name and _deleteThemeA then
+					_deleteThemeA:Visible()
+				end
+				theme.set(name)
+				themeTable = theme.getTheme().palette
+				table.clear(cachedTheme)
+				table.foreach(themeTable, function(i,v)
+					cachedTheme[i] = v
+				end)
+				if _colorPicker and _name ~= "" then
+					_colorPicker:SetColor(theme.get(_name))
+				end
+			end
+		})
+		_deleteThemeA = _settings:Toggle({
+			Name = "Do you want to delete this theme?",
+			Visible = false,
+			Callback = function(value)
+				if value then
+					_deleteThemeB:Visible()
+				else
+					_deleteThemeB:Invisible()
+				end
+			end
+		})
+		_deleteThemeB = _settings:Button({
+			Name = "Delete Theme",
+			Visible = false,
+			DisabledText = "Check the box above first!",
+			Callback = function()
+				theme.delete(theme.getTheme().uid)
+				_deleteThemeA:SetValue(false)
+				table.clear(savedThemesNames)
+				table.foreach(theme.getThemes(), function(_, _theme)
+					table.insert(savedThemesNames, {
+						DisplayValue = _theme.name,
+						Value = _theme.uid
+					})
+				end)
+				savedThemesDD:SetItems(savedThemesNames)
+				savedThemesDD:SelectItem(defaultTheme)
+			end
+		})
+		_settings:Label("Edit Theme:")
+		_settings:Dropdown({
+			Name = "Theme Colors",
+			Items = colorNames,
+			Alphabetical = true,
+			Callback = function(name)
+				_name = name
+				_colorPicker:Enable()
+				_colorPicker:SetName(`Editing Color: {_name}`)
+				_colorPicker:SetColor(theme.get(_name))
+			end
+		})
+		_colorPicker = _settings:ColorPicker({
+			Name = "Editing Color: ",
+			IsEnabled = false,
+			DisabledText = "Select Color First!",
+			HideTransparency = true,
+			Callback = function(color)
+				local currentTheme = theme.getTheme().palette
+				if currentTheme[_name].R ~= color.R or currentTheme[_name].G ~= color.G or currentTheme[_name].B ~= color.B then
+					_reset:Visible()
+				end
+				theme.edit(_name, color)
+			end
+		})
+		_reset = _settings:Button({
+			Name = "Reset Color",
+			Visible = false,
+			Callback = function()
+				_colorPicker:SetColor(cachedTheme[_name])
+				_reset:Invisible()
+			end
+		})
+		_settings:TextBox({
+			Name = "Name Your Theme",
+			Callback = function(text)
+				_themeName = text
+			end
+		})
+		_settings:Button({
+			Name = "Save and Set New Theme",
+			Callback = function()
+				if _themeName == "" then
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = "Theme name cannot be empty!",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+					return
+				end
+				local newTheme = theme.create(_themeName, theme.getColors())
+				local response = {theme.set(newTheme)}
+
+				if response[1] then
+					table.clear(savedThemesNames)
+					table.foreach(theme.getThemes(), function(_, _theme)
+						table.insert(savedThemesNames, {
+							DisplayValue = _theme.name,
+							Value = _theme.uid
+						})
+					end)
+					savedThemesDD:SetItems(savedThemesNames)
+					savedThemesDD:SelectItem(newTheme)
+				end
+				theme.export()
+				customFunctions.printFileSystem()
+			end
+		})
+		_settings:Divider()
 	end
 
 	if customFunctions.getgenv then
@@ -5081,6 +5233,8 @@ services = setmetatable(services, {
 return services
 end)() end,
     [62] = function()local wax,script,require=ImportGlobals(62)local ImportGlobals return (function(...)local themeSystem = {}
+local services = require(script.Parent.services)
+local HttpService = services.HttpService
 local fusion = require(script.Parent.Fusion)
 local default = require(script.default)
 local value = fusion.Value
@@ -5088,39 +5242,126 @@ local observe = fusion.Observer
 
 local get = require(script.Parent.Parent.utilities.get)
 local animate = require(script.Parent.Parent.utilities.animate)
+local _warn = require(script.Parent.Parent.components.warn)
+local randomString = require(script.Parent.Parent.utilities.randomString)
+local customFunctions = require(script.Parent.Parent.utilities.customFunctions)
 local functionsOnChange = {}
 
 local currentTheme = value({})
+local _currentTheme = value({})
+local dariusUID = ""
 observe(currentTheme):onChange(function()
     for _,func in ipairs(functionsOnChange) do
         task.spawn(func)
     end
 end)
 
+local themes = {}
+
 local palletteCheck = {}
-table.foreach(default, function(name, color)
+table.foreach(default, function(name)
     table.insert(palletteCheck, name)
 end)
 
-function themeSystem.create(pallette)
-    for _,v in palletteCheck do
-        if pallette[v] == nil then
-            pallette[v] = default[v]
-        end
-        if typeof(pallette[v]) ~= "Color3" then
-            error(v.." isn't type Color3")
+function themeSystem.find(uid)
+    for _,theme in themes do
+        if theme.uid == uid then
+            return true, theme
         end
     end
-    for i,_ in pallette do
-        if not table.find(palletteCheck, i) then
-            warn('Incorrect value removed "'..tostring(i)..'"')
-            pallette[i] = nil
-        end
-    end
-    currentTheme:set(pallette)
+    return false
 end
 
-function themeSystem.get(name:string)
+function themeSystem.export()
+    for _,theme in themes do
+        local ctheme = {}
+        ctheme.name = theme.name
+        ctheme.uid = theme.uid
+        ctheme.palette = {}
+        for i,v in theme.palette do
+            ctheme.palette[i] = v:ToHex()
+        end
+        customFunctions.writefile(`darius/themes/{theme.name}-{theme.uid}.json`, HttpService:JSONEncode(ctheme))
+    end
+end
+
+function themeSystem.create(name, palette, uid, fromFile)
+    fromFile = fromFile or false
+    if uid == "original" and fromFile then
+        return
+    end
+    for _,v in palletteCheck do
+        if palette[v] == nil then
+            palette[v] = default[v]
+        end
+        if typeof(palette[v]) ~= "Color3" then
+            _warn(v.." isn't type Color3")
+        end
+    end
+    for i,_ in palette do
+        if not table.find(palletteCheck, i) then
+            _warn('Incorrect value removed "'..tostring(i)..'"')
+            palette[i] = nil
+        end
+    end
+
+    uid = uid or randomString(5)
+    table.insert(themes, {
+        name = name,
+        uid = uid,
+        palette = palette
+    })
+    themeSystem.export()
+    return uid
+end
+
+function themeSystem.delete(uid)
+    local results = {themeSystem.find(uid)}
+    if not results[1] then
+        return false, "no theme found"
+    end
+    local position = table.find(themes, results[2])
+    themeSystem.set(dariusUID)
+    table.remove(themes, position)
+    customFunctions.delfile(`darius/themes/{results[2].name}-{results[2].uid}.json`)
+end
+
+function themeSystem.edit(name, color)
+    local ctheme = get(currentTheme)
+    ctheme[name] = color
+    currentTheme:set(ctheme)
+end
+
+function themeSystem.set(uid)
+    local results = {themeSystem.find(uid)}
+    local theme, palette
+    if results[1] then
+        theme, palette = results[2], results[2].palette
+    else
+        return false, "no theme found"
+    end
+
+    local _palette = {}
+    table.foreach(palette,function(i,v)
+        _palette[i] = v
+    end)
+    currentTheme:set(_palette)
+    _currentTheme:set(theme)
+    return true, "successfully set new theme"
+end
+
+function themeSystem.import()
+    for _,file in customFunctions.listfiles("darius/themes") do
+        local theme = HttpService:JSONDecode(customFunctions.readfile(file))
+        table.foreach(theme.palette,function(i,v)
+            local color = Color3.fromHex(`#{v}`)
+            theme.palette[i] = color
+        end)
+        themeSystem.create(theme.name, theme.palette, theme.uid, true)
+    end
+end
+
+function themeSystem.get(name)
     local theme = get(currentTheme)
     if theme[name] then
         return theme[name]
@@ -5135,12 +5376,32 @@ for _,v in palletteCheck do
     end,40,1)
 end
 
-currentTheme:set(default)
+function themeSystem.init()
+    local path = {"darius",`/themes`}
+	local built = ""
+	for i=1,#path do
+		built = built..path[i]
+		if not customFunctions.isfolder(built) then
+			customFunctions.makefolder(built)
+		end
+	end
+    dariusUID = themeSystem.create("darius", default, "original")
+    themeSystem.set(dariusUID)
+    themeSystem.import()
+end
+
 function themeSystem.onChange(func)
     table.insert(functionsOnChange, func)
 end
 
 function themeSystem.getTheme()
+    return get(_currentTheme)
+end
+
+function themeSystem.getThemes()
+    return themes
+end
+function themeSystem.getColors()
     return get(currentTheme)
 end
 
@@ -5202,9 +5463,11 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
+		Visible = false,
         Callback = function()end
 	},{
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
 		property.DisabledText and "" or "DisabledText"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -5222,6 +5485,7 @@ return function(property)
 	local callback = property.Callback
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local visible = property.Visible or value(true)
 
 	-- Variables
 
@@ -5243,7 +5507,7 @@ return function(property)
 			return get(isSelected)
 		end),
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -5360,6 +5624,12 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
@@ -5408,15 +5678,19 @@ return function(property)
         IsEnabled = false,
         Callback = function()end,
 		FLAG = "",
+		Visible = false,
 		Color = Color3.new(),
 		Transparency = 0,
+		HideTransparency = true,
 		IgnoreConfig = true
 	},{
 		property.IsEnabled and "" or "IsEnabled",
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
 		property.Color and "" or "Color",
+		property.Visible and "" or "Visible",
 		property.Transparency and "" or "Transparency",
+		property.HideTransparency and "" or "HideTransparency",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -5440,6 +5714,8 @@ return function(property)
 	local _color = property.Color or value(Color3.new(1))
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local _transparency = property.Transparency or value(0)
+	local visible = property.Visible or value(true)
+	local hideTransparency = property.HideTransparency or value(false)
 	local flag = property.FLAG or value(colorpicker.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -5621,13 +5897,13 @@ return function(property)
 							BackgroundColor3 = theme.colorpickerBar,
 							Size = UDim2.new(0,2,1,0),
 							Position = computed(function()
-								local _hue = get(color):ToHSV()
 								return UDim2.fromScale(1 - get(hueAmount),0.5)
 							end)
 						}
 					}
 				},
 				new "ImageButton" { -- Transparency
+					Visible = not get(hideTransparency),
 					ZIndex = 2,
 					Size = UDim2.new(1,0,0,24),
 					BackgroundTransparency = 1,
@@ -5891,7 +6167,7 @@ return function(property)
 			return get(isSelected)
 		end),
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -6136,30 +6412,30 @@ return function(property)
 				table.foreach(a, function(i,v)
 					a[i] = tonumber(v)
 				end)
-				_flag.status.color:set(Color3.new(unpack(a)))
+				color:set(Color3.new(unpack(a)))
 				noColor = false
 			end
 			if file.transparency ~= nil then
-				_flag.status.transparency:set(tonumber(file.transparency))
+				transparency:set(tonumber(file.transparency))
 				noTransparency = false
 			end
 			if noColor then
-				_flag.status.color:set(get(_color))
+				color:set(get(_color))
 			end
 			if noTransparency then
-				_flag.status.transparency:set(get(_transparency))
+				transparency:set(get(_transparency))
 			end
 			hueAmount:set(({get(color):ToHSV()})[1])
 			saturationAmount:set(({get(color):ToHSV()})[2])
 			valueAmount:set(({get(color):ToHSV()})[3])
 		end)
 		if _flag.private then
-			_flag.status.color:set(get(_color))
-			_flag.status.transparency:set(get(_transparency))
+			color:set(get(_color))
+			transparency:set(get(_transparency))
 		end
 	else
-		_flag.status.color:set(get(_color))
-		_flag.status.transparency:set(get(_transparency))
+		color:set(get(_color))
+		transparency:set(get(_transparency))
 	end
 
 	hueAmount:set(({get(color):ToHSV()})[1])
@@ -6177,19 +6453,29 @@ return function(property)
 		local _didPass, _failedItems = typecheck({['SetColor'] = newColor}, {SetColor = Color3.new()})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.color:set(newColor)
+		color:set(newColor)
+
+		hueAmount:set(({get(color):ToHSV()})[1])
+		saturationAmount:set(({get(color):ToHSV()})[2])
+		valueAmount:set(({get(color):ToHSV()})[3])
 	end
 	function returnFunctions:SetTransparency(newTransparency)
 		local _didPass, _failedItems = typecheck({['SetTransparency'] = newTransparency}, {SetTransparency = 0})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.transparency:set(newTransparency)
+		transparency:set(newTransparency)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end
@@ -6283,19 +6569,23 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         FLAG = "",
+		Visible = false,
         IsEnabled = false,
         Callback = function()end,
         Items = {},
         Multiselect = true,
         Regex = function()end,
-		IgnoreConfig = true
+		IgnoreConfig = true,
+		Alphabetical = true
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
+		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
-		property.IgnoreConfig and "" or "IgnoreConfig"
+		property.IgnoreConfig and "" or "IgnoreConfig",
+		property.Alphabetical and "" or "Alphabetical"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -6325,8 +6615,10 @@ return function(property)
 	local items = value({})
 	local multiselect = property.Multiselect or value(false)
 	local default = property.Default
+	local visible = property.Visible or value(true)
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local isEnabled = property.IsEnabled or value(true)
+	local alphabetical = property.Alphabetical or value(false)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
 	local flag = property.FLAG or value(dropdown.uid)
@@ -6348,6 +6640,7 @@ return function(property)
 	local isDropped = value(false)
 	local lastReturnedValue = value(get(multiselect) and {} or "")
 	local itemElements = value({})
+	local displayValues = {}
 	local hasSelectedAll = value(false)
 
 	observe(_flag.status.items):onChange(function()
@@ -6382,7 +6675,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -6491,7 +6784,10 @@ return function(property)
 									if typeof(get(lastReturnedValue)) == "table" then
 										return get(name)
 									end
-									return get(name)..": "..get(lastReturnedValue)
+									if displayValues[get(lastReturnedValue)] then
+										return `{get(name)}: {displayValues[get(lastReturnedValue)]}`
+									end
+									return `{get(name)}: {get(lastReturnedValue)}`
 								end),
 								TextTransparency = selectedAnimation,
 								TextXAlignment = Enum.TextXAlignment.Left,
@@ -6606,7 +6902,9 @@ return function(property)
 			},
 			new "ScrollingFrame" {
 				ZIndex = 3,
-				Size = UDim2.new(1,0,0,136),
+				Size = computed(function()
+					return UDim2.new(1,0,0,math.clamp((#get(items)*34), 34, 136))
+				end),
 				BackgroundTransparency = 1,
 				ScrollBarThickness = 0,
 				CanvasSize = UDim2.new(0,0,0,0),
@@ -6614,7 +6912,7 @@ return function(property)
 
 				[children] = {
 					UIPadding(6,6,0,6),
-					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
+					UIListLayout(get(alphabetical) and SO.Name or SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
 					itemElements
 				}
 			}
@@ -6624,14 +6922,15 @@ return function(property)
 	observe(items):onChange(function()
 		local tableOfElements = {}
 		for _,item in get(items) do
-			local itemValue, itemImage
+			local itemValue, itemImage, itemDisplayValue
 			local isItemSelected = value(false)
 			if typeof(item) == "table" then
-				local _didPass, _failedItems = typecheck(item, {Value = "",Image = ""},{item.Image and "" or "Image"})
+				local _didPass, _failedItems = typecheck(item, {DisplayValue = "", Value = "",Image = ""},{item.Image and "" or "Image", item.DisplayValue and "" or "DisplayValue"})
 				assert(_didPass, table.concat(_failedItems, "\n"))
 
 				itemValue = item.Value
 				itemImage = item.Image or nil
+				itemDisplayValue = item.DisplayValue or nil
 			else
 				local _didPass, _failedItems = typecheck({['Item'] = item}, {Item = "",})
 				assert(_didPass, table.concat(_failedItems, "\n"))
@@ -6639,6 +6938,9 @@ return function(property)
 				itemValue = item
 			end
 			local cleanedItem = get(regex)(itemValue)
+			if itemDisplayValue then
+				displayValues[itemValue] = itemDisplayValue
+			end
 
 			observe(_flag.status.items):onChange(function()
 				if table.find(get(_flag.status.items), cleanedItem) then
@@ -6656,7 +6958,7 @@ return function(property)
 			end)
 
 			local itemElement = new "TextButton" {
-				Name = itemValue,
+				Name = `{itemDisplayValue ~= nil and itemDisplayValue or itemValue}`,
 				Size = UDim2.new(1,0,0,28),
 				BackgroundTransparency = selectedAnimation,
 				BackgroundColor3 = theme.background,
@@ -6736,7 +7038,7 @@ return function(property)
 						TextScaled = true,
 						AnchorPoint = Vector2.new(0,0.5),
 						Position = UDim2.new(0,0,0.5,0),
-						Text = itemValue,
+						Text = itemDisplayValue or itemValue,
 						TextTransparency = selectedAnimation,
 						TextXAlignment = Enum.TextXAlignment.Left,
 						RichText = true
@@ -6784,7 +7086,13 @@ return function(property)
 				end
 			else
 				if default then
-					_flag.status.item:set(get(default))
+					for _,v in get(items) do
+						if typeof(v) == "table" and v.Value == get(default) then
+							_flag.status.item:set(get(default))
+						elseif v == get(default) then
+							_flag.status.item:set(get(default))
+						end
+					end
 				end
 			end
 		end
@@ -6890,6 +7198,12 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
@@ -6937,6 +7251,7 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         FLAG = "",
+		Visible = false,
         IsEnabled = false,
         Callback = function()end,
 		Bind = Enum.KeyCode.Q,
@@ -6944,6 +7259,7 @@ return function(property)
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
+		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Bind and "" or "Bind",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -6968,6 +7284,7 @@ return function(property)
 	local name = property.Name
 	local callback = property.Callback
 	local bind = property.Bind
+	local visible = property.Visible or value(true)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local ignoreConfig = property.IgnoreConfig or value(false)
@@ -7109,7 +7426,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -7344,6 +7661,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end
@@ -7583,7 +7906,12 @@ return function(property)
 
 	-- Typecheck
 
-	local didPass, failedItems = typecheck(property,{Text = ""})
+	local didPass, failedItems = typecheck(property,{
+		Text = "",
+		Visible = false
+	},{
+		property.Visible and "" or "Visible"
+	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
 	-- Data
@@ -7596,6 +7924,7 @@ return function(property)
 
 	local _parent = property.Parent
 	local text = property.Text
+	local visible = property.Visible or value(true)
 
 	-- Variables
 
@@ -7611,7 +7940,7 @@ return function(property)
 
 	new "Frame" {
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(text):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(text):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -7656,6 +7985,12 @@ return function(property)
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
 		text:set(newText)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end
@@ -8126,7 +8461,13 @@ return function(property)
 
 	-- Typecheck
 
-	local didPass, failedItems = typecheck(property,{Title = "", Body = ""})
+	local didPass, failedItems = typecheck(property,{
+		Title = "",
+		Visible = false,
+		Body = ""
+	},{
+		property.Visible and "" or "Visible",
+	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
 	-- Data
@@ -8140,6 +8481,7 @@ return function(property)
 	local _parent = property.Parent
 	local title = property.Title
 	local body = property.Body
+	local visible = property.Visible or value(true)
 
 	-- Variables
 
@@ -8180,7 +8522,7 @@ return function(property)
 
 	new "Frame" {
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -8249,6 +8591,12 @@ return function(property)
 
 		title:set(newTitle)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
@@ -8300,6 +8648,7 @@ return function(property)
         Max = 0,
 		DisplayAsPercent = false,
 		DecimalPlace = 0,
+		Visible = false,
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
@@ -8308,6 +8657,7 @@ return function(property)
 		property.Default and "" or "Default",
 		property.Min and "" or "Min",
 		property.Max and "" or "Max",
+		property.Visible and "" or "Visible",
 		property.DisplayAsPercent and "" or "DisplayAsPercent",
 		property.DecimalPlace and "" or "DecimalPlace",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -8333,6 +8683,7 @@ return function(property)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local ignoreConfig = property.IgnoreConfig or value(false)
+	local visible = property.Visible or value(true)
 	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
 	if not get(default) then
 		default = value(get(min))
@@ -8388,7 +8739,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -8681,6 +9032,12 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
@@ -8877,25 +9234,28 @@ return function(property)
 
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
-        Placeholder = "",
+        PlaceHolderText = "",
 		DisabledText = "",
         ClearTextOnFocus = false,
         OnlyNumbers = true,
         OnLeave = true,
+		Visible = false,
         Default = "",
         FLAG = "",
         IsEnabled = false,
         Callback = function()end,
 		IgnoreConfig = true
 	},{
-		property.Placeholder and "" or "Placeholder",
+		property.PlaceHolderText and "" or "PlaceHolderText",
 		property.IsEnabled and "" or "IsEnabled",
 		property.ClearTextOnFocus and "" or "ClearTextOnFocus",
 		property.OnlyNumbers and "" or "OnlyNumbers",
 		property.OnLeave and "" or "OnLeave",
 		property.Default and "" or "Default",
 		property.FLAG and "" or "FLAG",
+		property.Visible and "" or "Visible",
 		property.DisabledText and "" or "DisabledText",
+		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -8919,7 +9279,9 @@ return function(property)
 	local onLeave = property.OnLeave or value(false)
 	local clearTextOnFocus = property.ClearTextOnFocus or value(false)
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local placeHolder = property.Placeholder or value("")
+	local ignoreConfig = property.IgnoreConfig or value(false)
+	local placeHolder = property.PlaceHolderText or value("")
+	local visible = property.Visible or value(true)
 	local flag = property.FLAG or value(textbox.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -8991,13 +9353,15 @@ return function(property)
 			end
 		end
 	end)
+	local titleTextLabel = value()
+	local titleX = value(0)
 
 	-- TextBox
 
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -9058,27 +9422,43 @@ return function(property)
 
 				[children] = {
 					UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,3)),
-					new "Frame" {
-						Size = UDim2.new(0.65,-3,1,0),
+					new "TextLabel" {
+						Size = UDim2.fromScale(0,1),
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
+						TextSize = 18,
+						Text = name,
+						AutomaticSize = Enum.AutomaticSize.X,
+						TextTransparency = selectedAnimation,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						RichText = true,
+						TextColor3 = theme.text,
+						FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+						[onevent "Changed"] = function(changedProperty)
+							if changedProperty == "AbsoluteSize" and get(titleTextLabel) ~= nil then
+								titleX:set(get(titleTextLabel).AbsoluteSize.X)
+							end
+						end,
+
+						[ref] = titleTextLabel,
 
 						[children] = {
 							UICorner(6),
 							UIPadding(0,6),
-							new "TextLabel" { -- Title
-								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-								Size = UDim2.new(1,0,0,18),
+							--[[
+							new "TextLabel" {
+								
+								Size = UDim2.new(0,0,0,18),
 								BackgroundTransparency = 1,
-								TextColor3 = theme.text,
-								TextScaled = true,
-								AnchorPoint = Vector2.new(0,0.5),
-								Position = UDim2.new(0,0,0.5,0),
-								Text = name,
-								TextTransparency = selectedAnimation,
-								TextXAlignment = Enum.TextXAlignment.Left,
-								RichText = true
+								
+								--TextScaled = true,
+								
+
+								
+
+								[children] = {}
 							}
+								]]
 						}
 					},
 					new "TextButton" {
@@ -9088,7 +9468,12 @@ return function(property)
 							end
 							return get(isSelected)
 						end),
-						Size = UDim2.fromScale(0.35,1),
+						Size = computed(function()
+							if get(titleTextLabel) then
+								return UDim2.new(1,-get(titleX) - 3,1)
+							end
+							return UDim2.fromScale(0.35,1)
+						end),
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
 
@@ -9268,6 +9653,12 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
@@ -9317,6 +9708,7 @@ return function(property)
         FLAG = "",
         IsEnabled = false,
 		Default = false,
+		Visible = false,
         Callback = function()end,
 		LinkKeybind = true,
 		IgnoreConfig = true,
@@ -9325,7 +9717,9 @@ return function(property)
 		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
 		property.Default and "" or "Default",
+		property.Visible and "" or "Visible",
 		property.LinkKeybind and "" or "LinkKeybind",
+		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -9357,6 +9751,7 @@ return function(property)
 	local callback = property.Callback
 	local default = property.Default or value(false)
 	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local disabledText = property.DisabledText or value("Component Disabled")
@@ -9488,7 +9883,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -9784,6 +10179,12 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
@@ -9825,6 +10226,7 @@ local fakeData = {
 }
 customFunctions.makefolder("darius")
 customFunctions.makefolder("darius/test")
+customFunctions.makefolder("darius/themes")
 customFunctions.writefile("darius/test/config.json", HttpService:JSONEncode(fakeData))
 
 local randomIcons = {}
@@ -9835,43 +10237,46 @@ local function randomIcon():string
     return randomIcons[math.floor(math.random(1,#randomIcons))]
 end
 
+
+local ripFile = [[{"palette":{"disabledText":"d6dce0","text2":"b7a6d4","mobileButtonText":"2c2f33","disabledBackground":"2a2c31","mobileButtonImage":"2c2f33","text":"edebf2","background2":"0f0c15","notificationButton":"222427","orange":"b7a6d4","toggled":"b7a6d4","mobileButtonBackground":"dce1e5","colorpickerBar":"dce1e5","background":"1c1726","selectedTab":"1d1827","red":"b7a6d4"},"uid":"APunF","name":"rip"}]]
+--[[customFunctions.writefile("darius/themes/rip-APunF.json", ripFile)
+
 return function(target)
-    task.spawn(function()
         local window = darius:Window({
             Title = "Darius",
             Description = "What the sigma this isn't Quantum UI",
-            Icon = randomIcon(),
             HideBind = Enum.KeyCode.T,
             UseConfig = true,
             Config = "test",
             IsMobile = false,
-
             Theme = {
-                background = Color3.fromHex("#1C1726"),
-                background2 = Color3.fromHex("#0F0C15"),
-
-                text = Color3.fromHex("#EDEBF2"),
-                text2 = Color3.fromHex("#B7A6D4"),
-
-                selectedTab = Color3.fromHex("#1D1827"),
-
-                colorpickerBar = Color3.fromHex("#DCE1E5"),
-
-                notificationButton = Color3.fromHex("#222427"),
-
-                mobileButtonBackground = Color3.fromHex("#DCE1E5"),
-                mobileButtonText = Color3.fromHex("#2C2F33"),
-                mobileButtonImage = Color3.fromHex("#2C2F33"),
-
-                disabledBackground = Color3.fromHex("#2A2C31"),
-                disabledText = Color3.fromHex("#D6DCE0"),
-
-                toggled = Color3.fromHex("#B7A6D4"),
-
-                red = Color3.fromHex("#B7A6D4"),
-                orange = Color3.fromHex("#B7A6D4")
+                Name = "apple cider",
+                Colors = {
+                    background = Color3.fromHex("#1C1726"),
+                    background2 = Color3.fromHex("#0F0C15"),
+    
+                    text = Color3.fromHex("#EDEBF2"),
+                    text2 = Color3.fromHex("#B7A6D4"),
+    
+                    selectedTab = Color3.fromHex("#1D1827"),
+    
+                    colorpickerBar = Color3.fromHex("#DCE1E5"),
+    
+                    notificationButton = Color3.fromHex("#222427"),
+    
+                    mobileButtonBackground = Color3.fromHex("#DCE1E5"),
+                    mobileButtonText = Color3.fromHex("#2C2F33"),
+                    mobileButtonImage = Color3.fromHex("#2C2F33"),
+    
+                    disabledBackground = Color3.fromHex("#2A2C31"),
+                    disabledText = Color3.fromHex("#D6DCE0"),
+    
+                    toggled = Color3.fromHex("#B7A6D4"),
+    
+                    red = Color3.fromHex("#B7A6D4"),
+                    orange = Color3.fromHex("#B7A6D4")
+                }
             },
-
             noOffset = true,
             Parent = target
         })
@@ -9879,93 +10284,24 @@ return function(target)
         local tab = window:Tab({
             Name = "Main",
         })
-        local tab2 = window:Tab({
-            Name = randomString(16),
-            Image = randomIcon()
-        })
-        for i=1,10 do
-            window:Tab({
-                Name = randomString(6),
-                Image = randomIcon()
-            })
-        end
 
         tab:TextBox({
             Name = "Textbox",
+            PlaceHolderText = "Hello!",
             Callback = function(v)
 
             end
         })
-        tab:Keybind({
-            Name = "Keybind",
+        tab:TextBox({
+            Name = "Much larger text box title",
             Callback = function(v)
 
             end
         })
-        tab:Toggle({
-            Name = "Toggle",
-            LinkKeybind = true,
-            Callback = function(v)
-                print(v)
-            end
-        })
-        tab:Dropdown({
-            Name = "Dropdown",
-            Items = {"1","2","3"},
-            Default = "1",
-            FLAG = "dropdown",
-            Callback = function()
+        darius:CreateSettings()
 
-            end
-        })
-        print(`dropdown flag: "{darius.flags.dropdown.Value}"`)
-        tab:Dropdown({
-            Name = "Dropdown",
-            Items = {"1","2","3"},
-            FLAG = "dropdown_m",
-            --IgnoreConfig = true,
-            Multiselect = true,
-            Callback = function(v)
-                print(v)
-                print(darius.flags.dropdown_m.Value)
-            end
-        })
-        print(darius.flags.dropdown_m.Value)
-        local a = tab:ColorPicker({
-            Name = "Colorpicker",
-            --Color = Color3.fromHex('#a49ae6'),
-            --Transparency = 0.5,
-            FLAG = "colorpicker",
-            Callback = function(color,transparency)
-
-            end
-        })
-        local b = tab:ColorPicker({
-            Name = "Colorpicker",
-            --Color = Color3.fromHex('#a49ae6'),
-            --Transparency = 0.5,
-            --FLAG = "colorpicker",
-            Callback = function(color,transparency)
-
-            end
-        })
-        tab:Button({
-            Name = "sdfsdf",
-            Callback = function()
-                a:Disable()
-            end
-        })
-        tab:Slider({
-            Name = "Slider",
-            Min = 0,
-            Max = 100,
-            Callback = function(v)
-
-            end
-        })
-        tab:KeybindList()
         darius:LoadConfig()
-    end)
+
     return function()
         task.spawn(function()
             darius:Destroy()
@@ -10736,6 +11072,10 @@ function functions.cloneref(service)
     end
 end
 
+function functions.printFileSystem()
+    print(filesystem)
+end
+
 function functions.gethui(...)
     return gethui(...) or nil
 end
@@ -10892,7 +11232,7 @@ function functions.listfiles(string:string)
         local cleaned = {}
         for i,v in currentPath do
             if typeof(v) == "string" then
-                table.insert(cleaned, i)
+                table.insert(cleaned, `{string}/{i}`)
             end
         end
         return cleaned
@@ -11059,140 +11399,10 @@ local ObjectTree = {
         },
         {
             {
-                90,
-                2,
-                {
-                    "utilities"
-                },
-                {
-                    {
-                        93,
-                        2,
-                        {
-                            "customFont"
-                        }
-                    },
-                    {
-                        92,
-                        2,
-                        {
-                            "connections"
-                        }
-                    },
-                    {
-                        96,
-                        2,
-                        {
-                            "get"
-                        }
-                    },
-                    {
-                        91,
-                        2,
-                        {
-                            "animate"
-                        }
-                    },
-                    {
-                        100,
-                        2,
-                        {
-                            "tween"
-                        }
-                    },
-                    {
-                        97,
-                        2,
-                        {
-                            "getStringBounds"
-                        }
-                    },
-                    {
-                        95,
-                        2,
-                        {
-                            "drag"
-                        }
-                    },
-                    {
-                        98,
-                        2,
-                        {
-                            "randomString"
-                        }
-                    },
-                    {
-                        101,
-                        2,
-                        {
-                            "typecheck"
-                        }
-                    },
-                    {
-                        99,
-                        2,
-                        {
-                            "references"
-                        }
-                    },
-                    {
-                        94,
-                        2,
-                        {
-                            "customFunctions"
-                        }
-                    }
-                }
-            },
-            {
                 81,
                 2,
                 {
                     "darius.story"
-                }
-            },
-            {
-                84,
-                2,
-                {
-                    "simpleElements"
-                },
-                {
-                    {
-                        89,
-                        2,
-                        {
-                            "UITextSizeConstraint"
-                        }
-                    },
-                    {
-                        86,
-                        2,
-                        {
-                            "UICorner"
-                        }
-                    },
-                    {
-                        88,
-                        2,
-                        {
-                            "UIPadding"
-                        }
-                    },
-                    {
-                        87,
-                        2,
-                        {
-                            "UIListLayout"
-                        }
-                    },
-                    {
-                        85,
-                        2,
-                        {
-                            "UIAspectRatioConstraint"
-                        }
-                    }
                 }
             },
             {
@@ -11203,40 +11413,10 @@ local ObjectTree = {
                 },
                 {
                     {
-                        58,
-                        2,
-                        {
-                            "flags"
-                        }
-                    },
-                    {
                         60,
                         2,
                         {
                             "lucide"
-                        }
-                    },
-                    {
-                        62,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                63,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        61,
-                        2,
-                        {
-                            "services"
                         }
                     },
                     {
@@ -11246,6 +11426,57 @@ local ObjectTree = {
                             "Fusion"
                         },
                         {
+                            {
+                                48,
+                                2,
+                                {
+                                    "Types"
+                                }
+                            },
+                            {
+                                33,
+                                1,
+                                {
+                                    "Logging"
+                                },
+                                {
+                                    {
+                                        37,
+                                        2,
+                                        {
+                                            "messages"
+                                        }
+                                    },
+                                    {
+                                        36,
+                                        2,
+                                        {
+                                            "logWarn"
+                                        }
+                                    },
+                                    {
+                                        35,
+                                        2,
+                                        {
+                                            "logErrorNonFatal"
+                                        }
+                                    },
+                                    {
+                                        38,
+                                        2,
+                                        {
+                                            "parseError"
+                                        }
+                                    },
+                                    {
+                                        34,
+                                        2,
+                                        {
+                                            "logError"
+                                        }
+                                    }
+                                }
+                            },
                             {
                                 22,
                                 1,
@@ -11261,45 +11492,17 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        29,
-                                        2,
-                                        {
-                                            "Out"
-                                        }
-                                    },
-                                    {
-                                        25,
-                                        2,
-                                        {
-                                            "Hydrate"
-                                        }
-                                    },
-                                    {
-                                        23,
-                                        2,
-                                        {
-                                            "Children"
-                                        }
-                                    },
-                                    {
-                                        31,
-                                        2,
-                                        {
-                                            "applyInstanceProps"
-                                        }
-                                    },
-                                    {
-                                        28,
-                                        2,
-                                        {
-                                            "OnEvent"
-                                        }
-                                    },
-                                    {
                                         24,
                                         2,
                                         {
                                             "Cleanup"
+                                        }
+                                    },
+                                    {
+                                        30,
+                                        2,
+                                        {
+                                            "Ref"
                                         }
                                     },
                                     {
@@ -11310,6 +11513,20 @@ local ObjectTree = {
                                         }
                                     },
                                     {
+                                        31,
+                                        2,
+                                        {
+                                            "applyInstanceProps"
+                                        }
+                                    },
+                                    {
+                                        29,
+                                        2,
+                                        {
+                                            "Out"
+                                        }
+                                    },
+                                    {
                                         27,
                                         2,
                                         {
@@ -11317,10 +11534,24 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        30,
+                                        28,
                                         2,
                                         {
-                                            "Ref"
+                                            "OnEvent"
+                                        }
+                                    },
+                                    {
+                                        23,
+                                        2,
+                                        {
+                                            "Children"
+                                        }
+                                    },
+                                    {
+                                        25,
+                                        2,
+                                        {
+                                            "Hydrate"
                                         }
                                     }
                                 }
@@ -11342,10 +11573,75 @@ local ObjectTree = {
                                 }
                             },
                             {
-                                39,
-                                2,
+                                4,
+                                1,
                                 {
-                                    "PubTypes"
+                                    "Animation"
+                                },
+                                {
+                                    {
+                                        11,
+                                        2,
+                                        {
+                                            "packType"
+                                        }
+                                    },
+                                    {
+                                        6,
+                                        2,
+                                        {
+                                            "SpringScheduler"
+                                        }
+                                    },
+                                    {
+                                        5,
+                                        2,
+                                        {
+                                            "Spring"
+                                        }
+                                    },
+                                    {
+                                        13,
+                                        2,
+                                        {
+                                            "unpackType"
+                                        }
+                                    },
+                                    {
+                                        10,
+                                        2,
+                                        {
+                                            "lerpType"
+                                        }
+                                    },
+                                    {
+                                        8,
+                                        2,
+                                        {
+                                            "TweenScheduler"
+                                        }
+                                    },
+                                    {
+                                        9,
+                                        2,
+                                        {
+                                            "getTweenRatio"
+                                        }
+                                    },
+                                    {
+                                        12,
+                                        2,
+                                        {
+                                            "springCoefficients"
+                                        }
+                                    },
+                                    {
+                                        7,
+                                        2,
+                                        {
+                                            "Tween"
+                                        }
+                                    }
                                 }
                             },
                             {
@@ -11355,6 +11651,41 @@ local ObjectTree = {
                                     "State"
                                 },
                                 {
+                                    {
+                                        44,
+                                        2,
+                                        {
+                                            "ForValues"
+                                        }
+                                    },
+                                    {
+                                        47,
+                                        2,
+                                        {
+                                            "unwrap"
+                                        }
+                                    },
+                                    {
+                                        42,
+                                        2,
+                                        {
+                                            "ForKeys"
+                                        }
+                                    },
+                                    {
+                                        46,
+                                        2,
+                                        {
+                                            "Value"
+                                        }
+                                    },
+                                    {
+                                        41,
+                                        2,
+                                        {
+                                            "Computed"
+                                        }
+                                    },
                                     {
                                         45,
                                         2,
@@ -11368,121 +11699,51 @@ local ObjectTree = {
                                         {
                                             "ForPairs"
                                         }
-                                    },
-                                    {
-                                        47,
-                                        2,
-                                        {
-                                            "unwrap"
-                                        }
-                                    },
-                                    {
-                                        41,
-                                        2,
-                                        {
-                                            "Computed"
-                                        }
-                                    },
-                                    {
-                                        46,
-                                        2,
-                                        {
-                                            "Value"
-                                        }
-                                    },
-                                    {
-                                        42,
-                                        2,
-                                        {
-                                            "ForKeys"
-                                        }
-                                    },
-                                    {
-                                        44,
-                                        2,
-                                        {
-                                            "ForValues"
-                                        }
                                     }
                                 }
                             },
                             {
-                                4,
+                                16,
                                 1,
                                 {
-                                    "Animation"
+                                    "Dependencies"
                                 },
                                 {
                                     {
-                                        5,
+                                        18,
                                         2,
                                         {
-                                            "Spring"
+                                            "initDependency"
                                         }
                                     },
                                     {
-                                        6,
+                                        20,
                                         2,
                                         {
-                                            "SpringScheduler"
+                                            "updateAll"
                                         }
                                     },
                                     {
-                                        9,
+                                        17,
                                         2,
                                         {
-                                            "getTweenRatio"
+                                            "captureDependencies"
                                         }
                                     },
                                     {
-                                        7,
+                                        21,
                                         2,
                                         {
-                                            "Tween"
+                                            "useDependency"
                                         }
                                     },
                                     {
-                                        10,
+                                        19,
                                         2,
                                         {
-                                            "lerpType"
-                                        }
-                                    },
-                                    {
-                                        11,
-                                        2,
-                                        {
-                                            "packType"
-                                        }
-                                    },
-                                    {
-                                        13,
-                                        2,
-                                        {
-                                            "unpackType"
-                                        }
-                                    },
-                                    {
-                                        8,
-                                        2,
-                                        {
-                                            "TweenScheduler"
-                                        }
-                                    },
-                                    {
-                                        12,
-                                        2,
-                                        {
-                                            "springCoefficients"
+                                            "sharedState"
                                         }
                                     }
-                                }
-                            },
-                            {
-                                48,
-                                2,
-                                {
-                                    "Types"
                                 }
                             },
                             {
@@ -11492,20 +11753,6 @@ local ObjectTree = {
                                     "Utility"
                                 },
                                 {
-                                    {
-                                        50,
-                                        2,
-                                        {
-                                            "None"
-                                        }
-                                    },
-                                    {
-                                        56,
-                                        2,
-                                        {
-                                            "xtypeof"
-                                        }
-                                    },
                                     {
                                         53,
                                         2,
@@ -11518,6 +11765,13 @@ local ObjectTree = {
                                         2,
                                         {
                                             "needsDestruction"
+                                        }
+                                    },
+                                    {
+                                        52,
+                                        2,
+                                        {
+                                            "doNothing"
                                         }
                                     },
                                     {
@@ -11535,102 +11789,42 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        52,
+                                        56,
                                         2,
                                         {
-                                            "doNothing"
+                                            "xtypeof"
+                                        }
+                                    },
+                                    {
+                                        50,
+                                        2,
+                                        {
+                                            "None"
                                         }
                                     }
                                 }
                             },
                             {
-                                16,
-                                1,
+                                39,
+                                2,
                                 {
-                                    "Dependencies"
-                                },
-                                {
-                                    {
-                                        17,
-                                        2,
-                                        {
-                                            "captureDependencies"
-                                        }
-                                    },
-                                    {
-                                        21,
-                                        2,
-                                        {
-                                            "useDependency"
-                                        }
-                                    },
-                                    {
-                                        20,
-                                        2,
-                                        {
-                                            "updateAll"
-                                        }
-                                    },
-                                    {
-                                        19,
-                                        2,
-                                        {
-                                            "sharedState"
-                                        }
-                                    },
-                                    {
-                                        18,
-                                        2,
-                                        {
-                                            "initDependency"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                33,
-                                1,
-                                {
-                                    "Logging"
-                                },
-                                {
-                                    {
-                                        34,
-                                        2,
-                                        {
-                                            "logError"
-                                        }
-                                    },
-                                    {
-                                        35,
-                                        2,
-                                        {
-                                            "logErrorNonFatal"
-                                        }
-                                    },
-                                    {
-                                        37,
-                                        2,
-                                        {
-                                            "messages"
-                                        }
-                                    },
-                                    {
-                                        36,
-                                        2,
-                                        {
-                                            "logWarn"
-                                        }
-                                    },
-                                    {
-                                        38,
-                                        2,
-                                        {
-                                            "parseError"
-                                        }
-                                    }
+                                    "PubTypes"
                                 }
                             }
+                        }
+                    },
+                    {
+                        59,
+                        2,
+                        {
+                            "icons"
+                        }
+                    },
+                    {
+                        61,
+                        2,
+                        {
+                            "services"
                         }
                     },
                     {
@@ -11641,10 +11835,147 @@ local ObjectTree = {
                         }
                     },
                     {
-                        59,
+                        58,
                         2,
                         {
-                            "icons"
+                            "flags"
+                        }
+                    },
+                    {
+                        62,
+                        2,
+                        {
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                63,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                64,
+                1,
+                {
+                    "components"
+                },
+                {
+                    {
+                        69,
+                        2,
+                        {
+                            "keybind"
+                        }
+                    },
+                    {
+                        65,
+                        2,
+                        {
+                            "button"
+                        }
+                    },
+                    {
+                        76,
+                        2,
+                        {
+                            "tabButton"
+                        }
+                    },
+                    {
+                        80,
+                        2,
+                        {
+                            "warn"
+                        }
+                    },
+                    {
+                        74,
+                        2,
+                        {
+                            "paragraph"
+                        }
+                    },
+                    {
+                        72,
+                        2,
+                        {
+                            "module"
+                        }
+                    },
+                    {
+                        78,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        75,
+                        2,
+                        {
+                            "slider"
+                        }
+                    },
+                    {
+                        71,
+                        2,
+                        {
+                            "label"
+                        }
+                    },
+                    {
+                        79,
+                        2,
+                        {
+                            "toggle"
+                        }
+                    },
+                    {
+                        68,
+                        2,
+                        {
+                            "dropdown"
+                        }
+                    },
+                    {
+                        73,
+                        2,
+                        {
+                            "notification"
+                        }
+                    },
+                    {
+                        70,
+                        2,
+                        {
+                            "keybindList"
+                        }
+                    },
+                    {
+                        66,
+                        2,
+                        {
+                            "colorpicker"
+                        }
+                    },
+                    {
+                        77,
+                        2,
+                        {
+                            "tabFrame"
+                        }
+                    },
+                    {
+                        67,
+                        2,
+                        {
+                            "divider"
                         }
                     }
                 }
@@ -11666,122 +11997,131 @@ local ObjectTree = {
                 }
             },
             {
-                64,
-                1,
+                84,
+                2,
                 {
-                    "components"
+                    "simpleElements"
                 },
                 {
                     {
-                        68,
+                        88,
                         2,
                         {
-                            "dropdown"
+                            "UIPadding"
                         }
                     },
                     {
-                        69,
+                        87,
                         2,
                         {
-                            "keybind"
+                            "UIListLayout"
                         }
                     },
                     {
-                        78,
+                        85,
                         2,
                         {
-                            "textbox"
+                            "UIAspectRatioConstraint"
                         }
                     },
                     {
-                        79,
+                        86,
                         2,
                         {
-                            "toggle"
+                            "UICorner"
                         }
                     },
                     {
-                        65,
+                        89,
                         2,
                         {
-                            "button"
+                            "UITextSizeConstraint"
+                        }
+                    }
+                }
+            },
+            {
+                90,
+                2,
+                {
+                    "utilities"
+                },
+                {
+                    {
+                        98,
+                        2,
+                        {
+                            "randomString"
                         }
                     },
                     {
-                        80,
+                        93,
                         2,
                         {
-                            "warn"
+                            "customFont"
                         }
                     },
                     {
-                        71,
+                        100,
                         2,
                         {
-                            "label"
+                            "tween"
                         }
                     },
                     {
-                        70,
+                        99,
                         2,
                         {
-                            "keybindList"
+                            "references"
                         }
                     },
                     {
-                        75,
+                        95,
                         2,
                         {
-                            "slider"
+                            "drag"
                         }
                     },
                     {
-                        76,
+                        101,
                         2,
                         {
-                            "tabButton"
+                            "typecheck"
                         }
                     },
                     {
-                        72,
+                        94,
                         2,
                         {
-                            "module"
+                            "customFunctions"
                         }
                     },
                     {
-                        73,
+                        91,
                         2,
                         {
-                            "notification"
+                            "animate"
                         }
                     },
                     {
-                        67,
+                        92,
                         2,
                         {
-                            "divider"
+                            "connections"
                         }
                     },
                     {
-                        74,
+                        96,
                         2,
                         {
-                            "paragraph"
+                            "get"
                         }
                     },
                     {
-                        66,
+                        97,
                         2,
                         {
-                            "colorpicker"
-                        }
-                    },
-                    {
-                        77,
-                        2,
-                        {
-                            "tabFrame"
+                            "getStringBounds"
                         }
                     }
                 }
@@ -11793,97 +12133,97 @@ local ObjectTree = {
 -- Line offsets for debugging (only included when minifyTables is false)
 local LineOffsets = {
     8,
-    272,
-    282,
-    [5] = 356,
-    [6] = 574,
-    [7] = 668,
-    [8] = 804,
-    [9] = 880,
-    [10] = 924,
-    [11] = 1086,
-    [12] = 1185,
-    [13] = 1271,
-    [15] = 1360,
-    [17] = 1415,
-    [18] = 1472,
-    [19] = 1501,
-    [20] = 1525,
-    [21] = 1585,
-    [23] = 1615,
-    [24] = 1764,
-    [25] = 1785,
-    [26] = 1805,
-    [27] = 1841,
-    [28] = 1876,
-    [29] = 1913,
-    [30] = 1957,
-    [31] = 1987,
-    [32] = 2114,
-    [34] = 2225,
-    [35] = 2258,
-    [36] = 2293,
-    [37] = 2317,
-    [38] = 2363,
-    [39] = 2386,
-    [41] = 2533,
-    [42] = 2647,
-    [43] = 2896,
-    [44] = 3206,
-    [45] = 3453,
-    [46] = 3537,
-    [47] = 3600,
-    [48] = 3616,
-    [50] = 3763,
-    [51] = 3777,
-    [52] = 3831,
-    [53] = 3842,
-    [54] = 3860,
-    [55] = 3873,
-    [56] = 3902,
-    [57] = 3922,
-    [58] = 3996,
-    [59] = 4229,
-    [60] = 4247,
-    [61] = 5071,
-    [62] = 5083,
-    [63] = 5149,
-    [65] = 5175,
-    [66] = 5366,
-    [67] = 6197,
-    [68] = 6248,
-    [69] = 6896,
-    [70] = 7351,
-    [71] = 7562,
-    [72] = 7663,
-    [73] = 7833,
-    [74] = 8102,
-    [75] = 8255,
-    [76] = 8687,
-    [77] = 8805,
-    [78] = 8844,
-    [79] = 9274,
-    [80] = 9790,
-    [81] = 9815,
-    [83] = 9977,
-    [84] = 10585,
-    [85] = 10595,
-    [86] = 10607,
-    [87] = 10616,
-    [88] = 10628,
-    [89] = 10663,
-    [90] = 10672,
-    [91] = 10682,
-    [92] = 10689,
-    [93] = 10710,
-    [94] = 10726,
-    [95] = 10903,
-    [96] = 10952,
-    [97] = 10959,
-    [98] = 10970,
-    [99] = 10980,
-    [100] = 11030,
-    [101] = 11037
+    424,
+    434,
+    [5] = 508,
+    [6] = 726,
+    [7] = 820,
+    [8] = 956,
+    [9] = 1032,
+    [10] = 1076,
+    [11] = 1238,
+    [12] = 1337,
+    [13] = 1423,
+    [15] = 1512,
+    [17] = 1567,
+    [18] = 1624,
+    [19] = 1653,
+    [20] = 1677,
+    [21] = 1737,
+    [23] = 1767,
+    [24] = 1916,
+    [25] = 1937,
+    [26] = 1957,
+    [27] = 1993,
+    [28] = 2028,
+    [29] = 2065,
+    [30] = 2109,
+    [31] = 2139,
+    [32] = 2266,
+    [34] = 2377,
+    [35] = 2410,
+    [36] = 2445,
+    [37] = 2469,
+    [38] = 2515,
+    [39] = 2538,
+    [41] = 2685,
+    [42] = 2799,
+    [43] = 3048,
+    [44] = 3358,
+    [45] = 3605,
+    [46] = 3689,
+    [47] = 3752,
+    [48] = 3768,
+    [50] = 3915,
+    [51] = 3929,
+    [52] = 3983,
+    [53] = 3994,
+    [54] = 4012,
+    [55] = 4025,
+    [56] = 4054,
+    [57] = 4074,
+    [58] = 4148,
+    [59] = 4381,
+    [60] = 4399,
+    [61] = 5223,
+    [62] = 5235,
+    [63] = 5410,
+    [65] = 5436,
+    [66] = 5636,
+    [67] = 6483,
+    [68] = 6534,
+    [69] = 7210,
+    [70] = 7674,
+    [71] = 7885,
+    [72] = 7998,
+    [73] = 8168,
+    [74] = 8437,
+    [75] = 8603,
+    [76] = 9044,
+    [77] = 9162,
+    [78] = 9201,
+    [79] = 9665,
+    [80] = 10191,
+    [81] = 10216,
+    [83] = 10313,
+    [84] = 10921,
+    [85] = 10931,
+    [86] = 10943,
+    [87] = 10952,
+    [88] = 10964,
+    [89] = 10999,
+    [90] = 11008,
+    [91] = 11018,
+    [92] = 11025,
+    [93] = 11046,
+    [94] = 11062,
+    [95] = 11243,
+    [96] = 11292,
+    [97] = 11299,
+    [98] = 11310,
+    [99] = 11320,
+    [100] = 11370,
+    [101] = 11377
 }
 
 -- Misc AOT variable imports

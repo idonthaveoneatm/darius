@@ -46,6 +46,7 @@ return function(property)
         Max = 0,
 		DisplayAsPercent = false,
 		DecimalPlace = 0,
+		Visible = false,
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
@@ -54,6 +55,7 @@ return function(property)
 		property.Default and "" or "Default",
 		property.Min and "" or "Min",
 		property.Max and "" or "Max",
+		property.Visible and "" or "Visible",
 		property.DisplayAsPercent and "" or "DisplayAsPercent",
 		property.DecimalPlace and "" or "DecimalPlace",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -79,6 +81,7 @@ return function(property)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local ignoreConfig = property.IgnoreConfig or value(false)
+	local visible = property.Visible or value(true)
 	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
 	if not get(default) then
 		default = value(get(min))
@@ -134,7 +137,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -426,6 +429,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

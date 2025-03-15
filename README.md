@@ -151,6 +151,7 @@ local button = tab:Button({
     end,
 
     -- Optional
+    Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
     DisabledText = "Hey you cant use this!"
 })
@@ -169,6 +170,7 @@ local dropdown = tab:Dropdown({
     Items = {
         { -- Special Item Customization
             Image = "", -- rbxassetid:// or getcustomasset
+            DisplayValue = "Green Apple", -- will display Green Apple but callback Apple
             Value = "Apple"
         }, 
     "Banana", "Carrot", "Dingleberry", "Eggplant", "Fruit", "Grape", "Hen", "India", "Jumprope", "Kite", "Lime","Music","Number","Omega","Pencil","Quadrant", "Rust"},
@@ -177,6 +179,7 @@ local dropdown = tab:Dropdown({
     end,
 
     -- Optional
+    Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
     DisabledText = "Hey you cant use this!",
     FLAG = "dropdown_SingleSelection",
@@ -204,6 +207,7 @@ local toggle = tab:Toggle({
     end,
 
     -- Optional
+    Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
     DisabledText = "Hey you cant use this!",
     FLAG = "toggle_LinkKeybind",
@@ -226,6 +230,7 @@ local keybind = tab:Keybind({
     end,
 
     -- Optional
+    Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
     DisabledText = "Hey you cant use this!",
     FLAG = "keybind",
@@ -247,6 +252,7 @@ local slider = tab:Slider({
     end,
 
     -- Optional
+    Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults to true
     DisabledText = "Hey you cant use this!",
     FLAG = "slider",
@@ -268,6 +274,7 @@ local textbox = tab:TextBox({
     end,
 
     -- Optional
+    Visible = false, -- Defaults true
     IsEnabled = false,
     DisabledText = "Hey you cant use this!",
     FLAG = "textbox",
@@ -291,6 +298,7 @@ local colorpicker = tab:ColorPicker({
     end,
 
     -- Optional
+    Visible = false, -- Defaults true
     IsEnabled = false,
     DisabledText = "Hey you cant use this!",
     FLAG = "colorpicker",
@@ -315,7 +323,10 @@ label:SetText("say heyo")
 ```lua
 local paragraph = tab:Paragraph({
     Title = "Title here",
-    Body = "\tBODY\n Body\n body"
+    Body = "\tBODY\n Body\n body",
+
+    -- Optional
+    Visible = false -- Defaults true
 })
 ```
 ### Returned Functions
@@ -337,4 +348,6 @@ tab:KeybindList()
 <Component>:Enable()
 <Component>:Disable()
 <Component>:SetName("New Name")
+<Component>:Visible() -- Includes :Label and :Paragraph
+<Component>:Invisibile() -- Includes :Label and :Paragraph
 ```
