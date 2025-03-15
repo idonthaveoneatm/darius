@@ -73,10 +73,15 @@ red
 orange
 ]]
 ```
-### Exporting Themes
-Soon there will be a theme/config manager but for the time being this exists (and will stay). It returns a JSON
+### Settings Page
+Adding this function **after** you create your tabs adds a "⚙️ Settings" tab with a theme manager. (config manager soon)
 ```lua
-daris:ExportTheme(true) --> true = JSON false/nothing = LUAU
+darius:CreateSettings()
+```
+### Exporting Theme
+If you want to export the current theme you can use this.
+```lua
+darius:ExportTheme() --> "{}" is a JSON table of the current theme
 ```
 ### Notify a User
 ```lua
@@ -132,16 +137,6 @@ print(darius.Destroyed) --> false
 darius:Destroy()
 print(darius.Destroyed) --> true
 -- In console it would print "Destroying Darius"
-```
-### Settings Page
-Adding this function **after** you create your tabs adds a "⚙️ Settings" tab with a theme manager. (config manager soon)
-```lua
-darius:CreateSettings()
-```
-### Exporting Theme
-If you want to export the current theme you can use this.
-```lua
-darius:ExportTheme() --> "{}" is a JSON table of the current theme
 ```
 ## Create a Tab
 ```lua
