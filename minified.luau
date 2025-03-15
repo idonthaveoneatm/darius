@@ -31,53 +31,53 @@ return x('slider',S,V)end function T.Keybind(U,V)V.tab=R return x('keybind',S,V)
 L:Fire()for Q,R in E.list do R:set(false)end task.wait(0.1)p:deleteConnections()o:clear()L:Destroy()end function y.
 LoadConfig(P)if not A.UseConfig then return end v.load(k:JSONDecode(q.readfile(K)))v.config:set(K)H:update('boolean',
 true)end function y.SetTheme(P,Q)local R,S=t({['New Theme']=Q},{['New Theme']={}})assert(R,table.concat(S,'\n'))end
-function y.ExportTheme(P,Q)local R=i.getTheme()if Q and typeof(Q)=='boolean'and Q==true then local S='{'for T,U in R do
-S=S..`\n\t[{T}] = Color3.new({tostring(U)})`end S=S..'\n}'return S else return k:JSONEncode(R)end end function y.
-CreateSettings(P)local Q,R,S,T,U=O:Tab{Name='\u{2699}\u{fe0f} Settings'},i.getTheme().palette,{},{},{}table.foreach(R,
-function(V)table.insert(T,V)end)table.foreach(i.getThemes(),function(V,W)table.insert(U,{DisplayValue=W.name,Value=W.uid
-})end)local V,W,X,Y,Z,_='',''local aa=Q:Dropdown{Name='Current Theme',Items=U,Default=i.getTheme().uid,Callback=function
-(aa)if D==aa and Z then Z:Invisible()elseif D~=aa and Z then Z:Visible()end i.set(aa)R=i.getTheme().palette table.clear(
-S)table.foreach(R,function(ab,ac)S[ab]=ac end)if X and V~=''then X:SetColor(i.get(V))end end}Z=Q:Toggle{Name=
-'Do you want to delete this theme?',Visible=false,Callback=function(ab)if ab then _:Visible()else _:Invisible()end end}_
-=Q:Button{Name='Delete Theme',Visible=false,DisabledText='Check the box above first!',Callback=function()i.delete(i.
-getTheme().uid)Z:SetValue(false)table.clear(U)table.foreach(i.getThemes(),function(ab,ac)table.insert(U,{DisplayValue=ac
-.name,Value=ac.uid})end)aa:SetItems(U)aa:SelectItem(D)end}Q:Label'Edit Theme:'Q:Dropdown{Name='Theme Colors',Items=T,
-Alphabetical=true,Callback=function(ab)V=ab X:Enable()X:SetName(`Editing Color: {V}`)X:SetColor(i.get(V))end}X=Q:
-ColorPicker{Name='Editing Color: ',IsEnabled=false,DisabledText='Select Color First!',HideTransparency=true,Callback=
-function(ab)local ac=i.getTheme().palette if ac[V].R~=ab.R or ac[V].G~=ab.G or ac[V].B~=ab.B then Y:Visible()end i.edit(
-V,ab)end}Y=Q:Button{Name='Reset Color',Visible=false,Callback=function()X:SetColor(S[V])Y:Invisible()end}Q:TextBox{Name=
-'Name Your Theme',Callback=function(ab)W=ab end}Q:Button{Name='Save and Set New Theme',Callback=function()if W==''then y
-:Notify{Title=A.Title,Body='Theme name cannot be empty!',Duration=3,Image=h.alert,ImageColor=i.get'red'}return end local
-ab=i.create(W,i.getColors())local ac={i.set(ab)}if ac[1]then table.clear(U)table.foreach(i.getThemes(),function(ad,ae)
-table.insert(U,{DisplayValue=ae.name,Value=ae.uid})end)aa:SetItems(U)aa:SelectItem(ab)end i.export()q.printFileSystem()
-end}Q:Divider()end if q.getgenv then q.getgenv().dariusInstance=y else _G.dariusInstance=y end return y[J.uid]end return
-y end)()end,function()local aa,ab,ac=a(2)local ad return(function(...)return setmetatable({},{__index=function(ae,b)if
-ab:FindFirstChild(b)then return ac(ab[b])else error('no bundle: '..b)end end})end)()end,function()local aa,ab,ac=a(3)
-local ad return(function(...)local ae,b=ac(ab.PubTypes),ac(ab.Utility.restrictRead)export type StateObject<T> =PubTypes.
-StateObject<T>export type CanBeState<T> =PubTypes.CanBeState<T>export type Symbol=PubTypes.Symbol export type Value<T> =
-PubTypes.Value<T>export type Computed<T> =PubTypes.Computed<T>export type ForPairs<KO,VO> =PubTypes.ForPairs<KO,VO>
-export type ForKeys<KI,KO> =PubTypes.ForKeys<KI,KO>export type ForValues<VI,VO> =PubTypes.ForKeys<VI,VO>export type
-Observer=PubTypes.Observer export type Tween<T> =PubTypes.Tween<T>export type Spring<T> =PubTypes.Spring<T>type Fusion={
-version:PubTypes.Version,New:(className:string)->((propertyTable:PubTypes.PropertyTable)->Instance),Hydrate:(target:
-Instance)->((propertyTable:PubTypes.PropertyTable)->Instance),Ref:PubTypes.SpecialKey,Cleanup:PubTypes.SpecialKey,
-Children:PubTypes.SpecialKey,Out:PubTypes.SpecialKey,OnEvent:(eventName:string)->PubTypes.SpecialKey,OnChange:(
-propertyName:string)->PubTypes.SpecialKey,Value:<T>(initialValue:T)->Value<T>,Computed:<T>(callback:()->T,destructor:((T
-)->())?)->Computed<T>,ForPairs:<KI,VI,KO,VO,M>(inputTable:CanBeState<{[KI]:VI}>,processor:(KI,VI)->(KO,VO,M?),destructor
-:((KO,VO,M?)->())?)->ForPairs<KO,VO>,ForKeys:<KI,KO,M>(inputTable:CanBeState<{[KI]:any}>,processor:(KI)->(KO,M?),
-destructor:((KO,M?)->())?)->ForKeys<KO,any>,ForValues:<VI,VO,M>(inputTable:CanBeState<{[any]:VI}>,processor:(VI)->(VO,M?
-),destructor:((VO,M?)->())?)->ForValues<any,VO>,Observer:(watchedState:StateObject<any>)->Observer,Tween:<T>(goalState:
-StateObject<T>,tweenInfo:TweenInfo?)->Tween<T>,Spring:<T>(goalState:StateObject<T>,speed:number?,damping:number?)->
-Spring<T>,cleanup:(...any)->(),doNothing:(...any)->()}return b('Fusion',{version={major=0,minor=2,isRelease=true},New=
-ac(ab.Instances.New),Hydrate=ac(ab.Instances.Hydrate),Ref=ac(ab.Instances.Ref),Out=ac(ab.Instances.Out),Cleanup=ac(ab.
-Instances.Cleanup),Children=ac(ab.Instances.Children),OnEvent=ac(ab.Instances.OnEvent),OnChange=ac(ab.Instances.OnChange
-),Value=ac(ab.State.Value),Computed=ac(ab.State.Computed),ForPairs=ac(ab.State.ForPairs),ForKeys=ac(ab.State.ForKeys),
-ForValues=ac(ab.State.ForValues),Observer=ac(ab.State.Observer),Tween=ac(ab.Animation.Tween),Spring=ac(ab.Animation.
-Spring),cleanup=ac(ab.Utility.cleanup),doNothing=ac(ab.Utility.doNothing)})::Fusion end)()end,[5]=function()local aa,ab,
-ac=a(5)local ad return(function(...)local ae=ab.Parent.Parent local b,c,d,e,f,g,h,i,j,k,l,m=ac(ae.PubTypes),ac(ae.Types)
-,ac(ae.Logging.logError),ac(ae.Logging.logErrorNonFatal),ac(ae.Animation.unpackType),ac(ae.Animation.SpringScheduler),
-ac(ae.Dependencies.useDependency),ac(ae.Dependencies.initDependency),ac(ae.Dependencies.updateAll),ac(ae.Utility.xtypeof
-),ac(ae.State.unwrap),{}local n,o={__index=m},{__mode='k'}function m.get(p,q:boolean?):any if q~=false then h(p)end
-return p._currentValue end function m.setPosition(p,q:PubTypes.Animatable)local r=typeof(q)if r~=p._currentType then d(
+function y.ExportTheme(P)local Q,R=i.getTheme(),{}R.name=Q.name R.uid=Q.uid R.palette={}for S,T in Q.palette do R.
+palette[S]=T:ToHex()end return k:JSONEncode(R)end function y.CreateSettings(P)local Q,R,S,T,U=O:Tab{Name=
+'\u{2699}\u{fe0f} Settings'},i.getTheme().palette,{},{},{}table.foreach(R,function(V)table.insert(T,V)end)table.foreach(
+i.getThemes(),function(V,W)table.insert(U,{DisplayValue=W.name,Value=W.uid})end)local V,W,X,Y,Z,_='',''local aa=Q:
+Dropdown{Name='Current Theme',Items=U,Default=i.getTheme().uid,Callback=function(aa)if D==aa and Z then Z:Invisible()
+elseif D~=aa and Z then Z:Visible()end i.set(aa)R=i.getTheme().palette table.clear(S)table.foreach(R,function(ab,ac)S[ab
+]=ac end)if X and V~=''then X:SetColor(i.get(V))end end}Z=Q:Toggle{Name='Do you want to delete this theme?',Visible=
+false,Callback=function(ab)if ab then _:Visible()else _:Invisible()end end}_=Q:Button{Name='Delete Theme',Visible=false,
+DisabledText='Check the box above first!',Callback=function()i.delete(i.getTheme().uid)Z:SetValue(false)table.clear(U)
+table.foreach(i.getThemes(),function(ab,ac)table.insert(U,{DisplayValue=ac.name,Value=ac.uid})end)aa:SetItems(U)aa:
+SelectItem(D)end}Q:Label'Edit Theme:'Q:Dropdown{Name='Theme Colors',Items=T,Alphabetical=true,Callback=function(ab)V=ab
+X:Enable()X:SetName(`Editing Color: {V}`)X:SetColor(i.get(V))end}X=Q:ColorPicker{Name='Editing Color: ',IsEnabled=false,
+DisabledText='Select Color First!',HideTransparency=true,Callback=function(ab)local ac=i.getTheme().palette if ac[V].R~=
+ab.R or ac[V].G~=ab.G or ac[V].B~=ab.B then Y:Visible()end i.edit(V,ab)end}Y=Q:Button{Name='Reset Color',Visible=false,
+Callback=function()X:SetColor(S[V])Y:Invisible()end}Q:TextBox{Name='Name Your Theme',Callback=function(ab)W=ab end}Q:
+Button{Name='Save and Set New Theme',Callback=function()if W==''then y:Notify{Title=A.Title,Body=
+'Theme name cannot be empty!',Duration=3,Image=h.alert,ImageColor=i.get'red'}return end local ab=i.create(W,i.getColors(
+))local ac={i.set(ab)}if ac[1]then table.clear(U)table.foreach(i.getThemes(),function(ad,ae)table.insert(U,{DisplayValue
+=ae.name,Value=ae.uid})end)aa:SetItems(U)aa:SelectItem(ab)end i.export()q.printFileSystem()end}Q:Divider()end if q.
+getgenv then q.getgenv().dariusInstance=y else _G.dariusInstance=y end return y[J.uid]end return y end)()end,function()
+local aa,ab,ac=a(2)local ad return(function(...)return setmetatable({},{__index=function(ae,b)if ab:FindFirstChild(b)
+then return ac(ab[b])else error('no bundle: '..b)end end})end)()end,function()local aa,ab,ac=a(3)local ad return(
+function(...)local ae,b=ac(ab.PubTypes),ac(ab.Utility.restrictRead)export type StateObject<T> =PubTypes.StateObject<T>
+export type CanBeState<T> =PubTypes.CanBeState<T>export type Symbol=PubTypes.Symbol export type Value<T> =PubTypes.Value
+<T>export type Computed<T> =PubTypes.Computed<T>export type ForPairs<KO,VO> =PubTypes.ForPairs<KO,VO>export type ForKeys
+<KI,KO> =PubTypes.ForKeys<KI,KO>export type ForValues<VI,VO> =PubTypes.ForKeys<VI,VO>export type Observer=PubTypes.
+Observer export type Tween<T> =PubTypes.Tween<T>export type Spring<T> =PubTypes.Spring<T>type Fusion={version:PubTypes.
+Version,New:(className:string)->((propertyTable:PubTypes.PropertyTable)->Instance),Hydrate:(target:Instance)->((
+propertyTable:PubTypes.PropertyTable)->Instance),Ref:PubTypes.SpecialKey,Cleanup:PubTypes.SpecialKey,Children:PubTypes.
+SpecialKey,Out:PubTypes.SpecialKey,OnEvent:(eventName:string)->PubTypes.SpecialKey,OnChange:(propertyName:string)->
+PubTypes.SpecialKey,Value:<T>(initialValue:T)->Value<T>,Computed:<T>(callback:()->T,destructor:((T)->())?)->Computed<T>,
+ForPairs:<KI,VI,KO,VO,M>(inputTable:CanBeState<{[KI]:VI}>,processor:(KI,VI)->(KO,VO,M?),destructor:((KO,VO,M?)->())?)->
+ForPairs<KO,VO>,ForKeys:<KI,KO,M>(inputTable:CanBeState<{[KI]:any}>,processor:(KI)->(KO,M?),destructor:((KO,M?)->())?)->
+ForKeys<KO,any>,ForValues:<VI,VO,M>(inputTable:CanBeState<{[any]:VI}>,processor:(VI)->(VO,M?),destructor:((VO,M?)->())?
+)->ForValues<any,VO>,Observer:(watchedState:StateObject<any>)->Observer,Tween:<T>(goalState:StateObject<T>,tweenInfo:
+TweenInfo?)->Tween<T>,Spring:<T>(goalState:StateObject<T>,speed:number?,damping:number?)->Spring<T>,cleanup:(...any)->()
+,doNothing:(...any)->()}return b('Fusion',{version={major=0,minor=2,isRelease=true},New=ac(ab.Instances.New),Hydrate=ac(
+ab.Instances.Hydrate),Ref=ac(ab.Instances.Ref),Out=ac(ab.Instances.Out),Cleanup=ac(ab.Instances.Cleanup),Children=ac(ab.
+Instances.Children),OnEvent=ac(ab.Instances.OnEvent),OnChange=ac(ab.Instances.OnChange),Value=ac(ab.State.Value),
+Computed=ac(ab.State.Computed),ForPairs=ac(ab.State.ForPairs),ForKeys=ac(ab.State.ForKeys),ForValues=ac(ab.State.
+ForValues),Observer=ac(ab.State.Observer),Tween=ac(ab.Animation.Tween),Spring=ac(ab.Animation.Spring),cleanup=ac(ab.
+Utility.cleanup),doNothing=ac(ab.Utility.doNothing)})::Fusion end)()end,[5]=function()local aa,ab,ac=a(5)local ad return
+(function(...)local ae=ab.Parent.Parent local b,c,d,e,f,g,h,i,j,k,l,m=ac(ae.PubTypes),ac(ae.Types),ac(ae.Logging.
+logError),ac(ae.Logging.logErrorNonFatal),ac(ae.Animation.unpackType),ac(ae.Animation.SpringScheduler),ac(ae.
+Dependencies.useDependency),ac(ae.Dependencies.initDependency),ac(ae.Dependencies.updateAll),ac(ae.Utility.xtypeof),ac(
+ae.State.unwrap),{}local n,o={__index=m},{__mode='k'}function m.get(p,q:boolean?):any if q~=false then h(p)end return p.
+_currentValue end function m.setPosition(p,q:PubTypes.Animatable)local r=typeof(q)if r~=p._currentType then d(
 'springTypeMismatch',nil,r,p._currentType)end p._springPositions=f(q,r)p._currentValue=q g.add(p)j(p)end function m.
 setVelocity(p,q:PubTypes.Animatable)local r=typeof(q)if r~=p._currentType then d('springTypeMismatch',nil,r,p.
 _currentType)end p._springVelocities=f(q,r)g.add(p)end function m.addVelocity(p,q:PubTypes.Animatable)local r=typeof(q)
@@ -1408,65 +1408,64 @@ ab.Parent.Parent.Bundles.Fusion)local af=ae.Computed return function(ag,ah)retur
 =function()local aa,ab,ac=a(101)local ad return(function(...)return function(ae:table,af:table,ag:table?):any ag=ag or{}
 local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))and not table.find(ag,aj)then ah=
 false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah,ai end end)()end},{{1,2,{
-'Darius'},{{82,1,{'layouts'},{{83,2,{'main'}}}},{81,2,{'darius.story'}},{64,1,{'components'},{{66,2,{'colorpicker'}},{78
-,2,{'textbox'}},{79,2,{'toggle'}},{77,2,{'tabFrame'}},{69,2,{'keybind'}},{80,2,{'warn'}},{65,2,{'button'}},{67,2,{
-'divider'}},{74,2,{'paragraph'}},{76,2,{'tabButton'}},{75,2,{'slider'}},{70,2,{'keybindList'}},{71,2,{'label'}},{73,2,{
-'notification'}},{68,2,{'dropdown'}},{72,2,{'module'}}}},{2,2,{'Bundles'},{{60,2,{'lucide'}},{3,2,{'Fusion'},{{33,1,{
-'Logging'},{{37,2,{'messages'}},{38,2,{'parseError'}},{34,2,{'logError'}},{36,2,{'logWarn'}},{35,2,{'logErrorNonFatal'}}
-}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{49,1,{'Utility'},{{56,2,{'xtypeof'}},{51,2,{'cleanup'}},{54,2,{
-'needsDestruction'}},{55,2,{'restrictRead'}},{52,2,{'doNothing'}},{50,2,{'None'}},{53,2,{'isSimilar'}}}},{48,2,{'Types'}
-},{40,1,{'State'},{{47,2,{'unwrap'}},{42,2,{'ForKeys'}},{44,2,{'ForValues'}},{45,2,{'Observer'}},{46,2,{'Value'}},{43,2,
-{'ForPairs'}},{41,2,{'Computed'}}}},{39,2,{'PubTypes'}},{16,1,{'Dependencies'},{{18,2,{'initDependency'}},{19,2,{
-'sharedState'}},{21,2,{'useDependency'}},{20,2,{'updateAll'}},{17,2,{'captureDependencies'}}}},{4,1,{'Animation'},{{12,2
-,{'springCoefficients'}},{8,2,{'TweenScheduler'}},{7,2,{'Tween'}},{5,2,{'Spring'}},{6,2,{'SpringScheduler'}},{13,2,{
-'unpackType'}},{10,2,{'lerpType'}},{11,2,{'packType'}},{9,2,{'getTweenRatio'}}}},{22,1,{'Instances'},{{25,2,{'Hydrate'}}
-,{24,2,{'Cleanup'}},{23,2,{'Children'}},{28,2,{'OnEvent'}},{32,2,{'defaultProps'}},{27,2,{'OnChange'}},{31,2,{
-'applyInstanceProps'}},{30,2,{'Ref'}},{26,2,{'New'}},{29,2,{'Out'}}}}}},{58,2,{'flags'}},{57,2,{'data'}},{62,2,{
-'themeSystem'},{{63,2,{'default'}}}},{61,2,{'services'}},{59,2,{'icons'}}}},{84,2,{'simpleElements'},{{87,2,{
-'UIListLayout'}},{89,2,{'UITextSizeConstraint'}},{88,2,{'UIPadding'}},{85,2,{'UIAspectRatioConstraint'}},{86,2,{
-'UICorner'}}}},{90,2,{'utilities'},{{98,2,{'randomString'}},{97,2,{'getStringBounds'}},{92,2,{'connections'}},{93,2,{
-'customFont'}},{96,2,{'get'}},{100,2,{'tween'}},{95,2,{'drag'}},{99,2,{'references'}},{101,2,{'typecheck'}},{91,2,{
-'animate'}},{94,2,{'customFunctions'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,unpack,
-coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay,az,aA=aj.insert,aj.remove,aj.freeze
-or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)=='Lune'then local aB,aC=ap(ao,
-'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,aG,aH,aI,aJ,aK=aB or function(aC
-,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{}
-,{}local aL,aM={GetFullName={{},function(aL)local aM,aN=aL.Name,aL.Parent while aN do aM=aN.Name..'.'..aM aN=aN.Parent
-end return aM end},GetChildren={{},function(aL)local aM={}for aN in ai,aK[aL]do au(aM,aN)end return aM end},
-GetDescendants={{},function(aL)local aM={}for aN in ai,aK[aL]do au(aM,aN)for aO,aP in ai,aN:GetDescendants()do au(aM,aP)
-end end return aM end},FindFirstChild={{'string','boolean?'},function(aL,aM,aN)local aO=aK[aL]for aP in ai,aO do if aP.
-Name==aM then return aP end end if aN then for aQ in ai,aO do return aQ:FindFirstChild(aM,true)end end end},
-FindFirstAncestor={{'string'},function(aL,aM)local aN=aL.Parent while aN do if aN.Name==aM then return aN end aN=aN.
-Parent end end},WaitForChild={{'string','number?'},function(aL,aM)return aL:FindFirstChild(aM)end}},{}for aN,aO in ai,aL
-do local aP,aQ,aR=aO[1],aO[2],{}for aS,aT in ai,aP do local aU,b=az(aT,'^([^%?]+)(%??)')aR[aS]={aU,b}end aM[aN]=function
-(aU,...)if not aK[aU]then ah("Expected ':' not '.' calling member function "..aN,2)end local b={...}for d,e in ai,aR do
-local f=b[d]local g,h,i=an(f),e[1],e[2]if f==nil and not i then ah('Argument '..f..' missing or nil',3)end if h~='any'
-and g~=h and not(g=='nil'and i)then ah('Argument '..d..' expects type "'..h..'", got "'..g..'"',2)end end return aQ(aU,
-...)end end local function aP(aQ,aR,aS)local aT,aU=(ag({},{__mode='k'}))local function b(d)ah(d..
-' is not a valid (virtual) member of '..aQ..' "'..aR..'"',3)end local function d(e)ah(
-'Unable to assign (virtual) property '..e..'. Property is read only',3)end local e,f={},{}f.__metatable=false f.__index=
-function(g,h)if h=='ClassName'then return aQ elseif h=='Name'then return aR elseif h=='Parent'then return aS elseif aQ==
-'StringValue'and h=='Value'then return aU else local i=aM[h]if i then return i end end for i in ai,aT do if i.Name==h
-then return i end end b(h)end f.__newindex=function(g,h,i)if h=='ClassName'then d(h)elseif h=='Name'then aR=i elseif h==
-'Parent'then if i==e then return end if aS~=nil then aK[aS][e]=nil end aS=i if i~=nil then aK[i][e]=true end elseif aQ==
-'StringValue'and h=='Value'then aU=i else b(h)end end f.__tostring=function()return aR end ag(e,f)aK[e]=aT if aS~=nil
-then aK[aS][e]=true end return e end local function aQ(aR,aS)local aT,aU,b,d=aR[1],aR[2],aR[3],aR[4]local e=aD[aU]local
-f=b and av(b,1)or e local g=aP(e,f,aS)aE[aT]=g if b then for h,i in ai,b do g[h]=i end end if d then for h,i in ai,d do
-aQ(i,g)end end return g end local aR=aP('Folder','['..ad..']')for aS,aT in ai,ab do aQ(aT,aR)end for aU,b in ai,aa do
-local d=aE[aU]aF[d]=b aG[d]=aU local e=d.ClassName if e=='LocalScript'or e=='Script'then au(aI,d)end end local function
-d(e)local f,g=e.ClassName,aH[e]if g and f=='ModuleScript'then return ak(g)end local h=aF[e]local function i(j)j=aq(j)
-local k,l,o=e:GetFullName(),az(j,'[^:]+:(%d+): (.+)')if not l or not at then return k..':*: '..(o or j)end l=ar(l)local
-p=aG[e]local q=at[p]local z=l-q+1 if z<0 then z='?'end return k..':'..z..': '..o end if f=='LocalScript'or f=='Script'
-then local j,k=ap(h)if not j then ah(i(k),0)end else local j={ap(h)}local k=av(j,1)if not k then local l=av(j,1)ah(i(l),
-0)end aH[e]=j return ak(j)end end function a(e)local f=aE[e]local function g(h,...)local i={ap(h,...)}local j=av(i,1)if
-not j then ah(i[1],3)end return ak(i)end local h=aw(ag({},{__index=aJ,__newindex=function(h,i,j)aJ[i]=j end,__len=
-function()return#aJ end,__iter=function()return ai,aJ end}))local i,j=aw{version=ac,envname=ad,shared=h,script=am,
-require=ao},f local function k(l,...)local o,p,q=an(l),'Attempted to call require with a non-ModuleScript',
-'Attempted to call require with self'if o=='table'and aK[l]then if l.ClassName~='ModuleScript'then ah(p,2)elseif l==f
-then ah(q,2)end return d(l)elseif o=='string'and ay(l,1,1)~='@'then if#l==0 then ah(
-'Attempted to call require with empty string',2)end local z=f if ay(l,1,1)=='/'then z=aR elseif ay(l,1,2)=='./'then l=
-ay(l,3)end local A for B in aA(l,'([^/]*)/?')do local C=B if B=='..'then C='Parent'end if C~=''then local D=z:
-FindFirstChild(C)if not D then local E=z.Parent if E then D=E:FindFirstChild(C)end end if D then z=D elseif B~=A and B~=
-'init'and B~='init.server'and B~='init.client'then ah('Virtual script path "'..l..'" not found',2)end end A=B end if z.
-ClassName~='ModuleScript'then ah(p,2)elseif z==f then ah(q,2)end return d(z)end return g(ao,l,...)end return i,j,k end
+'Darius'},{{90,2,{'utilities'},{{97,2,{'getStringBounds'}},{92,2,{'connections'}},{93,2,{'customFont'}},{96,2,{'get'}},{
+95,2,{'drag'}},{98,2,{'randomString'}},{100,2,{'tween'}},{101,2,{'typecheck'}},{91,2,{'animate'}},{99,2,{'references'}},
+{94,2,{'customFunctions'}}}},{84,2,{'simpleElements'},{{85,2,{'UIAspectRatioConstraint'}},{89,2,{'UITextSizeConstraint'}
+},{88,2,{'UIPadding'}},{86,2,{'UICorner'}},{87,2,{'UIListLayout'}}}},{81,2,{'darius.story'}},{82,1,{'layouts'},{{83,2,{
+'main'}}}},{64,1,{'components'},{{69,2,{'keybind'}},{80,2,{'warn'}},{78,2,{'textbox'}},{68,2,{'dropdown'}},{77,2,{
+'tabFrame'}},{79,2,{'toggle'}},{75,2,{'slider'}},{76,2,{'tabButton'}},{71,2,{'label'}},{73,2,{'notification'}},{67,2,{
+'divider'}},{72,2,{'module'}},{70,2,{'keybindList'}},{65,2,{'button'}},{74,2,{'paragraph'}},{66,2,{'colorpicker'}}}},{2,
+2,{'Bundles'},{{59,2,{'icons'}},{62,2,{'themeSystem'},{{63,2,{'default'}}}},{57,2,{'data'}},{61,2,{'services'}},{58,2,{
+'flags'}},{60,2,{'lucide'}},{3,2,{'Fusion'},{{40,1,{'State'},{{46,2,{'Value'}},{44,2,{'ForValues'}},{41,2,{'Computed'}},
+{42,2,{'ForKeys'}},{43,2,{'ForPairs'}},{45,2,{'Observer'}},{47,2,{'unwrap'}}}},{33,1,{'Logging'},{{36,2,{'logWarn'}},{37
+,2,{'messages'}},{38,2,{'parseError'}},{34,2,{'logError'}},{35,2,{'logErrorNonFatal'}}}},{48,2,{'Types'}},{16,1,{
+'Dependencies'},{{17,2,{'captureDependencies'}},{21,2,{'useDependency'}},{20,2,{'updateAll'}},{19,2,{'sharedState'}},{18
+,2,{'initDependency'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{39,2,{'PubTypes'}},{4,1,{'Animation'},{{9,2,{
+'getTweenRatio'}},{7,2,{'Tween'}},{10,2,{'lerpType'}},{11,2,{'packType'}},{6,2,{'SpringScheduler'}},{13,2,{'unpackType'}
+},{5,2,{'Spring'}},{12,2,{'springCoefficients'}},{8,2,{'TweenScheduler'}}}},{49,1,{'Utility'},{{51,2,{'cleanup'}},{56,2,
+{'xtypeof'}},{52,2,{'doNothing'}},{53,2,{'isSimilar'}},{54,2,{'needsDestruction'}},{55,2,{'restrictRead'}},{50,2,{'None'
+}}}},{22,1,{'Instances'},{{31,2,{'applyInstanceProps'}},{24,2,{'Cleanup'}},{26,2,{'New'}},{32,2,{'defaultProps'}},{23,2,
+{'Children'}},{25,2,{'Hydrate'}},{30,2,{'Ref'}},{29,2,{'Out'}},{28,2,{'OnEvent'}},{27,2,{'OnChange'}}}}}}}}}}},'0.4.1',
+'WaxRuntime',string,task,setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,
+_VERSION local au,av,aw,ax,ay,az,aA=aj.insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,
+ae.gmatch if as and ay(as,1,4)=='Lune'then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af
+and af.defer local aC,aD,aE,aF,aG,aH,aI,aJ,aK=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]=
+'Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{},{}local aL,aM={GetFullName={{},function(aL)local aM,aN=
+aL.Name,aL.Parent while aN do aM=aN.Name..'.'..aM aN=aN.Parent end return aM end},GetChildren={{},function(aL)local aM={
+}for aN in ai,aK[aL]do au(aM,aN)end return aM end},GetDescendants={{},function(aL)local aM={}for aN in ai,aK[aL]do au(aM
+,aN)for aO,aP in ai,aN:GetDescendants()do au(aM,aP)end end return aM end},FindFirstChild={{'string','boolean?'},function
+(aL,aM,aN)local aO=aK[aL]for aP in ai,aO do if aP.Name==aM then return aP end end if aN then for aQ in ai,aO do return
+aQ:FindFirstChild(aM,true)end end end},FindFirstAncestor={{'string'},function(aL,aM)local aN=aL.Parent while aN do if aN
+.Name==aM then return aN end aN=aN.Parent end end},WaitForChild={{'string','number?'},function(aL,aM)return aL:
+FindFirstChild(aM)end}},{}for aN,aO in ai,aL do local aP,aQ,aR=aO[1],aO[2],{}for aS,aT in ai,aP do local aU,b=az(aT,
+'^([^%?]+)(%??)')aR[aS]={aU,b}end aM[aN]=function(aU,...)if not aK[aU]then ah(
+"Expected ':' not '.' calling member function "..aN,2)end local b={...}for d,e in ai,aR do local f=b[d]local g,h,i=an(f)
+,e[1],e[2]if f==nil and not i then ah('Argument '..f..' missing or nil',3)end if h~='any'and g~=h and not(g=='nil'and i)
+then ah('Argument '..d..' expects type "'..h..'", got "'..g..'"',2)end end return aQ(aU,...)end end local function aP(aQ
+,aR,aS)local aT,aU=(ag({},{__mode='k'}))local function b(d)ah(d..' is not a valid (virtual) member of '..aQ..' "'..aR..
+'"',3)end local function d(e)ah('Unable to assign (virtual) property '..e..'. Property is read only',3)end local e,f={},
+{}f.__metatable=false f.__index=function(g,h)if h=='ClassName'then return aQ elseif h=='Name'then return aR elseif h==
+'Parent'then return aS elseif aQ=='StringValue'and h=='Value'then return aU else local i=aM[h]if i then return i end end
+for i in ai,aT do if i.Name==h then return i end end b(h)end f.__newindex=function(g,h,i)if h=='ClassName'then d(h)
+elseif h=='Name'then aR=i elseif h=='Parent'then if i==e then return end if aS~=nil then aK[aS][e]=nil end aS=i if i~=
+nil then aK[i][e]=true end elseif aQ=='StringValue'and h=='Value'then aU=i else b(h)end end f.__tostring=function()
+return aR end ag(e,f)aK[e]=aT if aS~=nil then aK[aS][e]=true end return e end local function aQ(aR,aS)local aT,aU,b,d=aR
+[1],aR[2],aR[3],aR[4]local e=aD[aU]local f=b and av(b,1)or e local g=aP(e,f,aS)aE[aT]=g if b then for h,i in ai,b do g[h
+]=i end end if d then for h,i in ai,d do aQ(i,g)end end return g end local aR=aP('Folder','['..ad..']')for aS,aT in ai,
+ab do aQ(aT,aR)end for aU,b in ai,aa do local d=aE[aU]aF[d]=b aG[d]=aU local e=d.ClassName if e=='LocalScript'or e==
+'Script'then au(aI,d)end end local function d(e)local f,g=e.ClassName,aH[e]if g and f=='ModuleScript'then return ak(g)
+end local h=aF[e]local function i(j)j=aq(j)local k,l,o=e:GetFullName(),az(j,'[^:]+:(%d+): (.+)')if not l or not at then
+return k..':*: '..(o or j)end l=ar(l)local p=aG[e]local q=at[p]local z=l-q+1 if z<0 then z='?'end return k..':'..z..': '
+..o end if f=='LocalScript'or f=='Script'then local j,k=ap(h)if not j then ah(i(k),0)end else local j={ap(h)}local k=av(
+j,1)if not k then local l=av(j,1)ah(i(l),0)end aH[e]=j return ak(j)end end function a(e)local f=aE[e]local function g(h,
+...)local i={ap(h,...)}local j=av(i,1)if not j then ah(i[1],3)end return ak(i)end local h=aw(ag({},{__index=aJ,
+__newindex=function(h,i,j)aJ[i]=j end,__len=function()return#aJ end,__iter=function()return ai,aJ end}))local i,j=aw{
+version=ac,envname=ad,shared=h,script=am,require=ao},f local function k(l,...)local o,p,q=an(l),
+'Attempted to call require with a non-ModuleScript','Attempted to call require with self'if o=='table'and aK[l]then if l
+.ClassName~='ModuleScript'then ah(p,2)elseif l==f then ah(q,2)end return d(l)elseif o=='string'and ay(l,1,1)~='@'then if
+#l==0 then ah('Attempted to call require with empty string',2)end local z=f if ay(l,1,1)=='/'then z=aR elseif ay(l,1,2)
+=='./'then l=ay(l,3)end local A for B in aA(l,'([^/]*)/?')do local C=B if B=='..'then C='Parent'end if C~=''then local D
+=z:FindFirstChild(C)if not D then local E=z.Parent if E then D=E:FindFirstChild(C)end end if D then z=D elseif B~=A and
+B~='init'and B~='init.server'and B~='init.client'then ah('Virtual script path "'..l..'" not found',2)end end A=B end if
+z.ClassName~='ModuleScript'then ah(p,2)elseif z==f then ah(q,2)end return d(z)end return g(ao,l,...)end return i,j,k end
 for e,f in ai,aI do aC(d,f)end return d(aR:GetChildren()[1])
