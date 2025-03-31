@@ -43,7 +43,8 @@ return function(property)
         Multiselect = true,
         Regex = function()end,
 		IgnoreConfig = true,
-		Alphabetical = true
+		Alphabetical = true,
+		AlwaysOpen = true
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
@@ -52,7 +53,8 @@ return function(property)
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
 		property.IgnoreConfig and "" or "IgnoreConfig",
-		property.Alphabetical and "" or "Alphabetical"
+		property.Alphabetical and "" or "Alphabetical",
+		property.AlwaysOpen and "" or "AlwaysOpen"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -86,6 +88,7 @@ return function(property)
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local isEnabled = property.IsEnabled or value(true)
 	local alphabetical = property.Alphabetical or value(false)
+	local alwaysOpen = property.AlwaysOpen or value(false)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
 	local flag = property.FLAG or value(dropdown.uid)
@@ -101,7 +104,7 @@ return function(property)
 
 	-- Variables
 
-	local dropdownRef = value()
+	
 	local searchRef = value()
 
 	local isDropped = value(false)
@@ -148,16 +151,8 @@ return function(property)
 			return true
 		end),
 		Size = animate(function()
-			if get(isDropped) and get(dropdownRef) then
-				local _dropdown = get(dropdownRef)
-				local y = 3
-				for _,child in _dropdown:GetChildren() do
-					if child:IsA("UIListLayout") or child:IsA("UICorner") or not child.Visible then
-						continue
-					end
-					y += (4 + child.Size.Y.Offset)
-				end
-				return UDim2.new(1,0,0,y)
+			if get(isDropped) then
+				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4) or 6) + math.clamp((#get(items)*34), 34, 136))
 			end
 			return UDim2.new(1,0,0,36)
 		end, 40, 1),
@@ -165,11 +160,9 @@ return function(property)
 		BackgroundTransparency = selectedAnimation,
 		ClipsDescendants = true,
 
-		[ref] = dropdownRef,
-
 		[children] = {
 			UICorner(6),
-			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,4)),
+			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
 			new "TextButton" {
 				Interactable = computed(function()
 					if not get(isEnabled) then
@@ -181,6 +174,9 @@ return function(property)
 				BackgroundTransparency = 1,
 
 				[onevent "Activated"] = function()
+					if get(alwaysOpen) then
+						return
+					end
 					isDropped:set(not get(isDropped))
 				end,
 
@@ -278,6 +274,7 @@ return function(property)
 			new "Frame" {
 				Size = UDim2.new(1,0,0,32),
 				BackgroundTransparency = 1,
+
 				[children] = {
 					UIPadding(0,6),
 					new "TextBox" {
@@ -370,15 +367,20 @@ return function(property)
 			new "ScrollingFrame" {
 				ZIndex = 3,
 				Size = computed(function()
-					return UDim2.new(1,0,0,math.clamp((#get(items)*34), 34, 136))
+					return UDim2.new(1,-6,0,math.clamp((#get(items)*34), 34, 136))
 				end),
 				BackgroundTransparency = 1,
-				ScrollBarThickness = 0,
+				ScrollBarThickness = computed(function()
+					return #get(items) > 4 and 6 or 0
+				end),
+				ScrollBarImageColor3 = theme.scrollBar,
 				CanvasSize = UDim2.new(0,0,0,0),
 				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 
 				[children] = {
-					UIPadding(6,6,0,6),
+					UIPadding(6,computed(function()
+						return #get(items) > 4 and UDim.new(0,12) or UDim.new(0,0)
+					end),0,6),
 					UIListLayout(get(alphabetical) and SO.Name or SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
 					itemElements
 				}
@@ -442,6 +444,9 @@ return function(property)
 						_flag.status.items:set(_items)
 					else
 						_flag.status.item:set(cleanedItem)
+						if get(alwaysOpen) then
+							return
+						end
 						isDropped:set(false)
 					end
 				end,
@@ -521,6 +526,9 @@ return function(property)
 	-- Closure
 
 	items:set(get(property.Items))
+	if get(alwaysOpen) then
+		isDropped:set(true)
+	end
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
 		observe(_flag.file):onChange(function()
@@ -585,7 +593,6 @@ return function(property)
 	function returnFunctions:SetItems(newTable) -- Sets a new table of items
 		local _didPass, _failedItems = typecheck({['SetItems'] = newTable}, {SetItems = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-
 		items:set(newTable)
 		local multiselectTable = {}
 		local foundAnything = false
@@ -613,6 +620,12 @@ return function(property)
 		if foundAnything then
 			if get(multiselect) then
 				_flag.status.items:set(multiselectTable)
+			end
+		else
+			if get(multiselect) then
+				_flag.status.items:set({})
+			else
+				_flag.status.item:set("")
 			end
 		end
 	end

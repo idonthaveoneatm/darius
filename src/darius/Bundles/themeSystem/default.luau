@@ -7,6 +7,8 @@ return {
 
     selectedTab = Color3.fromHex("#1A1A1B"),
 
+    scrollBar = Color3.fromHex("#DCE1E5"),
+
     colorpickerBar = Color3.fromHex("#DCE1E5"),
 
     notificationButton = Color3.fromHex("#222427"),
@@ -21,5 +23,5 @@ return {
     toggled = Color3.fromHex("#DCE1E5"),
 
     red = Color3.fromRGB(255,105,97),
-    orange = Color3.fromHex("#ff9b61")
+    orange = Color3.fromHex("#ff9b61"),
 }

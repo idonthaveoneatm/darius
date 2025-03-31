@@ -5,8 +5,11 @@ local HttpService = services.HttpService
 local fusion = require(script.Parent).Fusion
 local observe = fusion.Observer
 local value = fusion.Value
-local connections = require(script.Parent.Parent.utilities).connections
-local customFunctions = require(script.Parent.Parent.utilities).customFunctions
+
+local utilities = require(script.Parent.Parent.utilities)
+local connections = utilities.connections
+local customFunctions = utilities.customFunctions
+local randomString = utilities.randomString
 
 local funcs = {}
 local flags = data.add({list = {}},"flags")
@@ -123,6 +126,10 @@ local cleaner = {
     end
 }
 
+local configs = {}
+funcs.currentConfig = ""
+funcs.path = ""
+
 function funcs.preregister(name)
     local flagEvent = fusion.New "BindableEvent" {}
     local onChange = {}
@@ -200,22 +207,46 @@ function funcs.register(name, default, type, private)
     return _flag
 end
 
-funcs.config = value("")
-
-function funcs.export()
-    local exported = {}
-    local _list = get(flags.list)
-    for _,flag in _list do
-        if flag.private then
-            continue
+function funcs.find(uid)
+    for i,v in configs do
+        if v.uid == uid then
+            return v, i
         end
-        if flag.type == "unknown" then
-            continue
-        end
-        exported[flag.name] = cleaner[flag.type](flag.status)
     end
-    if get(funcs.config) ~= "" then
-        customFunctions.writefile(get(funcs.config), HttpService:JSONEncode(exported))
+    return false
+end
+
+function funcs.create(name, uid, fromFile, tbl)
+    fromFile = fromFile or false
+    if uid == "original" and fromFile then
+        return
+    end
+    local config = {}
+    config.name = name
+    config.uid = uid or randomString(5)
+    config.flagValues = {}
+    if fromFile then
+        config.flagValues = tbl
+    else
+        for _,flag in get(flags.list) do
+            if flag.private then
+                continue
+            end
+            if flag.type == "unknown" then
+                continue
+            end
+            config.flagValues[flag.name] = cleaner[flag.type](flag.status)
+        end
+    end
+    table.insert(configs, config)
+
+    return uid
+end
+
+function funcs.init()
+    for _,file in customFunctions.listfiles(funcs.path) do
+        local config = HttpService:JSONDecode(customFunctions.readfile(file))
+        funcs.create(config.name, config.uid, true, config.flagValues)
     end
 end
 
@@ -227,6 +258,43 @@ function funcs.load(fileTable)
         end
         flag.file:set(v)
     end
+end
+
+function funcs.set(uid)
+    local config = funcs.find(uid)
+    if not config then
+        return
+    end
+    funcs.currentConfig = uid
+    funcs.load(config.flagValues)
+end
+
+function funcs.save(uid)
+    local config = funcs.find(uid)
+    for _,flag in get(flags.list) do
+        if flag.private then
+            continue
+        end
+        if flag.type == "unknown" then
+            continue
+        end
+        config.flagValues[flag.name] = cleaner[flag.type](flag.status)
+    end
+    customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+end
+
+function funcs.delete(uid)
+    local config, index = funcs.find(uid)
+    if config then
+        if customFunctions.isfile(`{funcs.path}/{config.uid}.json`) then
+            customFunctions.delfile(`{funcs.path}/{config.uid}.json`)
+            table.remove(configs, index)
+        end
+    end
+end
+
+function funcs.getConfigs()
+    return configs
 end
 
 return funcs

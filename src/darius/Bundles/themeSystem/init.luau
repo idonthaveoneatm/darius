@@ -1,6 +1,7 @@
 local themeSystem = {}
 local services = require(script.Parent.services)
 local HttpService = services.HttpService
+local data = require(script.Parent.data)
 local fusion = require(script.Parent.Fusion)
 local default = require(script.default)
 local value = fusion.Value
@@ -23,11 +24,14 @@ observe(currentTheme):onChange(function()
 end)
 
 local themes = {}
+local potentialFromFiles = {}
 
 local palletteCheck = {}
 table.foreach(default, function(name)
     table.insert(palletteCheck, name)
 end)
+
+themeSystem.path = ""
 
 function themeSystem.find(uid)
     for _,theme in themes do
@@ -43,15 +47,16 @@ function themeSystem.export()
         local ctheme = {}
         ctheme.name = theme.name
         ctheme.uid = theme.uid
+        ctheme.fromSet = theme.fromSet
         ctheme.palette = {}
         for i,v in theme.palette do
             ctheme.palette[i] = v:ToHex()
         end
-        customFunctions.writefile(`darius/themes/{theme.name}-{theme.uid}.json`, HttpService:JSONEncode(ctheme))
+        customFunctions.writefile(`{themeSystem.path}/{theme.uid}.json`, HttpService:JSONEncode(ctheme))
     end
 end
 
-function themeSystem.create(name, palette, uid, fromFile)
+function themeSystem.create(name, palette, uid, fromFile, fromSet)
     fromFile = fromFile or false
     if uid == "original" and fromFile then
         return
@@ -71,10 +76,23 @@ function themeSystem.create(name, palette, uid, fromFile)
         end
     end
 
+    if fromSet and fromFile then
+        table.insert(potentialFromFiles, uid)
+    end
+    if fromSet and not fromFile then
+        for _,v in potentialFromFiles do
+            local theme = themeSystem.find(v)
+            if theme.name == name then
+                return v.uid
+            end
+        end
+    end
+
     uid = uid or randomString(5)
     table.insert(themes, {
         name = name,
         uid = uid,
+        fromSet = fromSet or false,
         palette = palette
     })
     themeSystem.export()
@@ -89,7 +107,7 @@ function themeSystem.delete(uid)
     local position = table.find(themes, results[2])
     themeSystem.set(dariusUID)
     table.remove(themes, position)
-    customFunctions.delfile(`darius/themes/{results[2].name}-{results[2].uid}.json`)
+    customFunctions.delfile(`{themeSystem.path}/{results[2].uid}.json`)
 end
 
 function themeSystem.edit(name, color)
@@ -116,15 +134,8 @@ function themeSystem.set(uid)
     return true, "successfully set new theme"
 end
 
-function themeSystem.import()
-    for _,file in customFunctions.listfiles("darius/themes") do
-        local theme = HttpService:JSONDecode(customFunctions.readfile(file))
-        table.foreach(theme.palette,function(i,v)
-            local color = Color3.fromHex(`#{v}`)
-            theme.palette[i] = color
-        end)
-        themeSystem.create(theme.name, theme.palette, theme.uid, true)
-    end
+function themeSystem.import(name, palette)
+    themeSystem.create(name, palette)
 end
 
 function themeSystem.get(name)
@@ -143,17 +154,16 @@ for _,v in palletteCheck do
 end
 
 function themeSystem.init()
-    local path = {"darius",`/themes`}
-	local built = ""
-	for i=1,#path do
-		built = built..path[i]
-		if not customFunctions.isfolder(built) then
-			customFunctions.makefolder(built)
-		end
-	end
     dariusUID = themeSystem.create("darius", default, "original")
     themeSystem.set(dariusUID)
-    themeSystem.import()
+    for _,file in customFunctions.listfiles(themeSystem.path) do
+        local theme = HttpService:JSONDecode(customFunctions.readfile(file))
+        table.foreach(theme.palette,function(i,v)
+            local color = Color3.fromHex(`#{v}`)
+            theme.palette[i] = color
+        end)
+        themeSystem.create(theme.name, theme.palette, theme.uid, true, theme.fromSet)
+    end
 end
 
 function themeSystem.onChange(func)

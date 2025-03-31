@@ -60,6 +60,7 @@ function darius:Window(windowProperty)
         IsMobile = false,
 		Offset = 0,
         Theme = {},
+		Workspace = "",
         noOffset = false,
 		Parent = Instance.new("Part")
 	},{
@@ -72,35 +73,24 @@ function darius:Window(windowProperty)
 		windowProperty.Offset and "" or "Offset"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
-
+	--[[
 	didPass, failedItems = typecheck(windowProperty,{
 		Config = "",
 	},{
 		windowProperty.UseConfig and "" or "Config"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
+	]]
 
 	-- Warn
 
 	setWarnTitle(windowProperty.Title)
 
-	-- Theme
-
-	theme.init()
-	local defaultTheme = theme.getTheme().uid
-	if windowProperty.Theme then
-		didPass, failedItems = typecheck(windowProperty.Theme, {
-			Name = "",
-			Colors = {}
-		})
-		assert(didPass, table.concat(failedItems, "\n"))
-		theme.set(theme.create(windowProperty.Theme.Name, windowProperty.Theme.Colors))
-	end
-
 	-- Data
 
 	data.add({string = ""}, "selectedTab")
 	data.add({boolean = false}, "isFirst")
+	local setTheme = data.add({tbl = {}}, "setTheme")
 	data.add({number = windowProperty.noOffset and 0 or 58}, "absoluteOffset")
 	data.add({name = randomString(32)}, "instanceName")
 	data.add({binds = {}}, "currentBinds")
@@ -118,27 +108,53 @@ function darius:Window(windowProperty)
 	local useConfig = data.add({boolean = false}, "useConfig")
 	local windowData = data.add({data = windowProperty})
 
+	-- Files
+
+	local path = {"darius",`/{windowProperty.Workspace}`,`/configurations`}
+	local built = ""
+	for i=1,#path do
+		built = built..path[i]
+		if not customFunctions.isfolder(built) then
+			customFunctions.makefolder(built)
+		end
+	end
+	flagCreator.path = `darius/{windowProperty.Workspace}/configurations`
+	path = {"darius",`/{windowProperty.Workspace}`,`/themes`}
+	built = ""
+	for i=1,#path do
+		built = built..path[i]
+		if not customFunctions.isfolder(built) then
+			customFunctions.makefolder(built)
+		end
+	end
+	theme.path = `darius/{windowProperty.Workspace}/themes`
+
+	darius.Folder = `darius/{windowProperty.Workspace}`
+
+	-- Themes
+
+	theme.init()
+	local defaultTheme = theme.getTheme().uid
+	if windowProperty.Theme then
+		didPass, failedItems = typecheck(windowProperty.Theme, {
+			Name = "",
+			Colors = {}
+		})
+		assert(didPass, table.concat(failedItems, "\n"))
+		setTheme:update("tbl", windowProperty.Theme)
+		task.wait()
+		theme.set(theme.create(windowProperty.Theme.Name, windowProperty.Theme.Colors, nil, nil, true))
+	end
+
+	-- Configs
+
+	flagCreator.init()
+
 	-- Flags
 
 	local config
 	if windowProperty.UseConfig then
 		useConfig:update("boolean", windowProperty.UseConfig)
-		config = windowProperty.Config
-
-		local path = {"darius",`/{config}`}
-		local built = ""
-		for i=1,#path do
-			built = built..path[i]
-			if not customFunctions.isfolder(built) then
-				customFunctions.makefolder(built)
-			end
-		end
-		darius.Folder = built
-		config = built.."/config.json"
-		darius.File = config
-		if not customFunctions.isfile(config) then
-			customFunctions.writefile(config, "{}")
-		end
 	end
 
 	darius.flags = {}
@@ -224,6 +240,9 @@ function darius:Window(windowProperty)
 			property.tab = tab
 			return addComponent("colorpicker", tabFrame, property)
 		end
+		function components:ButtonGroup()
+			return addComponent("buttonGroup", tabFrame, {tab = tab})
+		end
 		return tabs[tab.uid]
 	end
 	darius.Destroyed = false
@@ -245,9 +264,8 @@ function darius:Window(windowProperty)
 		if not windowProperty.UseConfig then
 			return
 		end
-		flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
-		flagCreator.config:set(config)
-		configLoaded:update("boolean", true)
+		--flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
+		--configLoaded:update("boolean", true)
 	end
 	function darius:SetTheme(newTheme)
 		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
@@ -267,7 +285,8 @@ function darius:Window(windowProperty)
 	end
 	function darius:CreateSettings()
 		local _settings = tabs:Tab({
-			Name = "⚙️ Settings"
+			Name = "Settings",
+			Image = icons.cog
 		})
 		local themeTable = theme.getTheme().palette
 		local cachedTheme = {}
@@ -407,7 +426,176 @@ function darius:Window(windowProperty)
 				customFunctions.printFileSystem()
 			end
 		})
+
 		_settings:Divider()
+
+		-- Configuration Manager
+
+		local configNames = {}
+		table.foreach(flagCreator.getConfigs(), function(_, _config)
+			table.insert(configNames, {
+				DisplayValue = _config.name,
+				Value = _config.uid
+			})
+		end)
+		local selectedConfig = ""
+
+		local configs = _settings:Dropdown({
+			Name = "Configs",
+			Items = configNames,
+			AlwaysOpen = true,
+			Callback = function(uid)
+				selectedConfig = uid
+			end
+		})
+		local configButtons = _settings:ButtonGroup()
+		configButtons:Button({
+			Name = "Load",
+			Callback = function()
+				if selectedConfig ~= "" then
+					flagCreator.set(selectedConfig)
+					local _config = flagCreator.find(selectedConfig)
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = `Set configuration to "{_config.name}"`,
+						Duration = 3,
+						Image = icons.check
+					})
+				else
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "No configuration selected",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+				end
+			end
+		})
+		local function refreshConfigList()
+			table.clear(configNames)
+			table.foreach(flagCreator.getConfigs(), function(_, _config)
+				table.insert(configNames, {
+					DisplayValue = _config.name,
+					Value = _config.uid
+				})
+			end)
+			configs:SetItems(configNames)
+		end
+
+		-- Create
+
+		local createA, createB, createC
+		local configName = ""
+		configButtons:Button({
+			Name = "Create",
+			Callback = function()
+				configButtons:Invisible()
+				configs:Invisible()
+				createA:Visible()
+				createB:Visible()
+				createC:Visible()
+			end
+		})
+
+		createA = _settings:TextBox({
+			Visible = false,
+			Name = "Name your configuration",
+			Callback = function(name)
+				configName = name
+			end
+		})
+		createB = _settings:Button({
+			Visible = false,
+			Name = "Complete new configuration",
+			Callback = function()
+				if configName ~= "" then
+					flagCreator.create(configName, nil, false, nil)
+
+					refreshConfigList()
+
+					configButtons:Visible()
+					configs:Visible()
+					createA:Invisible()
+					createB:Invisible()
+					createC:Invisible()
+					createA:SetInput("")
+
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = `Created "{configName}"`,
+						Duration = 3,
+						Image = icons.check
+					})
+				else
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "Name cannot be empty",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+				end
+			end
+		})
+		createC = _settings:Button({
+			Visible = false,
+			Name = "Cancel",
+			Callback = function()
+				configButtons:Visible()
+				configs:Visible()
+				createA:Invisible()
+				createB:Invisible()
+				createC:Invisible()
+				createA:SetInput("")
+			end
+		})
+
+		-- Save
+
+		configButtons:Button({
+			Name = "Save",
+			Callback = function()
+				if selectedConfig ~= "" then
+					flagCreator.save(selectedConfig)
+					local _config = flagCreator.find(selectedConfig)
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = `Saved configuration "{_config.name}"`,
+						Duration = 3,
+						Image = icons.check
+					})
+				else
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "No configuration selected",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+				end
+			end
+		})
+
+		-- Delete
+
+		configButtons:Button({
+			Name = "Delete",
+			Callback = function()
+				if selectedConfig == "" then
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "No configuration selected",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+					return
+				end
+				flagCreator.delete(selectedConfig)
+				refreshConfigList()
+			end
+		})
 	end
 
 	if customFunctions.getgenv then
@@ -4150,8 +4338,11 @@ local HttpService = services.HttpService
 local fusion = require(script.Parent).Fusion
 local observe = fusion.Observer
 local value = fusion.Value
-local connections = require(script.Parent.Parent.utilities).connections
-local customFunctions = require(script.Parent.Parent.utilities).customFunctions
+
+local utilities = require(script.Parent.Parent.utilities)
+local connections = utilities.connections
+local customFunctions = utilities.customFunctions
+local randomString = utilities.randomString
 
 local funcs = {}
 local flags = data.add({list = {}},"flags")
@@ -4268,6 +4459,10 @@ local cleaner = {
     end
 }
 
+local configs = {}
+funcs.currentConfig = ""
+funcs.path = ""
+
 function funcs.preregister(name)
     local flagEvent = fusion.New "BindableEvent" {}
     local onChange = {}
@@ -4345,22 +4540,46 @@ function funcs.register(name, default, type, private)
     return _flag
 end
 
-funcs.config = value("")
-
-function funcs.export()
-    local exported = {}
-    local _list = get(flags.list)
-    for _,flag in _list do
-        if flag.private then
-            continue
+function funcs.find(uid)
+    for i,v in configs do
+        if v.uid == uid then
+            return v, i
         end
-        if flag.type == "unknown" then
-            continue
-        end
-        exported[flag.name] = cleaner[flag.type](flag.status)
     end
-    if get(funcs.config) ~= "" then
-        customFunctions.writefile(get(funcs.config), HttpService:JSONEncode(exported))
+    return false
+end
+
+function funcs.create(name, uid, fromFile, tbl)
+    fromFile = fromFile or false
+    if uid == "original" and fromFile then
+        return
+    end
+    local config = {}
+    config.name = name
+    config.uid = uid or randomString(5)
+    config.flagValues = {}
+    if fromFile then
+        config.flagValues = tbl
+    else
+        for _,flag in get(flags.list) do
+            if flag.private then
+                continue
+            end
+            if flag.type == "unknown" then
+                continue
+            end
+            config.flagValues[flag.name] = cleaner[flag.type](flag.status)
+        end
+    end
+    table.insert(configs, config)
+
+    return uid
+end
+
+function funcs.init()
+    for _,file in customFunctions.listfiles(funcs.path) do
+        local config = HttpService:JSONDecode(customFunctions.readfile(file))
+        funcs.create(config.name, config.uid, true, config.flagValues)
     end
 end
 
@@ -4372,6 +4591,43 @@ function funcs.load(fileTable)
         end
         flag.file:set(v)
     end
+end
+
+function funcs.set(uid)
+    local config = funcs.find(uid)
+    if not config then
+        return
+    end
+    funcs.currentConfig = uid
+    funcs.load(config.flagValues)
+end
+
+function funcs.save(uid)
+    local config = funcs.find(uid)
+    for _,flag in get(flags.list) do
+        if flag.private then
+            continue
+        end
+        if flag.type == "unknown" then
+            continue
+        end
+        config.flagValues[flag.name] = cleaner[flag.type](flag.status)
+    end
+    customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+end
+
+function funcs.delete(uid)
+    local config, index = funcs.find(uid)
+    if config then
+        if customFunctions.isfile(`{funcs.path}/{config.uid}.json`) then
+            customFunctions.delfile(`{funcs.path}/{config.uid}.json`)
+            table.remove(configs, index)
+        end
+    end
+end
+
+function funcs.getConfigs()
+    return configs
 end
 
 return funcs
@@ -4391,832 +4647,12 @@ end)() end,
     ['search'] = "rbxassetid://10734943674",
     ['finger'] = "rbxassetid://10734929723",
     ['alert'] = "rbxassetid://10709752996",
-    ['paint'] = "rbxassetid://10734910187"
+    ['paint'] = "rbxassetid://10734910187",
+    ['cog'] = "rbxassetid://10709810948"
 }
 end)() end,
-    [60] = function()local wax,script,require=ImportGlobals(60)local ImportGlobals return (function(...)--[[ This file was @generated by Tarmac. It is not intended for manual editing.
-local assets = {
-	["accessibility"] = "rbxassetid://10709751939",
-	["activity"] = "rbxassetid://10709752035",
-	["air-vent"] = "rbxassetid://10709752131",
-	["airplay"] = "rbxassetid://10709752254",
-	["alarm-check"] = "rbxassetid://10709752405",
-	["alarm-clock"] = "rbxassetid://10709752630",
-	["alarm-clock-off"] = "rbxassetid://10709752508",
-	["alarm-minus"] = "rbxassetid://10709752732",
-	["alarm-plus"] = "rbxassetid://10709752825",
-	["album"] = "rbxassetid://10709752906",
-	["alert-circle"] = "rbxassetid://10709752996",
-	["alert-octagon"] = "rbxassetid://10709753064",
-	["alert-triangle"] = "rbxassetid://10709753149",
-	["align-center"] = "rbxassetid://10709753570",
-	["align-center-horizontal"] = "rbxassetid://10709753272",
-	["align-center-vertical"] = "rbxassetid://10709753421",
-	["align-end-horizontal"] = "rbxassetid://10709753692",
-	["align-end-vertical"] = "rbxassetid://10709753808",
-	["align-horizontal-distribute-center"] = "rbxassetid://10747779791",
-	["align-horizontal-distribute-end"] = "rbxassetid://10747784534",
-	["align-horizontal-distribute-start"] = "rbxassetid://10709754118",
-	["align-horizontal-justify-center"] = "rbxassetid://10709754204",
-	["align-horizontal-justify-end"] = "rbxassetid://10709754317",
-	["align-horizontal-justify-start"] = "rbxassetid://10709754436",
-	["align-horizontal-space-around"] = "rbxassetid://10709754590",
-	["align-horizontal-space-between"] = "rbxassetid://10709754749",
-	["align-justify"] = "rbxassetid://10709759610",
-	["align-left"] = "rbxassetid://10709759764",
-	["align-right"] = "rbxassetid://10709759895",
-	["align-start-horizontal"] = "rbxassetid://10709760051",
-	["align-start-vertical"] = "rbxassetid://10709760244",
-	["align-vertical-distribute-center"] = "rbxassetid://10709760351",
-	["align-vertical-distribute-end"] = "rbxassetid://10709760434",
-	["align-vertical-distribute-start"] = "rbxassetid://10709760612",
-	["align-vertical-justify-center"] = "rbxassetid://10709760814",
-	["align-vertical-justify-end"] = "rbxassetid://10709761003",
-	["align-vertical-justify-start"] = "rbxassetid://10709761176",
-	["align-vertical-space-around"] = "rbxassetid://10709761324",
-	["align-vertical-space-between"] = "rbxassetid://10709761434",
-	["anchor"] = "rbxassetid://10709761530",
-	["angry"] = "rbxassetid://10709761629",
-	["annoyed"] = "rbxassetid://10709761722",
-	["aperture"] = "rbxassetid://10709761813",
-	["apple"] = "rbxassetid://10709761889",
-	["archive"] = "rbxassetid://10709762233",
-	["archive-restore"] = "rbxassetid://10709762058",
-	["armchair"] = "rbxassetid://10709762327",
-	["arrow-big-down"] = "rbxassetid://10747796644",
-	["arrow-big-left"] = "rbxassetid://10709762574",
-	["arrow-big-right"] = "rbxassetid://10709762727",
-	["arrow-big-up"] = "rbxassetid://10709762879",
-	["arrow-down"] = "rbxassetid://10709767827",
-	["arrow-down-circle"] = "rbxassetid://10709763034",
-	["arrow-down-left"] = "rbxassetid://10709767656",
-	["arrow-down-right"] = "rbxassetid://10709767750",
-	["arrow-left"] = "rbxassetid://10709768114",
-	["arrow-left-circle"] = "rbxassetid://10709767936",
-	["arrow-left-right"] = "rbxassetid://10709768019",
-	["arrow-right"] = "rbxassetid://10709768347",
-	["arrow-right-circle"] = "rbxassetid://10709768226",
-	["arrow-up"] = "rbxassetid://10709768939",
-	["arrow-up-circle"] = "rbxassetid://10709768432",
-	["arrow-up-down"] = "rbxassetid://10709768538",
-	["arrow-up-left"] = "rbxassetid://10709768661",
-	["arrow-up-right"] = "rbxassetid://10709768787",
-	["asterisk"] = "rbxassetid://10709769095",
-	["at-sign"] = "rbxassetid://10709769286",
-	["award"] = "rbxassetid://10709769406",
-	["axe"] = "rbxassetid://10709769508",
-	["axis-3d"] = "rbxassetid://10709769598",
-	["baby"] = "rbxassetid://10709769732",
-	["backpack"] = "rbxassetid://10709769841",
-	["baggage-claim"] = "rbxassetid://10709769935",
-	["banana"] = "rbxassetid://10709770005",
-	["banknote"] = "rbxassetid://10709770178",
-	["bar-chart"] = "rbxassetid://10709773755",
-	["bar-chart-2"] = "rbxassetid://10709770317",
-	["bar-chart-3"] = "rbxassetid://10709770431",
-	["bar-chart-4"] = "rbxassetid://10709770560",
-	["bar-chart-horizontal"] = "rbxassetid://10709773669",
-	["barcode"] = "rbxassetid://10747360675",
-	["baseline"] = "rbxassetid://10709773863",
-	["bath"] = "rbxassetid://10709773963",
-	["battery"] = "rbxassetid://10709774640",
-	["battery-charging"] = "rbxassetid://10709774068",
-	["battery-full"] = "rbxassetid://10709774206",
-	["battery-low"] = "rbxassetid://10709774370",
-	["battery-medium"] = "rbxassetid://10709774513",
-	["beaker"] = "rbxassetid://10709774756",
-	["bed"] = "rbxassetid://10709775036",
-	["bed-double"] = "rbxassetid://10709774864",
-	["bed-single"] = "rbxassetid://10709774968",
-	["beer"] = "rbxassetid://10709775167",
-	["bell"] = "rbxassetid://10709775704",
-	["bell-minus"] = "rbxassetid://10709775241",
-	["bell-off"] = "rbxassetid://10709775320",
-	["bell-plus"] = "rbxassetid://10709775448",
-	["bell-ring"] = "rbxassetid://10709775560",
-	["bike"] = "rbxassetid://10709775894",
-	["binary"] = "rbxassetid://10709776050",
-	["bitcoin"] = "rbxassetid://10709776126",
-	["bluetooth"] = "rbxassetid://10709776655",
-	["bluetooth-connected"] = "rbxassetid://10709776240",
-	["bluetooth-off"] = "rbxassetid://10709776344",
-	["bluetooth-searching"] = "rbxassetid://10709776501",
-	["bold"] = "rbxassetid://10747813908",
-	["bomb"] = "rbxassetid://10709781460",
-	["bone"] = "rbxassetid://10709781605",
-	["book"] = "rbxassetid://10709781824",
-	["book-open"] = "rbxassetid://10709781717",
-	["bookmark"] = "rbxassetid://10709782154",
-	["bookmark-minus"] = "rbxassetid://10709781919",
-	["bookmark-plus"] = "rbxassetid://10709782044",
-	["bot"] = "rbxassetid://10709782230",
-	["box"] = "rbxassetid://10709782497",
-	["box-select"] = "rbxassetid://10709782342",
-	["boxes"] = "rbxassetid://10709782582",
-	["briefcase"] = "rbxassetid://10709782662",
-	["brush"] = "rbxassetid://10709782758",
-	["bug"] = "rbxassetid://10709782845",
-	["building"] = "rbxassetid://10709783051",
-	["building-2"] = "rbxassetid://10709782939",
-	["bus"] = "rbxassetid://10709783137",
-	["cake"] = "rbxassetid://10709783217",
-	["calculator"] = "rbxassetid://10709783311",
-	["calendar"] = "rbxassetid://10709789505",
-	["calendar-check"] = "rbxassetid://10709783474",
-	["calendar-check-2"] = "rbxassetid://10709783392",
-	["calendar-clock"] = "rbxassetid://10709783577",
-	["calendar-days"] = "rbxassetid://10709783673",
-	["calendar-heart"] = "rbxassetid://10709783835",
-	["calendar-minus"] = "rbxassetid://10709783959",
-	["calendar-off"] = "rbxassetid://10709788784",
-	["calendar-plus"] = "rbxassetid://10709788937",
-	["calendar-range"] = "rbxassetid://10709789053",
-	["calendar-search"] = "rbxassetid://10709789200",
-	["calendar-x"] = "rbxassetid://10709789407",
-	["calendar-x-2"] = "rbxassetid://10709789329",
-	["camera"] = "rbxassetid://10709789686",
-	["camera-off"] = "rbxassetid://10747822677",
-	["car"] = "rbxassetid://10709789810",
-	["carrot"] = "rbxassetid://10709789960",
-	["cast"] = "rbxassetid://10709790097",
-	["charge"] = "rbxassetid://10709790202",
-	["check"] = "rbxassetid://10709790644",
-	["check-circle"] = "rbxassetid://10709790387",
-	["check-circle-2"] = "rbxassetid://10709790298",
-	["check-square"] = "rbxassetid://10709790537",
-	["chef-hat"] = "rbxassetid://10709790757",
-	["cherry"] = "rbxassetid://10709790875",
-	["chevron-down"] = "rbxassetid://10709790948",
-	["chevron-first"] = "rbxassetid://10709791015",
-	["chevron-last"] = "rbxassetid://10709791130",
-	["chevron-left"] = "rbxassetid://10709791281",
-	["chevron-right"] = "rbxassetid://10709791437",
-	["chevron-up"] = "rbxassetid://10709791523",
-	["chevrons-down"] = "rbxassetid://10709796864",
-	["chevrons-down-up"] = "rbxassetid://10709791632",
-	["chevrons-left"] = "rbxassetid://10709797151",
-	["chevrons-left-right"] = "rbxassetid://10709797006",
-	["chevrons-right"] = "rbxassetid://10709797382",
-	["chevrons-right-left"] = "rbxassetid://10709797274",
-	["chevrons-up"] = "rbxassetid://10709797622",
-	["chevrons-up-down"] = "rbxassetid://10709797508",
-	["chrome"] = "rbxassetid://10709797725",
-	["circle"] = "rbxassetid://10709798174",
-	["circle-dot"] = "rbxassetid://10709797837",
-	["circle-ellipsis"] = "rbxassetid://10709797985",
-	["circle-slashed"] = "rbxassetid://10709798100",
-	["citrus"] = "rbxassetid://10709798276",
-	["clapperboard"] = "rbxassetid://10709798350",
-	["clipboard"] = "rbxassetid://10709799288",
-	["clipboard-check"] = "rbxassetid://10709798443",
-	["clipboard-copy"] = "rbxassetid://10709798574",
-	["clipboard-edit"] = "rbxassetid://10709798682",
-	["clipboard-list"] = "rbxassetid://10709798792",
-	["clipboard-signature"] = "rbxassetid://10709798890",
-	["clipboard-type"] = "rbxassetid://10709798999",
-	["clipboard-x"] = "rbxassetid://10709799124",
-	["clock"] = "rbxassetid://10709805144",
-	["clock-1"] = "rbxassetid://10709799535",
-	["clock-10"] = "rbxassetid://10709799718",
-	["clock-11"] = "rbxassetid://10709799818",
-	["clock-12"] = "rbxassetid://10709799962",
-	["clock-2"] = "rbxassetid://10709803876",
-	["clock-3"] = "rbxassetid://10709803989",
-	["clock-4"] = "rbxassetid://10709804164",
-	["clock-5"] = "rbxassetid://10709804291",
-	["clock-6"] = "rbxassetid://10709804435",
-	["clock-7"] = "rbxassetid://10709804599",
-	["clock-8"] = "rbxassetid://10709804784",
-	["clock-9"] = "rbxassetid://10709804996",
-	["cloud"] = "rbxassetid://10709806740",
-	["cloud-cog"] = "rbxassetid://10709805262",
-	["cloud-drizzle"] = "rbxassetid://10709805371",
-	["cloud-fog"] = "rbxassetid://10709805477",
-	["cloud-hail"] = "rbxassetid://10709805596",
-	["cloud-lightning"] = "rbxassetid://10709805727",
-	["cloud-moon"] = "rbxassetid://10709805942",
-	["cloud-moon-rain"] = "rbxassetid://10709805838",
-	["cloud-off"] = "rbxassetid://10709806060",
-	["cloud-rain"] = "rbxassetid://10709806277",
-	["cloud-rain-wind"] = "rbxassetid://10709806166",
-	["cloud-snow"] = "rbxassetid://10709806374",
-	["cloud-sun"] = "rbxassetid://10709806631",
-	["cloud-sun-rain"] = "rbxassetid://10709806475",
-	["cloudy"] = "rbxassetid://10709806859",
-	["clover"] = "rbxassetid://10709806995",
-	["code"] = "rbxassetid://10709810463",
-	["code-2"] = "rbxassetid://10709807111",
-	["codepen"] = "rbxassetid://10709810534",
-	["codesandbox"] = "rbxassetid://10709810676",
-	["coffee"] = "rbxassetid://10709810814",
-	["cog"] = "rbxassetid://10709810948",
-	["coins"] = "rbxassetid://10709811110",
-	["columns"] = "rbxassetid://10709811261",
-	["command"] = "rbxassetid://10709811365",
-	["compass"] = "rbxassetid://10709811445",
-	["component"] = "rbxassetid://10709811595",
-	["concierge-bell"] = "rbxassetid://10709811706",
-	["connection"] = "rbxassetid://10747361219",
-	["contact"] = "rbxassetid://10709811834",
-	["contrast"] = "rbxassetid://10709811939",
-	["cookie"] = "rbxassetid://10709812067",
-	["copy"] = "rbxassetid://10709812159",
-	["copyleft"] = "rbxassetid://10709812251",
-	["copyright"] = "rbxassetid://10709812311",
-	["corner-down-left"] = "rbxassetid://10709812396",
-	["corner-down-right"] = "rbxassetid://10709812485",
-	["corner-left-down"] = "rbxassetid://10709812632",
-	["corner-left-up"] = "rbxassetid://10709812784",
-	["corner-right-down"] = "rbxassetid://10709812939",
-	["corner-right-up"] = "rbxassetid://10709813094",
-	["corner-up-left"] = "rbxassetid://10709813185",
-	["corner-up-right"] = "rbxassetid://10709813281",
-	["cpu"] = "rbxassetid://10709813383",
-	["croissant"] = "rbxassetid://10709818125",
-	["crop"] = "rbxassetid://10709818245",
-	["cross"] = "rbxassetid://10709818399",
-	["crosshair"] = "rbxassetid://10709818534",
-	["crown"] = "rbxassetid://10709818626",
-	["cup-soda"] = "rbxassetid://10709818763",
-	["curly-braces"] = "rbxassetid://10709818847",
-	["currency"] = "rbxassetid://10709818931",
-	["database"] = "rbxassetid://10709818996",
-	["delete"] = "rbxassetid://10709819059",
-	["diamond"] = "rbxassetid://10709819149",
-	["dice-1"] = "rbxassetid://10709819266",
-	["dice-2"] = "rbxassetid://10709819361",
-	["dice-3"] = "rbxassetid://10709819508",
-	["dice-4"] = "rbxassetid://10709819670",
-	["dice-5"] = "rbxassetid://10709819801",
-	["dice-6"] = "rbxassetid://10709819896",
-	["dices"] = "rbxassetid://10723343321",
-	["diff"] = "rbxassetid://10723343416",
-	["disc"] = "rbxassetid://10723343537",
-	["divide"] = "rbxassetid://10723343805",
-	["divide-circle"] = "rbxassetid://10723343636",
-	["divide-square"] = "rbxassetid://10723343737",
-	["dollar-sign"] = "rbxassetid://10723343958",
-	["download"] = "rbxassetid://10723344270",
-	["download-cloud"] = "rbxassetid://10723344088",
-	["droplet"] = "rbxassetid://10723344432",
-	["droplets"] = "rbxassetid://10734883356",
-	["drumstick"] = "rbxassetid://10723344737",
-	["edit"] = "rbxassetid://10734883598",
-	["edit-2"] = "rbxassetid://10723344885",
-	["edit-3"] = "rbxassetid://10723345088",
-	["egg"] = "rbxassetid://10723345518",
-	["egg-fried"] = "rbxassetid://10723345347",
-	["electricity"] = "rbxassetid://10723345749",
-	["electricity-off"] = "rbxassetid://10723345643",
-	["equal"] = "rbxassetid://10723345990",
-	["equal-not"] = "rbxassetid://10723345866",
-	["eraser"] = "rbxassetid://10723346158",
-	["euro"] = "rbxassetid://10723346372",
-	["expand"] = "rbxassetid://10723346553",
-	["external-link"] = "rbxassetid://10723346684",
-	["eye"] = "rbxassetid://10723346959",
-	["eye-off"] = "rbxassetid://10723346871",
-	["factory"] = "rbxassetid://10723347051",
-	["fan"] = "rbxassetid://10723354359",
-	["fast-forward"] = "rbxassetid://10723354521",
-	["feather"] = "rbxassetid://10723354671",
-	["figma"] = "rbxassetid://10723354801",
-	["file"] = "rbxassetid://10723374641",
-	["file-archive"] = "rbxassetid://10723354921",
-	["file-audio"] = "rbxassetid://10723355148",
-	["file-audio-2"] = "rbxassetid://10723355026",
-	["file-axis-3d"] = "rbxassetid://10723355272",
-	["file-badge"] = "rbxassetid://10723355622",
-	["file-badge-2"] = "rbxassetid://10723355451",
-	["file-bar-chart"] = "rbxassetid://10723355887",
-	["file-bar-chart-2"] = "rbxassetid://10723355746",
-	["file-box"] = "rbxassetid://10723355989",
-	["file-check"] = "rbxassetid://10723356210",
-	["file-check-2"] = "rbxassetid://10723356100",
-	["file-clock"] = "rbxassetid://10723356329",
-	["file-code"] = "rbxassetid://10723356507",
-	["file-cog"] = "rbxassetid://10723356830",
-	["file-cog-2"] = "rbxassetid://10723356676",
-	["file-diff"] = "rbxassetid://10723357039",
-	["file-digit"] = "rbxassetid://10723357151",
-	["file-down"] = "rbxassetid://10723357322",
-	["file-edit"] = "rbxassetid://10723357495",
-	["file-heart"] = "rbxassetid://10723357637",
-	["file-image"] = "rbxassetid://10723357790",
-	["file-input"] = "rbxassetid://10723357933",
-	["file-json"] = "rbxassetid://10723364435",
-	["file-json-2"] = "rbxassetid://10723364361",
-	["file-key"] = "rbxassetid://10723364605",
-	["file-key-2"] = "rbxassetid://10723364515",
-	["file-line-chart"] = "rbxassetid://10723364725",
-	["file-lock"] = "rbxassetid://10723364957",
-	["file-lock-2"] = "rbxassetid://10723364861",
-	["file-minus"] = "rbxassetid://10723365254",
-	["file-minus-2"] = "rbxassetid://10723365086",
-	["file-output"] = "rbxassetid://10723365457",
-	["file-pie-chart"] = "rbxassetid://10723365598",
-	["file-plus"] = "rbxassetid://10723365877",
-	["file-plus-2"] = "rbxassetid://10723365766",
-	["file-question"] = "rbxassetid://10723365987",
-	["file-scan"] = "rbxassetid://10723366167",
-	["file-search"] = "rbxassetid://10723366550",
-	["file-search-2"] = "rbxassetid://10723366340",
-	["file-signature"] = "rbxassetid://10723366741",
-	["file-spreadsheet"] = "rbxassetid://10723366962",
-	["file-symlink"] = "rbxassetid://10723367098",
-	["file-terminal"] = "rbxassetid://10723367244",
-	["file-text"] = "rbxassetid://10723367380",
-	["file-type"] = "rbxassetid://10723367606",
-	["file-type-2"] = "rbxassetid://10723367509",
-	["file-up"] = "rbxassetid://10723367734",
-	["file-video"] = "rbxassetid://10723373884",
-	["file-video-2"] = "rbxassetid://10723367834",
-	["file-volume"] = "rbxassetid://10723374172",
-	["file-volume-2"] = "rbxassetid://10723374030",
-	["file-warning"] = "rbxassetid://10723374276",
-	["file-x"] = "rbxassetid://10723374544",
-	["file-x-2"] = "rbxassetid://10723374378",
-	["files"] = "rbxassetid://10723374759",
-	["film"] = "rbxassetid://10723374981",
-	["filter"] = "rbxassetid://10723375128",
-	["fingerprint"] = "rbxassetid://10723375250",
-	["flag"] = "rbxassetid://10723375890",
-	["flag-off"] = "rbxassetid://10723375443",
-	["flag-triangle-left"] = "rbxassetid://10723375608",
-	["flag-triangle-right"] = "rbxassetid://10723375727",
-	["flame"] = "rbxassetid://10723376114",
-	["flashlight"] = "rbxassetid://10723376471",
-	["flashlight-off"] = "rbxassetid://10723376365",
-	["flask-conical"] = "rbxassetid://10734883986",
-	["flask-round"] = "rbxassetid://10723376614",
-	["flip-horizontal"] = "rbxassetid://10723376884",
-	["flip-horizontal-2"] = "rbxassetid://10723376745",
-	["flip-vertical"] = "rbxassetid://10723377138",
-	["flip-vertical-2"] = "rbxassetid://10723377026",
-	["flower"] = "rbxassetid://10747830374",
-	["flower-2"] = "rbxassetid://10723377305",
-	["focus"] = "rbxassetid://10723377537",
-	["folder"] = "rbxassetid://10723387563",
-	["folder-archive"] = "rbxassetid://10723384478",
-	["folder-check"] = "rbxassetid://10723384605",
-	["folder-clock"] = "rbxassetid://10723384731",
-	["folder-closed"] = "rbxassetid://10723384893",
-	["folder-cog"] = "rbxassetid://10723385213",
-	["folder-cog-2"] = "rbxassetid://10723385036",
-	["folder-down"] = "rbxassetid://10723385338",
-	["folder-edit"] = "rbxassetid://10723385445",
-	["folder-heart"] = "rbxassetid://10723385545",
-	["folder-input"] = "rbxassetid://10723385721",
-	["folder-key"] = "rbxassetid://10723385848",
-	["folder-lock"] = "rbxassetid://10723386005",
-	["folder-minus"] = "rbxassetid://10723386127",
-	["folder-open"] = "rbxassetid://10723386277",
-	["folder-output"] = "rbxassetid://10723386386",
-	["folder-plus"] = "rbxassetid://10723386531",
-	["folder-search"] = "rbxassetid://10723386787",
-	["folder-search-2"] = "rbxassetid://10723386674",
-	["folder-symlink"] = "rbxassetid://10723386930",
-	["folder-tree"] = "rbxassetid://10723387085",
-	["folder-up"] = "rbxassetid://10723387265",
-	["folder-x"] = "rbxassetid://10723387448",
-	["folders"] = "rbxassetid://10723387721",
-	["form-input"] = "rbxassetid://10723387841",
-	["forward"] = "rbxassetid://10723388016",
-	["frame"] = "rbxassetid://10723394389",
-	["framer"] = "rbxassetid://10723394565",
-	["frown"] = "rbxassetid://10723394681",
-	["fuel"] = "rbxassetid://10723394846",
-	["function-square"] = "rbxassetid://10723395041",
-	["gamepad"] = "rbxassetid://10723395457",
-	["gamepad-2"] = "rbxassetid://10723395215",
-	["gauge"] = "rbxassetid://10723395708",
-	["gavel"] = "rbxassetid://10723395896",
-	["gem"] = "rbxassetid://10723396000",
-	["ghost"] = "rbxassetid://10723396107",
-	["gift"] = "rbxassetid://10723396402",
-	["gift-card"] = "rbxassetid://10723396225",
-	["git-branch"] = "rbxassetid://10723396676",
-	["git-branch-plus"] = "rbxassetid://10723396542",
-	["git-commit"] = "rbxassetid://10723396812",
-	["git-compare"] = "rbxassetid://10723396954",
-	["git-fork"] = "rbxassetid://10723397049",
-	["git-merge"] = "rbxassetid://10723397165",
-	["git-pull-request"] = "rbxassetid://10723397431",
-	["git-pull-request-closed"] = "rbxassetid://10723397268",
-	["git-pull-request-draft"] = "rbxassetid://10734884302",
-	["glass"] = "rbxassetid://10723397788",
-	["glass-2"] = "rbxassetid://10723397529",
-	["glass-water"] = "rbxassetid://10723397678",
-	["glasses"] = "rbxassetid://10723397895",
-	["globe"] = "rbxassetid://10723404337",
-	["globe-2"] = "rbxassetid://10723398002",
-	["grab"] = "rbxassetid://10723404472",
-	["graduation-cap"] = "rbxassetid://10723404691",
-	["grape"] = "rbxassetid://10723404822",
-	["grid"] = "rbxassetid://10723404936",
-	["grip-horizontal"] = "rbxassetid://10723405089",
-	["grip-vertical"] = "rbxassetid://10723405236",
-	["hammer"] = "rbxassetid://10723405360",
-	["hand"] = "rbxassetid://10723405649",
-	["hand-metal"] = "rbxassetid://10723405508",
-	["hard-drive"] = "rbxassetid://10723405749",
-	["hard-hat"] = "rbxassetid://10723405859",
-	["hash"] = "rbxassetid://10723405975",
-	["haze"] = "rbxassetid://10723406078",
-	["headphones"] = "rbxassetid://10723406165",
-	["heart"] = "rbxassetid://10723406885",
-	["heart-crack"] = "rbxassetid://10723406299",
-	["heart-handshake"] = "rbxassetid://10723406480",
-	["heart-off"] = "rbxassetid://10723406662",
-	["heart-pulse"] = "rbxassetid://10723406795",
-	["help-circle"] = "rbxassetid://10723406988",
-	["hexagon"] = "rbxassetid://10723407092",
-	["highlighter"] = "rbxassetid://10723407192",
-	["history"] = "rbxassetid://10723407335",
-	["home"] = "rbxassetid://10723407389",
-	["hourglass"] = "rbxassetid://10723407498",
-	["ice-cream"] = "rbxassetid://10723414308",
-	["image"] = "rbxassetid://10723415040",
-	["image-minus"] = "rbxassetid://10723414487",
-	["image-off"] = "rbxassetid://10723414677",
-	["image-plus"] = "rbxassetid://10723414827",
-	["import"] = "rbxassetid://10723415205",
-	["inbox"] = "rbxassetid://10723415335",
-	["indent"] = "rbxassetid://10723415494",
-	["indian-rupee"] = "rbxassetid://10723415642",
-	["infinity"] = "rbxassetid://10723415766",
-	["info"] = "rbxassetid://10723415903",
-	["inspect"] = "rbxassetid://10723416057",
-	["italic"] = "rbxassetid://10723416195",
-	["japanese-yen"] = "rbxassetid://10723416363",
-	["joystick"] = "rbxassetid://10723416527",
-	["key"] = "rbxassetid://10723416652",
-	["keyboard"] = "rbxassetid://10723416765",
-	["lamp"] = "rbxassetid://10723417513",
-	["lamp-ceiling"] = "rbxassetid://10723416922",
-	["lamp-desk"] = "rbxassetid://10723417016",
-	["lamp-floor"] = "rbxassetid://10723417131",
-	["lamp-wall-down"] = "rbxassetid://10723417240",
-	["lamp-wall-up"] = "rbxassetid://10723417356",
-	["landmark"] = "rbxassetid://10723417608",
-	["languages"] = "rbxassetid://10723417703",
-	["laptop"] = "rbxassetid://10723423881",
-	["laptop-2"] = "rbxassetid://10723417797",
-	["lasso"] = "rbxassetid://10723424235",
-	["lasso-select"] = "rbxassetid://10723424058",
-	["laugh"] = "rbxassetid://10723424372",
-	["layers"] = "rbxassetid://10723424505",
-	["layout"] = "rbxassetid://10723425376",
-	["layout-dashboard"] = "rbxassetid://10723424646",
-	["layout-grid"] = "rbxassetid://10723424838",
-	["layout-list"] = "rbxassetid://10723424963",
-	["layout-template"] = "rbxassetid://10723425187",
-	["leaf"] = "rbxassetid://10723425539",
-	["library"] = "rbxassetid://10723425615",
-	["life-buoy"] = "rbxassetid://10723425685",
-	["lightbulb"] = "rbxassetid://10723425852",
-	["lightbulb-off"] = "rbxassetid://10723425762",
-	["line-chart"] = "rbxassetid://10723426393",
-	["link"] = "rbxassetid://10723426722",
-	["link-2"] = "rbxassetid://10723426595",
-	["link-2-off"] = "rbxassetid://10723426513",
-	["list"] = "rbxassetid://10723433811",
-	["list-checks"] = "rbxassetid://10734884548",
-	["list-end"] = "rbxassetid://10723426886",
-	["list-minus"] = "rbxassetid://10723426986",
-	["list-music"] = "rbxassetid://10723427081",
-	["list-ordered"] = "rbxassetid://10723427199",
-	["list-plus"] = "rbxassetid://10723427334",
-	["list-start"] = "rbxassetid://10723427494",
-	["list-video"] = "rbxassetid://10723427619",
-	["list-x"] = "rbxassetid://10723433655",
-	["loader"] = "rbxassetid://10723434070",
-	["loader-2"] = "rbxassetid://10723433935",
-	["locate"] = "rbxassetid://10723434557",
-	["locate-fixed"] = "rbxassetid://10723434236",
-	["locate-off"] = "rbxassetid://10723434379",
-	["lock"] = "rbxassetid://10723434711",
-	["log-in"] = "rbxassetid://10723434830",
-	["log-out"] = "rbxassetid://10723434906",
-	["luggage"] = "rbxassetid://10723434993",
-	["magnet"] = "rbxassetid://10723435069",
-	["mail"] = "rbxassetid://10734885430",
-	["mail-check"] = "rbxassetid://10723435182",
-	["mail-minus"] = "rbxassetid://10723435261",
-	["mail-open"] = "rbxassetid://10723435342",
-	["mail-plus"] = "rbxassetid://10723435443",
-	["mail-question"] = "rbxassetid://10723435515",
-	["mail-search"] = "rbxassetid://10734884739",
-	["mail-warning"] = "rbxassetid://10734885015",
-	["mail-x"] = "rbxassetid://10734885247",
-	["mails"] = "rbxassetid://10734885614",
-	["map"] = "rbxassetid://10734886202",
-	["map-pin"] = "rbxassetid://10734886004",
-	["map-pin-off"] = "rbxassetid://10734885803",
-	["maximize"] = "rbxassetid://10734886735",
-	["maximize-2"] = "rbxassetid://10734886496",
-	["medal"] = "rbxassetid://10734887072",
-	["megaphone"] = "rbxassetid://10734887454",
-	["megaphone-off"] = "rbxassetid://10734887311",
-	["meh"] = "rbxassetid://10734887603",
-	["menu"] = "rbxassetid://10734887784",
-	["message-circle"] = "rbxassetid://10734888000",
-	["message-square"] = "rbxassetid://10734888228",
-	["mic"] = "rbxassetid://10734888864",
-	["mic-2"] = "rbxassetid://10734888430",
-	["mic-off"] = "rbxassetid://10734888646",
-	["microscope"] = "rbxassetid://10734889106",
-	["microwave"] = "rbxassetid://10734895076",
-	["milestone"] = "rbxassetid://10734895310",
-	["minimize"] = "rbxassetid://10734895698",
-	["minimize-2"] = "rbxassetid://10734895530",
-	["minus"] = "rbxassetid://10734896206",
-	["minus-circle"] = "rbxassetid://10734895856",
-	["minus-square"] = "rbxassetid://10734896029",
-	["monitor"] = "rbxassetid://10734896881",
-	["monitor-off"] = "rbxassetid://10734896360",
-	["monitor-speaker"] = "rbxassetid://10734896512",
-	["moon"] = "rbxassetid://10734897102",
-	["more-horizontal"] = "rbxassetid://10734897250",
-	["more-vertical"] = "rbxassetid://10734897387",
-	["mountain"] = "rbxassetid://10734897956",
-	["mountain-snow"] = "rbxassetid://10734897665",
-	["mouse"] = "rbxassetid://10734898592",
-	["mouse-pointer"] = "rbxassetid://10734898476",
-	["mouse-pointer-2"] = "rbxassetid://10734898194",
-	["mouse-pointer-click"] = "rbxassetid://10734898355",
-	["move"] = "rbxassetid://10734900011",
-	["move-3d"] = "rbxassetid://10734898756",
-	["move-diagonal"] = "rbxassetid://10734899164",
-	["move-diagonal-2"] = "rbxassetid://10734898934",
-	["move-horizontal"] = "rbxassetid://10734899414",
-	["move-vertical"] = "rbxassetid://10734899821",
-	["music"] = "rbxassetid://10734905958",
-	["music-2"] = "rbxassetid://10734900215",
-	["music-3"] = "rbxassetid://10734905665",
-	["music-4"] = "rbxassetid://10734905823",
-	["navigation"] = "rbxassetid://10734906744",
-	["navigation-2"] = "rbxassetid://10734906332",
-	["navigation-2-off"] = "rbxassetid://10734906144",
-	["navigation-off"] = "rbxassetid://10734906580",
-	["network"] = "rbxassetid://10734906975",
-	["newspaper"] = "rbxassetid://10734907168",
-	["octagon"] = "rbxassetid://10734907361",
-	["option"] = "rbxassetid://10734907649",
-	["outdent"] = "rbxassetid://10734907933",
-	["package"] = "rbxassetid://10734909540",
-	["package-2"] = "rbxassetid://10734908151",
-	["package-check"] = "rbxassetid://10734908384",
-	["package-minus"] = "rbxassetid://10734908626",
-	["package-open"] = "rbxassetid://10734908793",
-	["package-plus"] = "rbxassetid://10734909016",
-	["package-search"] = "rbxassetid://10734909196",
-	["package-x"] = "rbxassetid://10734909375",
-	["paint-bucket"] = "rbxassetid://10734909847",
-	["paintbrush"] = "rbxassetid://10734910187",
-	["paintbrush-2"] = "rbxassetid://10734910030",
-	["palette"] = "rbxassetid://10734910430",
-	["palmtree"] = "rbxassetid://10734910680",
-	["paperclip"] = "rbxassetid://10734910927",
-	["party-popper"] = "rbxassetid://10734918735",
-	["pause"] = "rbxassetid://10734919336",
-	["pause-circle"] = "rbxassetid://10735024209",
-	["pause-octagon"] = "rbxassetid://10734919143",
-	["pen-tool"] = "rbxassetid://10734919503",
-	["pencil"] = "rbxassetid://10734919691",
-	["percent"] = "rbxassetid://10734919919",
-	["person-standing"] = "rbxassetid://10734920149",
-	["phone"] = "rbxassetid://10734921524",
-	["phone-call"] = "rbxassetid://10734920305",
-	["phone-forwarded"] = "rbxassetid://10734920508",
-	["phone-incoming"] = "rbxassetid://10734920694",
-	["phone-missed"] = "rbxassetid://10734920845",
-	["phone-off"] = "rbxassetid://10734921077",
-	["phone-outgoing"] = "rbxassetid://10734921288",
-	["pie-chart"] = "rbxassetid://10734921727",
-	["piggy-bank"] = "rbxassetid://10734921935",
-	["pin"] = "rbxassetid://10734922324",
-	["pin-off"] = "rbxassetid://10734922180",
-	["pipette"] = "rbxassetid://10734922497",
-	["pizza"] = "rbxassetid://10734922774",
-	["plane"] = "rbxassetid://10734922971",
-	["play"] = "rbxassetid://10734923549",
-	["play-circle"] = "rbxassetid://10734923214",
-	["plus"] = "rbxassetid://10734924532",
-	["plus-circle"] = "rbxassetid://10734923868",
-	["plus-square"] = "rbxassetid://10734924219",
-	["podcast"] = "rbxassetid://10734929553",
-	["pointer"] = "rbxassetid://10734929723",
-	["pound-sterling"] = "rbxassetid://10734929981",
-	["power"] = "rbxassetid://10734930466",
-	["power-off"] = "rbxassetid://10734930257",
-	["printer"] = "rbxassetid://10734930632",
-	["puzzle"] = "rbxassetid://10734930886",
-	["quote"] = "rbxassetid://10734931234",
-	["radio"] = "rbxassetid://10734931596",
-	["radio-receiver"] = "rbxassetid://10734931402",
-	["rectangle-horizontal"] = "rbxassetid://10734931777",
-	["rectangle-vertical"] = "rbxassetid://10734932081",
-	["recycle"] = "rbxassetid://10734932295",
-	["redo"] = "rbxassetid://10734932822",
-	["redo-2"] = "rbxassetid://10734932586",
-	["refresh-ccw"] = "rbxassetid://10734933056",
-	["refresh-cw"] = "rbxassetid://10734933222",
-	["refrigerator"] = "rbxassetid://10734933465",
-	["regex"] = "rbxassetid://10734933655",
-	["repeat"] = "rbxassetid://10734933966",
-	["repeat-1"] = "rbxassetid://10734933826",
-	["reply"] = "rbxassetid://10734934252",
-	["reply-all"] = "rbxassetid://10734934132",
-	["rewind"] = "rbxassetid://10734934347",
-	["rocket"] = "rbxassetid://10734934585",
-	["rocking-chair"] = "rbxassetid://10734939942",
-	["rotate-3d"] = "rbxassetid://10734940107",
-	["rotate-ccw"] = "rbxassetid://10734940376",
-	["rotate-cw"] = "rbxassetid://10734940654",
-	["rss"] = "rbxassetid://10734940825",
-	["ruler"] = "rbxassetid://10734941018",
-	["russian-ruble"] = "rbxassetid://10734941199",
-	["sailboat"] = "rbxassetid://10734941354",
-	["save"] = "rbxassetid://10734941499",
-	["scale"] = "rbxassetid://10734941912",
-	["scale-3d"] = "rbxassetid://10734941739",
-	["scaling"] = "rbxassetid://10734942072",
-	["scan"] = "rbxassetid://10734942565",
-	["scan-face"] = "rbxassetid://10734942198",
-	["scan-line"] = "rbxassetid://10734942351",
-	["scissors"] = "rbxassetid://10734942778",
-	["screen-share"] = "rbxassetid://10734943193",
-	["screen-share-off"] = "rbxassetid://10734942967",
-	["scroll"] = "rbxassetid://10734943448",
-	["search"] = "rbxassetid://10734943674",
-	["send"] = "rbxassetid://10734943902",
-	["separator-horizontal"] = "rbxassetid://10734944115",
-	["separator-vertical"] = "rbxassetid://10734944326",
-	["server"] = "rbxassetid://10734949856",
-	["server-cog"] = "rbxassetid://10734944444",
-	["server-crash"] = "rbxassetid://10734944554",
-	["server-off"] = "rbxassetid://10734944668",
-	["settings"] = "rbxassetid://10734950309",
-	["settings-2"] = "rbxassetid://10734950020",
-	["share"] = "rbxassetid://10734950813",
-	["share-2"] = "rbxassetid://10734950553",
-	["sheet"] = "rbxassetid://10734951038",
-	["shield"] = "rbxassetid://10734951847",
-	["shield-alert"] = "rbxassetid://10734951173",
-	["shield-check"] = "rbxassetid://10734951367",
-	["shield-close"] = "rbxassetid://10734951535",
-	["shield-off"] = "rbxassetid://10734951684",
-	["shirt"] = "rbxassetid://10734952036",
-	["shopping-bag"] = "rbxassetid://10734952273",
-	["shopping-cart"] = "rbxassetid://10734952479",
-	["shovel"] = "rbxassetid://10734952773",
-	["shower-head"] = "rbxassetid://10734952942",
-	["shrink"] = "rbxassetid://10734953073",
-	["shrub"] = "rbxassetid://10734953241",
-	["shuffle"] = "rbxassetid://10734953451",
-	["sidebar"] = "rbxassetid://10734954301",
-	["sidebar-close"] = "rbxassetid://10734953715",
-	["sidebar-open"] = "rbxassetid://10734954000",
-	["sigma"] = "rbxassetid://10734954538",
-	["signal"] = "rbxassetid://10734961133",
-	["signal-high"] = "rbxassetid://10734954807",
-	["signal-low"] = "rbxassetid://10734955080",
-	["signal-medium"] = "rbxassetid://10734955336",
-	["signal-zero"] = "rbxassetid://10734960878",
-	["siren"] = "rbxassetid://10734961284",
-	["skip-back"] = "rbxassetid://10734961526",
-	["skip-forward"] = "rbxassetid://10734961809",
-	["skull"] = "rbxassetid://10734962068",
-	["slack"] = "rbxassetid://10734962339",
-	["slash"] = "rbxassetid://10734962600",
-	["slice"] = "rbxassetid://10734963024",
-	["sliders"] = "rbxassetid://10734963400",
-	["sliders-horizontal"] = "rbxassetid://10734963191",
-	["smartphone"] = "rbxassetid://10734963940",
-	["smartphone-charging"] = "rbxassetid://10734963671",
-	["smile"] = "rbxassetid://10734964441",
-	["smile-plus"] = "rbxassetid://10734964188",
-	["snowflake"] = "rbxassetid://10734964600",
-	["sofa"] = "rbxassetid://10734964852",
-	["sort-asc"] = "rbxassetid://10734965115",
-	["sort-desc"] = "rbxassetid://10734965287",
-	["speaker"] = "rbxassetid://10734965419",
-	["sprout"] = "rbxassetid://10734965572",
-	["square"] = "rbxassetid://10734965702",
-	["star"] = "rbxassetid://10734966248",
-	["star-half"] = "rbxassetid://10734965897",
-	["star-off"] = "rbxassetid://10734966097",
-	["stethoscope"] = "rbxassetid://10734966384",
-	["sticker"] = "rbxassetid://10734972234",
-	["sticky-note"] = "rbxassetid://10734972463",
-	["stop-circle"] = "rbxassetid://10734972621",
-	["stretch-horizontal"] = "rbxassetid://10734972862",
-	["stretch-vertical"] = "rbxassetid://10734973130",
-	["strikethrough"] = "rbxassetid://10734973290",
-	["subscript"] = "rbxassetid://10734973457",
-	["sun"] = "rbxassetid://10734974297",
-	["sun-dim"] = "rbxassetid://10734973645",
-	["sun-medium"] = "rbxassetid://10734973778",
-	["sun-moon"] = "rbxassetid://10734973999",
-	["sun-snow"] = "rbxassetid://10734974130",
-	["sunrise"] = "rbxassetid://10734974522",
-	["sunset"] = "rbxassetid://10734974689",
-	["superscript"] = "rbxassetid://10734974850",
-	["swiss-franc"] = "rbxassetid://10734975024",
-	["switch-camera"] = "rbxassetid://10734975214",
-	["sword"] = "rbxassetid://10734975486",
-	["swords"] = "rbxassetid://10734975692",
-	["syringe"] = "rbxassetid://10734975932",
-	["table"] = "rbxassetid://10734976230",
-	["table-2"] = "rbxassetid://10734976097",
-	["tablet"] = "rbxassetid://10734976394",
-	["tag"] = "rbxassetid://10734976528",
-	["tags"] = "rbxassetid://10734976739",
-	["target"] = "rbxassetid://10734977012",
-	["tent"] = "rbxassetid://10734981750",
-	["terminal"] = "rbxassetid://10734982144",
-	["terminal-square"] = "rbxassetid://10734981995",
-	["text-cursor"] = "rbxassetid://10734982395",
-	["text-cursor-input"] = "rbxassetid://10734982297",
-	["thermometer"] = "rbxassetid://10734983134",
-	["thermometer-snowflake"] = "rbxassetid://10734982571",
-	["thermometer-sun"] = "rbxassetid://10734982771",
-	["thumbs-down"] = "rbxassetid://10734983359",
-	["thumbs-up"] = "rbxassetid://10734983629",
-	["ticket"] = "rbxassetid://10734983868",
-	["timer"] = "rbxassetid://10734984606",
-	["timer-off"] = "rbxassetid://10734984138",
-	["timer-reset"] = "rbxassetid://10734984355",
-	["toggle-left"] = "rbxassetid://10734984834",
-	["toggle-right"] = "rbxassetid://10734985040",
-	["tornado"] = "rbxassetid://10734985247",
-	["toy-brick"] = "rbxassetid://10747361919",
-	["train"] = "rbxassetid://10747362105",
-	["trash"] = "rbxassetid://10747362393",
-	["trash-2"] = "rbxassetid://10747362241",
-	["tree-deciduous"] = "rbxassetid://10747362534",
-	["tree-pine"] = "rbxassetid://10747362748",
-	["trees"] = "rbxassetid://10747363016",
-	["trending-down"] = "rbxassetid://10747363205",
-	["trending-up"] = "rbxassetid://10747363465",
-	["triangle"] = "rbxassetid://10747363621",
-	["trophy"] = "rbxassetid://10747363809",
-	["truck"] = "rbxassetid://10747364031",
-	["tv"] = "rbxassetid://10747364593",
-	["tv-2"] = "rbxassetid://10747364302",
-	["type"] = "rbxassetid://10747364761",
-	["umbrella"] = "rbxassetid://10747364971",
-	["underline"] = "rbxassetid://10747365191",
-	["undo"] = "rbxassetid://10747365484",
-	["undo-2"] = "rbxassetid://10747365359",
-	["unlink"] = "rbxassetid://10747365771",
-	["unlink-2"] = "rbxassetid://10747397871",
-	["unlock"] = "rbxassetid://10747366027",
-	["upload"] = "rbxassetid://10747366434",
-	["upload-cloud"] = "rbxassetid://10747366266",
-	["usb"] = "rbxassetid://10747366606",
-	["user"] = "rbxassetid://10747373176",
-	["user-check"] = "rbxassetid://10747371901",
-	["user-cog"] = "rbxassetid://10747372167",
-	["user-minus"] = "rbxassetid://10747372346",
-	["user-plus"] = "rbxassetid://10747372702",
-	["user-x"] = "rbxassetid://10747372992",
-	["users"] = "rbxassetid://10747373426",
-	["utensils"] = "rbxassetid://10747373821",
-	["utensils-crossed"] = "rbxassetid://10747373629",
-	["venetian-mask"] = "rbxassetid://10747374003",
-	["verified"] = "rbxassetid://10747374131",
-	["vibrate"] = "rbxassetid://10747374489",
-	["vibrate-off"] = "rbxassetid://10747374269",
-	["video"] = "rbxassetid://10747374938",
-	["video-off"] = "rbxassetid://10747374721",
-	["view"] = "rbxassetid://10747375132",
-	["voicemail"] = "rbxassetid://10747375281",
-	["volume"] = "rbxassetid://10747376008",
-	["volume-1"] = "rbxassetid://10747375450",
-	["volume-2"] = "rbxassetid://10747375679",
-	["volume-x"] = "rbxassetid://10747375880",
-	["wallet"] = "rbxassetid://10747376205",
-	["wand"] = "rbxassetid://10747376565",
-	["wand-2"] = "rbxassetid://10747376349",
-	["watch"] = "rbxassetid://10747376722",
-	["waves"] = "rbxassetid://10747376931",
-	["webcam"] = "rbxassetid://10747381992",
-	["wifi"] = "rbxassetid://10747382504",
-	["wifi-off"] = "rbxassetid://10747382268",
-	["wind"] = "rbxassetid://10747382750",
-	["wrap-text"] = "rbxassetid://10747383065",
-	["wrench"] = "rbxassetid://10747383470",
-	["x"] = "rbxassetid://10747384394",
-	["x-circle"] = "rbxassetid://10747383819",
-	["x-octagon"] = "rbxassetid://10747384037",
-	["x-square"] = "rbxassetid://10747384217",
-	["zoom-in"] = "rbxassetid://10747384552",
-	["zoom-out"] = "rbxassetid://10747384679",
-}
-return assets
-]]
+    [60] = function()local wax,script,require=ImportGlobals(60)local ImportGlobals return (function(...)local lucide = loadstring(game:GetObjects("rbxassetid://85554466048193")[1].Source)()
+return lucide
 end)() end,
     [61] = function()local wax,script,require=ImportGlobals(61)local ImportGlobals return (function(...)local cF = require(script.Parent.Parent.utilities.customFunctions)
 local cloneref = cF.cloneref
@@ -5233,6 +4669,7 @@ end)() end,
     [62] = function()local wax,script,require=ImportGlobals(62)local ImportGlobals return (function(...)local themeSystem = {}
 local services = require(script.Parent.services)
 local HttpService = services.HttpService
+local data = require(script.Parent.data)
 local fusion = require(script.Parent.Fusion)
 local default = require(script.default)
 local value = fusion.Value
@@ -5255,11 +4692,14 @@ observe(currentTheme):onChange(function()
 end)
 
 local themes = {}
+local potentialFromFiles = {}
 
 local palletteCheck = {}
 table.foreach(default, function(name)
     table.insert(palletteCheck, name)
 end)
+
+themeSystem.path = ""
 
 function themeSystem.find(uid)
     for _,theme in themes do
@@ -5275,15 +4715,16 @@ function themeSystem.export()
         local ctheme = {}
         ctheme.name = theme.name
         ctheme.uid = theme.uid
+        ctheme.fromSet = theme.fromSet
         ctheme.palette = {}
         for i,v in theme.palette do
             ctheme.palette[i] = v:ToHex()
         end
-        customFunctions.writefile(`darius/themes/{theme.name}-{theme.uid}.json`, HttpService:JSONEncode(ctheme))
+        customFunctions.writefile(`{themeSystem.path}/{theme.uid}.json`, HttpService:JSONEncode(ctheme))
     end
 end
 
-function themeSystem.create(name, palette, uid, fromFile)
+function themeSystem.create(name, palette, uid, fromFile, fromSet)
     fromFile = fromFile or false
     if uid == "original" and fromFile then
         return
@@ -5303,10 +4744,23 @@ function themeSystem.create(name, palette, uid, fromFile)
         end
     end
 
+    if fromSet and fromFile then
+        table.insert(potentialFromFiles, uid)
+    end
+    if fromSet and not fromFile then
+        for _,v in potentialFromFiles do
+            local theme = themeSystem.find(v)
+            if theme.name == name then
+                return v.uid
+            end
+        end
+    end
+
     uid = uid or randomString(5)
     table.insert(themes, {
         name = name,
         uid = uid,
+        fromSet = fromSet or false,
         palette = palette
     })
     themeSystem.export()
@@ -5321,7 +4775,7 @@ function themeSystem.delete(uid)
     local position = table.find(themes, results[2])
     themeSystem.set(dariusUID)
     table.remove(themes, position)
-    customFunctions.delfile(`darius/themes/{results[2].name}-{results[2].uid}.json`)
+    customFunctions.delfile(`{themeSystem.path}/{results[2].uid}.json`)
 end
 
 function themeSystem.edit(name, color)
@@ -5348,15 +4802,8 @@ function themeSystem.set(uid)
     return true, "successfully set new theme"
 end
 
-function themeSystem.import()
-    for _,file in customFunctions.listfiles("darius/themes") do
-        local theme = HttpService:JSONDecode(customFunctions.readfile(file))
-        table.foreach(theme.palette,function(i,v)
-            local color = Color3.fromHex(`#{v}`)
-            theme.palette[i] = color
-        end)
-        themeSystem.create(theme.name, theme.palette, theme.uid, true)
-    end
+function themeSystem.import(name, palette)
+    themeSystem.create(name, palette)
 end
 
 function themeSystem.get(name)
@@ -5375,17 +4822,16 @@ for _,v in palletteCheck do
 end
 
 function themeSystem.init()
-    local path = {"darius",`/themes`}
-	local built = ""
-	for i=1,#path do
-		built = built..path[i]
-		if not customFunctions.isfolder(built) then
-			customFunctions.makefolder(built)
-		end
-	end
     dariusUID = themeSystem.create("darius", default, "original")
     themeSystem.set(dariusUID)
-    themeSystem.import()
+    for _,file in customFunctions.listfiles(themeSystem.path) do
+        local theme = HttpService:JSONDecode(customFunctions.readfile(file))
+        table.foreach(theme.palette,function(i,v)
+            local color = Color3.fromHex(`#{v}`)
+            theme.palette[i] = color
+        end)
+        themeSystem.create(theme.name, theme.palette, theme.uid, true, theme.fromSet)
+    end
 end
 
 function themeSystem.onChange(func)
@@ -5414,6 +4860,8 @@ end)() end,
 
     selectedTab = Color3.fromHex("#1A1A1B"),
 
+    scrollBar = Color3.fromHex("#DCE1E5"),
+
     colorpickerBar = Color3.fromHex("#DCE1E5"),
 
     notificationButton = Color3.fromHex("#222427"),
@@ -5428,7 +4876,7 @@ end)() end,
     toggled = Color3.fromHex("#DCE1E5"),
 
     red = Color3.fromRGB(255,105,97),
-    orange = Color3.fromHex("#ff9b61")
+    orange = Color3.fromHex("#ff9b61"),
 }
 end)() end,
     [65] = function()local wax,script,require=ImportGlobals(65)local ImportGlobals return (function(...)local darius = script.Parent.Parent
@@ -5632,6 +5080,248 @@ return function(property)
 end
 end)() end,
     [66] = function()local wax,script,require=ImportGlobals(66)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+return function(property)
+	local Bundles = require(darius.Bundles)
+	local data = Bundles.data
+	local theme = Bundles.themeSystem
+	local icons = Bundles.icons
+	local Fusion = Bundles.Fusion
+		local new = Fusion.New
+		local children = Fusion.Children
+		local value = Fusion.Value
+		local observe = Fusion.Observer
+		local onevent = Fusion.OnEvent
+		local computed = Fusion.Computed
+
+	local utilities = require(darius.utilities)
+	local get = utilities.get
+	local animate = utilities.animate
+	local typecheck = utilities.typecheck
+	local customFont = utilities.customFont
+
+	local simpleElements = require(darius.simpleElements)
+    local UIListLayout = simpleElements.UIListLayout
+    local SO = Enum.SortOrder
+	local FD = Enum.FillDirection
+	local HA = Enum.HorizontalAlignment
+	local VA = Enum.VerticalAlignment
+	local UIPadding = simpleElements.UIPadding
+	local UICorner = simpleElements.UICorner
+
+    -- Property
+
+    local _parent = property.Parent
+    local _tab = property.tab
+
+    -- Variables
+
+    local buttonCount = value(0)
+    local visible = value(true)
+
+	-- Button Group
+
+    local buttonGroup = new "Frame" {
+        Visible = visible,
+        Parent = _parent,
+		Size = UDim2.new(1,0,0,36),
+        BackgroundTransparency = 1,
+
+        [children] = {
+            UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4))
+        }
+    }
+
+    local returnTable = {}
+    function returnTable:Button(_property)
+
+        -- Typecheck
+
+        local didPass, failedItems = typecheck(_property,{
+            Name = "",
+            DisabledText = "",
+            IsEnabled = false,
+            Visible = false,
+            Callback = function()end
+        },{
+            _property.IsEnabled and "" or "IsEnabled",
+            _property.Visible and "" or "Visible",
+            _property.DisabledText and "" or "DisabledText"
+        })
+        assert(didPass, table.concat(failedItems, "\n"))
+
+        buttonCount:set(get(buttonCount) + 1)
+
+        -- Data
+
+        local selectedTab = data.find("selectedTab")
+        local searchText = data.find("searchText")
+        local button = data.add(_property)
+
+        -- Properties
+
+        local name = _property.Name
+        local callback = _property.Callback
+        local isEnabled = _property.IsEnabled or value(true)
+        local disabledText = _property.DisabledText or value("Component Disabled")
+        local visible = _property.Visible or value(true)
+
+        -- Variables
+
+        local isSelected = value(get(selectedTab.string) == get(_tab).uid)
+        observe(selectedTab.string):onChange(function()
+            isSelected:set(get(selectedTab.string) == get(_tab).uid)
+        end)
+        local selectedAnimation = animate(function()
+            return get(isSelected) and 0 or 1
+        end, 40, 1)
+
+        new "TextButton" {
+            Interactable = computed(function()
+                if not get(isEnabled) then
+                    return false
+                end
+                return get(isSelected)
+            end),
+            Visible = computed(function()
+                if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
+                    return false
+                end
+                return true
+            end),
+            Size = computed(function()
+                return UDim2.new(1/get(buttonCount),get(buttonCount)-1 < 0 and 0 or -(((get(buttonCount)-1)*4)/get(buttonCount)),0,36)
+            end),
+            Parent = buttonGroup,
+            BackgroundColor3 = theme.background2,
+            BackgroundTransparency = selectedAnimation,
+
+            [onevent "Activated"] = function()
+                if not get(isEnabled) then
+                    return
+                end
+                task.spawn(get(callback))
+            end,
+
+            [children] = {
+                UICorner(6),
+                new "Frame" { -- Disabled Frame
+                    ZIndex = 2,
+                    Visible = computed(function()
+                        if not get(isEnabled)  then
+                            return true
+                        end
+                        return false
+                    end),
+                    BackgroundTransparency = animate(function()
+                        return get(isSelected) and 0.2 or 1
+                    end,40,1),
+                    BackgroundColor3 = theme.disabledBackground,
+                    Size = UDim2.fromScale(1,1),
+
+                    [children] = {
+                        UICorner(6),
+                        new "ImageLabel" { -- Icon
+                            Size = UDim2.fromOffset(24,24),
+                            AnchorPoint = Vector2.new(0,0.5),
+                            Position = UDim2.new(0,5,0.5,0),
+                            BackgroundTransparency = 1,
+                            Image = icons.lock,
+                            ImageColor3 = theme.disabledText,
+                            ImageTransparency = selectedAnimation,
+                        },
+                        new "TextLabel" {
+                            FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+                            BackgroundTransparency = 1,
+                            Size = UDim2.new(1,-24,0,18),
+                            TextColor3 = theme.disabledText,
+                            TextTransparency = selectedAnimation,
+                            TextScaled = true,
+                            AnchorPoint = Vector2.new(0,0.5),
+                            Position = UDim2.new(0,29,0.5,0),
+                            Text = disabledText,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            RichText = true,
+
+                            [children] = {
+                                UIPadding(0,5)
+                            }
+                        }
+                    }
+                },
+                new "Frame" {
+                    Size = UDim2.fromScale(1,1),
+                    BackgroundTransparency = 1,
+                    [children] = {
+                        UIPadding(0,8),
+                        new "TextLabel" { -- Title
+                            FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+                            Size = UDim2.new(1,-16-16,0,18),
+                            BackgroundTransparency = 1,
+                            TextColor3 = theme.text,
+                            TextScaled = true,
+                            AnchorPoint = Vector2.new(0,0.5),
+                            Position = UDim2.new(0,0,0.5,0),
+                            Text = name,
+                            TextTransparency = selectedAnimation,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            RichText = true
+                        },
+                        new "ImageLabel" { -- Icon
+                            Size = UDim2.fromOffset(16,16),
+                            AnchorPoint = Vector2.new(1,0.5),
+                            Position = UDim2.new(1,0,0.5,0),
+                            BackgroundTransparency = 1,
+                            Image = icons.fingerprint,
+                            ImageColor3 = theme.text2,
+                            ImageTransparency = animate(function()
+                                return get(isSelected) and 0.5 or 1
+                            end, 40, 1)
+                        }
+                    }
+                }
+            }
+        }
+
+        local returnFunctions = {}
+        function returnFunctions:SetName(newText)
+            local _didPass, _failedItems = typecheck({['SetName'] = newText}, {SetName = ""})
+            assert(_didPass, table.concat(_failedItems, "\n"))
+
+            name:set(newText)
+        end
+        function returnFunctions:SetCallback(newFunction)
+            local _didPass, _failedItems = typecheck({['SetCallback'] = newFunction}, {SetCallback = function()end})
+            assert(_didPass, table.concat(_failedItems, "\n"))
+
+            callback:set(newFunction)
+        end
+        function returnFunctions:Fire()
+            task.spawn(get(callback))
+        end
+        function returnFunctions:Enable()
+            isEnabled:set(true)
+        end
+        function returnFunctions:Disable()
+            isEnabled:set(false)
+        end
+        function returnFunctions:Visible()
+            visible:set(true)
+        end
+        function returnFunctions:Invisible()
+            visible:set(false)
+        end
+        return returnFunctions
+    end
+    function returnTable:Visible()
+        visible:set(true)
+    end
+    function returnTable:Invisible()
+        visible:set(false)
+    end
+	return returnTable
+end
+end)() end,
+    [67] = function()local wax,script,require=ImportGlobals(67)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -6478,7 +6168,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [67] = function()local wax,script,require=ImportGlobals(67)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [68] = function()local wax,script,require=ImportGlobals(68)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -6529,7 +6219,7 @@ return function(property)
     }
 end
 end)() end,
-    [68] = function()local wax,script,require=ImportGlobals(68)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [69] = function()local wax,script,require=ImportGlobals(69)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
 	local Bundles = require(darius.Bundles)
@@ -6574,7 +6264,8 @@ return function(property)
         Multiselect = true,
         Regex = function()end,
 		IgnoreConfig = true,
-		Alphabetical = true
+		Alphabetical = true,
+		AlwaysOpen = true
 	},{
 		property.DisabledText and "" or "DisabledText",
 		property.FLAG and "" or "FLAG",
@@ -6583,7 +6274,8 @@ return function(property)
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
 		property.IgnoreConfig and "" or "IgnoreConfig",
-		property.Alphabetical and "" or "Alphabetical"
+		property.Alphabetical and "" or "Alphabetical",
+		property.AlwaysOpen and "" or "AlwaysOpen"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -6617,6 +6309,7 @@ return function(property)
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local isEnabled = property.IsEnabled or value(true)
 	local alphabetical = property.Alphabetical or value(false)
+	local alwaysOpen = property.AlwaysOpen or value(false)
 	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
 	local flag = property.FLAG or value(dropdown.uid)
@@ -6632,7 +6325,7 @@ return function(property)
 
 	-- Variables
 
-	local dropdownRef = value()
+	
 	local searchRef = value()
 
 	local isDropped = value(false)
@@ -6679,16 +6372,8 @@ return function(property)
 			return true
 		end),
 		Size = animate(function()
-			if get(isDropped) and get(dropdownRef) then
-				local _dropdown = get(dropdownRef)
-				local y = 3
-				for _,child in _dropdown:GetChildren() do
-					if child:IsA("UIListLayout") or child:IsA("UICorner") or not child.Visible then
-						continue
-					end
-					y += (4 + child.Size.Y.Offset)
-				end
-				return UDim2.new(1,0,0,y)
+			if get(isDropped) then
+				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4) or 6) + math.clamp((#get(items)*34), 34, 136))
 			end
 			return UDim2.new(1,0,0,36)
 		end, 40, 1),
@@ -6696,11 +6381,9 @@ return function(property)
 		BackgroundTransparency = selectedAnimation,
 		ClipsDescendants = true,
 
-		[ref] = dropdownRef,
-
 		[children] = {
 			UICorner(6),
-			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,4)),
+			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
 			new "TextButton" {
 				Interactable = computed(function()
 					if not get(isEnabled) then
@@ -6712,6 +6395,9 @@ return function(property)
 				BackgroundTransparency = 1,
 
 				[onevent "Activated"] = function()
+					if get(alwaysOpen) then
+						return
+					end
 					isDropped:set(not get(isDropped))
 				end,
 
@@ -6809,6 +6495,7 @@ return function(property)
 			new "Frame" {
 				Size = UDim2.new(1,0,0,32),
 				BackgroundTransparency = 1,
+
 				[children] = {
 					UIPadding(0,6),
 					new "TextBox" {
@@ -6901,15 +6588,20 @@ return function(property)
 			new "ScrollingFrame" {
 				ZIndex = 3,
 				Size = computed(function()
-					return UDim2.new(1,0,0,math.clamp((#get(items)*34), 34, 136))
+					return UDim2.new(1,-6,0,math.clamp((#get(items)*34), 34, 136))
 				end),
 				BackgroundTransparency = 1,
-				ScrollBarThickness = 0,
+				ScrollBarThickness = computed(function()
+					return #get(items) > 4 and 6 or 0
+				end),
+				ScrollBarImageColor3 = theme.scrollBar,
 				CanvasSize = UDim2.new(0,0,0,0),
 				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 
 				[children] = {
-					UIPadding(6,6,0,6),
+					UIPadding(6,computed(function()
+						return #get(items) > 4 and UDim.new(0,12) or UDim.new(0,0)
+					end),0,6),
 					UIListLayout(get(alphabetical) and SO.Name or SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
 					itemElements
 				}
@@ -6973,6 +6665,9 @@ return function(property)
 						_flag.status.items:set(_items)
 					else
 						_flag.status.item:set(cleanedItem)
+						if get(alwaysOpen) then
+							return
+						end
 						isDropped:set(false)
 					end
 				end,
@@ -7052,6 +6747,9 @@ return function(property)
 	-- Closure
 
 	items:set(get(property.Items))
+	if get(alwaysOpen) then
+		isDropped:set(true)
+	end
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
 		observe(_flag.file):onChange(function()
@@ -7116,7 +6814,6 @@ return function(property)
 	function returnFunctions:SetItems(newTable) -- Sets a new table of items
 		local _didPass, _failedItems = typecheck({['SetItems'] = newTable}, {SetItems = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-
 		items:set(newTable)
 		local multiselectTable = {}
 		local foundAnything = false
@@ -7144,6 +6841,12 @@ return function(property)
 		if foundAnything then
 			if get(multiselect) then
 				_flag.status.items:set(multiselectTable)
+			end
+		else
+			if get(multiselect) then
+				_flag.status.items:set({})
+			else
+				_flag.status.item:set("")
 			end
 		end
 	end
@@ -7205,7 +6908,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [69] = function()local wax,script,require=ImportGlobals(69)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [70] = function()local wax,script,require=ImportGlobals(70)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -7669,7 +7372,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [70] = function()local wax,script,require=ImportGlobals(70)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [71] = function()local wax,script,require=ImportGlobals(71)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
     local bundles = require(darius.Bundles)
@@ -7880,7 +7583,7 @@ return function(property)
     end)
 end
 end)() end,
-    [71] = function()local wax,script,require=ImportGlobals(71)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [72] = function()local wax,script,require=ImportGlobals(72)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local bundles = require(darius.Bundles)
 	local data = bundles.data
@@ -7993,7 +7696,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [72] = function()local wax,script,require=ImportGlobals(72)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [73] = function()local wax,script,require=ImportGlobals(73)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -8163,7 +7866,7 @@ return function(property)
     end
 end
 end)() end,
-    [73] = function()local wax,script,require=ImportGlobals(73)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [74] = function()local wax,script,require=ImportGlobals(74)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local bundles = require(darius.Bundles)
     local theme = bundles.themeSystem
@@ -8432,7 +8135,7 @@ return function(property)
     end)
 end
 end)() end,
-    [74] = function()local wax,script,require=ImportGlobals(74)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [75] = function()local wax,script,require=ImportGlobals(75)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
     local bundles = require(darius.Bundles)
@@ -8598,7 +8301,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [75] = function()local wax,script,require=ImportGlobals(75)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [76] = function()local wax,script,require=ImportGlobals(76)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
 	local Bundles = require(darius.Bundles)
@@ -9039,7 +8742,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [76] = function()local wax,script,require=ImportGlobals(76)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [77] = function()local wax,script,require=ImportGlobals(77)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -9157,7 +8860,7 @@ return function(property)
 	return tab
 end
 end)() end,
-    [77] = function()local wax,script,require=ImportGlobals(77)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [78] = function()local wax,script,require=ImportGlobals(78)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local Bundles = require(darius.Bundles)
     local data = Bundles.data
@@ -9196,7 +8899,7 @@ return function(property)
     }
 end
 end)() end,
-    [78] = function()local wax,script,require=ImportGlobals(78)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [79] = function()local wax,script,require=ImportGlobals(79)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local bundles = require(darius.Bundles)
 	local data = bundles.data
@@ -9660,7 +9363,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [79] = function()local wax,script,require=ImportGlobals(79)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [80] = function()local wax,script,require=ImportGlobals(80)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -10186,7 +9889,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [80] = function()local wax,script,require=ImportGlobals(80)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [81] = function()local wax,script,require=ImportGlobals(81)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 local title = ""
 
 local returnTable = {}
@@ -10210,103 +9913,6 @@ table.insert(returnTable, function(newTitle)
 end)
 
 return returnTable
-end)() end,
-    [81] = function()local wax,script,require=ImportGlobals(81)local ImportGlobals return (function(...)--[[
-local darius = require(script.Parent)
-local randomString = require(script.Parent.utilities).randomString
-local lucide = require(script.Parent.Bundles.lucide)
-local HttpService = require(script.Parent.Bundles).services.HttpService
-local customFunctions = require(script.Parent.utilities).customFunctions
-
-local fakeData = {
-	['dropdown_m'] = {"1"},
-    ['colorpicker'] = {color = "0.1,0.2,0.5",transparency = 0.5}
-}
-customFunctions.makefolder("darius")
-customFunctions.makefolder("darius/test")
-customFunctions.makefolder("darius/themes")
-customFunctions.writefile("darius/test/config.json", HttpService:JSONEncode(fakeData))
-
-local randomIcons = {}
-for _,v in lucide do
-    table.insert(randomIcons, v)
-end
-local function randomIcon():string
-    return randomIcons[math.floor(math.random(1,#randomIcons))]
-end
-
-
-local ripFile = [[{"palette":{"disabledText":"d6dce0","text2":"b7a6d4","mobileButtonText":"2c2f33","disabledBackground":"2a2c31","mobileButtonImage":"2c2f33","text":"edebf2","background2":"0f0c15","notificationButton":"222427","orange":"b7a6d4","toggled":"b7a6d4","mobileButtonBackground":"dce1e5","colorpickerBar":"dce1e5","background":"1c1726","selectedTab":"1d1827","red":"b7a6d4"},"uid":"APunF","name":"rip"}]]
---[[customFunctions.writefile("darius/themes/rip-APunF.json", ripFile)
-
-return function(target)
-        local window = darius:Window({
-            Title = "Darius",
-            Description = "What the sigma this isn't Quantum UI",
-            HideBind = Enum.KeyCode.T,
-            UseConfig = true,
-            Config = "test",
-            IsMobile = false,
-            Theme = {
-                Name = "apple cider",
-                Colors = {
-                    background = Color3.fromHex("#1C1726"),
-                    background2 = Color3.fromHex("#0F0C15"),
-    
-                    text = Color3.fromHex("#EDEBF2"),
-                    text2 = Color3.fromHex("#B7A6D4"),
-    
-                    selectedTab = Color3.fromHex("#1D1827"),
-    
-                    colorpickerBar = Color3.fromHex("#DCE1E5"),
-    
-                    notificationButton = Color3.fromHex("#222427"),
-    
-                    mobileButtonBackground = Color3.fromHex("#DCE1E5"),
-                    mobileButtonText = Color3.fromHex("#2C2F33"),
-                    mobileButtonImage = Color3.fromHex("#2C2F33"),
-    
-                    disabledBackground = Color3.fromHex("#2A2C31"),
-                    disabledText = Color3.fromHex("#D6DCE0"),
-    
-                    toggled = Color3.fromHex("#B7A6D4"),
-    
-                    red = Color3.fromHex("#B7A6D4"),
-                    orange = Color3.fromHex("#B7A6D4")
-                }
-            },
-            noOffset = true,
-            Parent = target
-        })
-
-        local tab = window:Tab({
-            Name = "Main",
-        })
-
-        tab:TextBox({
-            Name = "Textbox",
-            PlaceHolderText = "Hello!",
-            Callback = function(v)
-
-            end
-        })
-        tab:TextBox({
-            Name = "Much larger text box title",
-            Callback = function(v)
-
-            end
-        })
-        darius:CreateSettings()
-
-        darius:LoadConfig()
-
-    return function()
-        task.spawn(function()
-            darius:Destroy()
-        end)
-    end
-end
-]]
 end)() end,
     [83] = function()local wax,script,require=ImportGlobals(83)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property, bindableEvent)
@@ -10986,10 +10592,10 @@ return function(...)
         }
     else
         return Fusion.New "UIPadding" {
-            PaddingTop = UDim.new(0,args[1]),
-            PaddingRight = UDim.new(0,args[2]),
-            PaddingBottom = UDim.new(0,args[3]),
-            PaddingLeft = UDim.new(0,args[4]),
+            PaddingTop = typeof(args[1]) == "number" and UDim.new(0,args[1]) or args[1],
+            PaddingRight = typeof(args[2]) == "number" and UDim.new(0,args[2]) or args[2],
+            PaddingBottom = typeof(args[3]) == "number" and UDim.new(0,args[3]) or args[3],
+            PaddingLeft = typeof(args[4]) == "number" and UDim.new(0,args[4]) or args[4]
         }
     end
 end
@@ -11397,19 +11003,56 @@ local ObjectTree = {
         },
         {
             {
+                84,
+                2,
+                {
+                    "simpleElements"
+                },
+                {
+                    {
+                        86,
+                        2,
+                        {
+                            "UICorner"
+                        }
+                    },
+                    {
+                        87,
+                        2,
+                        {
+                            "UIListLayout"
+                        }
+                    },
+                    {
+                        89,
+                        2,
+                        {
+                            "UITextSizeConstraint"
+                        }
+                    },
+                    {
+                        85,
+                        2,
+                        {
+                            "UIAspectRatioConstraint"
+                        }
+                    },
+                    {
+                        88,
+                        2,
+                        {
+                            "UIPadding"
+                        }
+                    }
+                }
+            },
+            {
                 90,
                 2,
                 {
                     "utilities"
                 },
                 {
-                    {
-                        95,
-                        2,
-                        {
-                            "drag"
-                        }
-                    },
                     {
                         94,
                         2,
@@ -11418,38 +11061,10 @@ local ObjectTree = {
                         }
                     },
                     {
-                        91,
+                        96,
                         2,
                         {
-                            "animate"
-                        }
-                    },
-                    {
-                        101,
-                        2,
-                        {
-                            "typecheck"
-                        }
-                    },
-                    {
-                        100,
-                        2,
-                        {
-                            "tween"
-                        }
-                    },
-                    {
-                        99,
-                        2,
-                        {
-                            "references"
-                        }
-                    },
-                    {
-                        97,
-                        2,
-                        {
-                            "getStringBounds"
+                            "get"
                         }
                     },
                     {
@@ -11467,10 +11082,45 @@ local ObjectTree = {
                         }
                     },
                     {
-                        96,
+                        99,
                         2,
                         {
-                            "get"
+                            "references"
+                        }
+                    },
+                    {
+                        91,
+                        2,
+                        {
+                            "animate"
+                        }
+                    },
+                    {
+                        97,
+                        2,
+                        {
+                            "getStringBounds"
+                        }
+                    },
+                    {
+                        100,
+                        2,
+                        {
+                            "tween"
+                        }
+                    },
+                    {
+                        101,
+                        2,
+                        {
+                            "typecheck"
+                        }
+                    },
+                    {
+                        95,
+                        2,
+                        {
+                            "drag"
                         }
                     },
                     {
@@ -11483,57 +11133,6 @@ local ObjectTree = {
                 }
             },
             {
-                81,
-                2,
-                {
-                    "darius.story"
-                }
-            },
-            {
-                84,
-                2,
-                {
-                    "simpleElements"
-                },
-                {
-                    {
-                        88,
-                        2,
-                        {
-                            "UIPadding"
-                        }
-                    },
-                    {
-                        85,
-                        2,
-                        {
-                            "UIAspectRatioConstraint"
-                        }
-                    },
-                    {
-                        89,
-                        2,
-                        {
-                            "UITextSizeConstraint"
-                        }
-                    },
-                    {
-                        87,
-                        2,
-                        {
-                            "UIListLayout"
-                        }
-                    },
-                    {
-                        86,
-                        2,
-                        {
-                            "UICorner"
-                        }
-                    }
-                }
-            },
-            {
                 2,
                 2,
                 {
@@ -11541,40 +11140,10 @@ local ObjectTree = {
                 },
                 {
                     {
-                        62,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                63,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
                         61,
                         2,
                         {
                             "services"
-                        }
-                    },
-                    {
-                        59,
-                        2,
-                        {
-                            "icons"
-                        }
-                    },
-                    {
-                        58,
-                        2,
-                        {
-                            "flags"
                         }
                     },
                     {
@@ -11584,6 +11153,13 @@ local ObjectTree = {
                             "Fusion"
                         },
                         {
+                            {
+                                48,
+                                2,
+                                {
+                                    "Types"
+                                }
+                            },
                             {
                                 40,
                                 1,
@@ -11613,17 +11189,17 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        44,
-                                        2,
-                                        {
-                                            "ForValues"
-                                        }
-                                    },
-                                    {
                                         45,
                                         2,
                                         {
                                             "Observer"
+                                        }
+                                    },
+                                    {
+                                        44,
+                                        2,
+                                        {
+                                            "ForValues"
                                         }
                                     },
                                     {
@@ -11638,173 +11214,6 @@ local ObjectTree = {
                                         2,
                                         {
                                             "ForPairs"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                33,
-                                1,
-                                {
-                                    "Logging"
-                                },
-                                {
-                                    {
-                                        34,
-                                        2,
-                                        {
-                                            "logError"
-                                        }
-                                    },
-                                    {
-                                        35,
-                                        2,
-                                        {
-                                            "logErrorNonFatal"
-                                        }
-                                    },
-                                    {
-                                        36,
-                                        2,
-                                        {
-                                            "logWarn"
-                                        }
-                                    },
-                                    {
-                                        37,
-                                        2,
-                                        {
-                                            "messages"
-                                        }
-                                    },
-                                    {
-                                        38,
-                                        2,
-                                        {
-                                            "parseError"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                16,
-                                1,
-                                {
-                                    "Dependencies"
-                                },
-                                {
-                                    {
-                                        18,
-                                        2,
-                                        {
-                                            "initDependency"
-                                        }
-                                    },
-                                    {
-                                        21,
-                                        2,
-                                        {
-                                            "useDependency"
-                                        }
-                                    },
-                                    {
-                                        20,
-                                        2,
-                                        {
-                                            "updateAll"
-                                        }
-                                    },
-                                    {
-                                        19,
-                                        2,
-                                        {
-                                            "sharedState"
-                                        }
-                                    },
-                                    {
-                                        17,
-                                        2,
-                                        {
-                                            "captureDependencies"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                22,
-                                1,
-                                {
-                                    "Instances"
-                                },
-                                {
-                                    {
-                                        31,
-                                        2,
-                                        {
-                                            "applyInstanceProps"
-                                        }
-                                    },
-                                    {
-                                        25,
-                                        2,
-                                        {
-                                            "Hydrate"
-                                        }
-                                    },
-                                    {
-                                        32,
-                                        2,
-                                        {
-                                            "defaultProps"
-                                        }
-                                    },
-                                    {
-                                        30,
-                                        2,
-                                        {
-                                            "Ref"
-                                        }
-                                    },
-                                    {
-                                        26,
-                                        2,
-                                        {
-                                            "New"
-                                        }
-                                    },
-                                    {
-                                        27,
-                                        2,
-                                        {
-                                            "OnChange"
-                                        }
-                                    },
-                                    {
-                                        24,
-                                        2,
-                                        {
-                                            "Cleanup"
-                                        }
-                                    },
-                                    {
-                                        28,
-                                        2,
-                                        {
-                                            "OnEvent"
-                                        }
-                                    },
-                                    {
-                                        29,
-                                        2,
-                                        {
-                                            "Out"
-                                        }
-                                    },
-                                    {
-                                        23,
-                                        2,
-                                        {
-                                            "Children"
                                         }
                                     }
                                 }
@@ -11826,17 +11235,126 @@ local ObjectTree = {
                                 }
                             },
                             {
-                                48,
-                                2,
+                                33,
+                                1,
                                 {
-                                    "Types"
+                                    "Logging"
+                                },
+                                {
+                                    {
+                                        35,
+                                        2,
+                                        {
+                                            "logErrorNonFatal"
+                                        }
+                                    },
+                                    {
+                                        34,
+                                        2,
+                                        {
+                                            "logError"
+                                        }
+                                    },
+                                    {
+                                        38,
+                                        2,
+                                        {
+                                            "parseError"
+                                        }
+                                    },
+                                    {
+                                        36,
+                                        2,
+                                        {
+                                            "logWarn"
+                                        }
+                                    },
+                                    {
+                                        37,
+                                        2,
+                                        {
+                                            "messages"
+                                        }
+                                    }
                                 }
                             },
                             {
-                                39,
-                                2,
+                                22,
+                                1,
                                 {
-                                    "PubTypes"
+                                    "Instances"
+                                },
+                                {
+                                    {
+                                        29,
+                                        2,
+                                        {
+                                            "Out"
+                                        }
+                                    },
+                                    {
+                                        24,
+                                        2,
+                                        {
+                                            "Cleanup"
+                                        }
+                                    },
+                                    {
+                                        23,
+                                        2,
+                                        {
+                                            "Children"
+                                        }
+                                    },
+                                    {
+                                        27,
+                                        2,
+                                        {
+                                            "OnChange"
+                                        }
+                                    },
+                                    {
+                                        30,
+                                        2,
+                                        {
+                                            "Ref"
+                                        }
+                                    },
+                                    {
+                                        32,
+                                        2,
+                                        {
+                                            "defaultProps"
+                                        }
+                                    },
+                                    {
+                                        25,
+                                        2,
+                                        {
+                                            "Hydrate"
+                                        }
+                                    },
+                                    {
+                                        31,
+                                        2,
+                                        {
+                                            "applyInstanceProps"
+                                        }
+                                    },
+                                    {
+                                        26,
+                                        2,
+                                        {
+                                            "New"
+                                        }
+                                    },
+                                    {
+                                        28,
+                                        2,
+                                        {
+                                            "OnEvent"
+                                        }
+                                    }
                                 }
                             },
                             {
@@ -11847,10 +11365,10 @@ local ObjectTree = {
                                 },
                                 {
                                     {
-                                        52,
+                                        56,
                                         2,
                                         {
-                                            "doNothing"
+                                            "xtypeof"
                                         }
                                     },
                                     {
@@ -11861,10 +11379,24 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        56,
+                                        51,
                                         2,
                                         {
-                                            "xtypeof"
+                                            "cleanup"
+                                        }
+                                    },
+                                    {
+                                        52,
+                                        2,
+                                        {
+                                            "doNothing"
+                                        }
+                                    },
+                                    {
+                                        54,
+                                        2,
+                                        {
+                                            "needsDestruction"
                                         }
                                     },
                                     {
@@ -11875,24 +11407,10 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        51,
-                                        2,
-                                        {
-                                            "cleanup"
-                                        }
-                                    },
-                                    {
                                         53,
                                         2,
                                         {
                                             "isSimilar"
-                                        }
-                                    },
-                                    {
-                                        54,
-                                        2,
-                                        {
-                                            "needsDestruction"
                                         }
                                     }
                                 }
@@ -11905,17 +11423,24 @@ local ObjectTree = {
                                 },
                                 {
                                     {
+                                        8,
+                                        2,
+                                        {
+                                            "TweenScheduler"
+                                        }
+                                    },
+                                    {
+                                        12,
+                                        2,
+                                        {
+                                            "springCoefficients"
+                                        }
+                                    },
+                                    {
                                         9,
                                         2,
                                         {
                                             "getTweenRatio"
-                                        }
-                                    },
-                                    {
-                                        13,
-                                        2,
-                                        {
-                                            "unpackType"
                                         }
                                     },
                                     {
@@ -11933,31 +11458,10 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        7,
-                                        2,
-                                        {
-                                            "Tween"
-                                        }
-                                    },
-                                    {
-                                        8,
-                                        2,
-                                        {
-                                            "TweenScheduler"
-                                        }
-                                    },
-                                    {
                                         5,
                                         2,
                                         {
                                             "Spring"
-                                        }
-                                    },
-                                    {
-                                        12,
-                                        2,
-                                        {
-                                            "springCoefficients"
                                         }
                                     },
                                     {
@@ -11966,7 +11470,88 @@ local ObjectTree = {
                                         {
                                             "lerpType"
                                         }
+                                    },
+                                    {
+                                        13,
+                                        2,
+                                        {
+                                            "unpackType"
+                                        }
+                                    },
+                                    {
+                                        7,
+                                        2,
+                                        {
+                                            "Tween"
+                                        }
                                     }
+                                }
+                            },
+                            {
+                                39,
+                                2,
+                                {
+                                    "PubTypes"
+                                }
+                            },
+                            {
+                                16,
+                                1,
+                                {
+                                    "Dependencies"
+                                },
+                                {
+                                    {
+                                        20,
+                                        2,
+                                        {
+                                            "updateAll"
+                                        }
+                                    },
+                                    {
+                                        19,
+                                        2,
+                                        {
+                                            "sharedState"
+                                        }
+                                    },
+                                    {
+                                        18,
+                                        2,
+                                        {
+                                            "initDependency"
+                                        }
+                                    },
+                                    {
+                                        17,
+                                        2,
+                                        {
+                                            "captureDependencies"
+                                        }
+                                    },
+                                    {
+                                        21,
+                                        2,
+                                        {
+                                            "useDependency"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        62,
+                        2,
+                        {
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                63,
+                                2,
+                                {
+                                    "default"
                                 }
                             }
                         }
@@ -11979,131 +11564,24 @@ local ObjectTree = {
                         }
                     },
                     {
+                        59,
+                        2,
+                        {
+                            "icons"
+                        }
+                    },
+                    {
+                        58,
+                        2,
+                        {
+                            "flags"
+                        }
+                    },
+                    {
                         57,
                         2,
                         {
                             "data"
-                        }
-                    }
-                }
-            },
-            {
-                64,
-                1,
-                {
-                    "components"
-                },
-                {
-                    {
-                        73,
-                        2,
-                        {
-                            "notification"
-                        }
-                    },
-                    {
-                        79,
-                        2,
-                        {
-                            "toggle"
-                        }
-                    },
-                    {
-                        80,
-                        2,
-                        {
-                            "warn"
-                        }
-                    },
-                    {
-                        75,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        76,
-                        2,
-                        {
-                            "tabButton"
-                        }
-                    },
-                    {
-                        65,
-                        2,
-                        {
-                            "button"
-                        }
-                    },
-                    {
-                        68,
-                        2,
-                        {
-                            "dropdown"
-                        }
-                    },
-                    {
-                        71,
-                        2,
-                        {
-                            "label"
-                        }
-                    },
-                    {
-                        67,
-                        2,
-                        {
-                            "divider"
-                        }
-                    },
-                    {
-                        72,
-                        2,
-                        {
-                            "module"
-                        }
-                    },
-                    {
-                        77,
-                        2,
-                        {
-                            "tabFrame"
-                        }
-                    },
-                    {
-                        74,
-                        2,
-                        {
-                            "paragraph"
-                        }
-                    },
-                    {
-                        78,
-                        2,
-                        {
-                            "textbox"
-                        }
-                    },
-                    {
-                        69,
-                        2,
-                        {
-                            "keybind"
-                        }
-                    },
-                    {
-                        70,
-                        2,
-                        {
-                            "keybindList"
-                        }
-                    },
-                    {
-                        66,
-                        2,
-                        {
-                            "colorpicker"
                         }
                     }
                 }
@@ -12123,6 +11601,134 @@ local ObjectTree = {
                         }
                     }
                 }
+            },
+            {
+                64,
+                1,
+                {
+                    "components"
+                },
+                {
+                    {
+                        68,
+                        2,
+                        {
+                            "divider"
+                        }
+                    },
+                    {
+                        65,
+                        2,
+                        {
+                            "button"
+                        }
+                    },
+                    {
+                        75,
+                        2,
+                        {
+                            "paragraph"
+                        }
+                    },
+                    {
+                        76,
+                        2,
+                        {
+                            "slider"
+                        }
+                    },
+                    {
+                        73,
+                        2,
+                        {
+                            "module"
+                        }
+                    },
+                    {
+                        80,
+                        2,
+                        {
+                            "toggle"
+                        }
+                    },
+                    {
+                        79,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        81,
+                        2,
+                        {
+                            "warn"
+                        }
+                    },
+                    {
+                        66,
+                        2,
+                        {
+                            "buttonGroup"
+                        }
+                    },
+                    {
+                        69,
+                        2,
+                        {
+                            "dropdown"
+                        }
+                    },
+                    {
+                        70,
+                        2,
+                        {
+                            "keybind"
+                        }
+                    },
+                    {
+                        74,
+                        2,
+                        {
+                            "notification"
+                        }
+                    },
+                    {
+                        72,
+                        2,
+                        {
+                            "label"
+                        }
+                    },
+                    {
+                        71,
+                        2,
+                        {
+                            "keybindList"
+                        }
+                    },
+                    {
+                        77,
+                        2,
+                        {
+                            "tabButton"
+                        }
+                    },
+                    {
+                        67,
+                        2,
+                        {
+                            "colorpicker"
+                        }
+                    },
+                    {
+                        78,
+                        2,
+                        {
+                            "tabFrame"
+                        }
+                    }
+                }
             }
         }
     }
@@ -12131,97 +11737,97 @@ local ObjectTree = {
 -- Line offsets for debugging (only included when minifyTables is false)
 local LineOffsets = {
     8,
-    422,
-    432,
-    [5] = 506,
-    [6] = 724,
-    [7] = 818,
-    [8] = 954,
-    [9] = 1030,
-    [10] = 1074,
-    [11] = 1236,
-    [12] = 1335,
-    [13] = 1421,
-    [15] = 1510,
-    [17] = 1565,
-    [18] = 1622,
-    [19] = 1651,
-    [20] = 1675,
-    [21] = 1735,
-    [23] = 1765,
-    [24] = 1914,
-    [25] = 1935,
-    [26] = 1955,
-    [27] = 1991,
-    [28] = 2026,
-    [29] = 2063,
-    [30] = 2107,
-    [31] = 2137,
-    [32] = 2264,
-    [34] = 2375,
-    [35] = 2408,
-    [36] = 2443,
-    [37] = 2467,
-    [38] = 2513,
-    [39] = 2536,
-    [41] = 2683,
-    [42] = 2797,
-    [43] = 3046,
-    [44] = 3356,
-    [45] = 3603,
-    [46] = 3687,
-    [47] = 3750,
-    [48] = 3766,
-    [50] = 3913,
-    [51] = 3927,
-    [52] = 3981,
-    [53] = 3992,
-    [54] = 4010,
-    [55] = 4023,
-    [56] = 4052,
-    [57] = 4072,
-    [58] = 4146,
-    [59] = 4379,
-    [60] = 4397,
-    [61] = 5221,
-    [62] = 5233,
-    [63] = 5408,
-    [65] = 5434,
-    [66] = 5634,
-    [67] = 6481,
-    [68] = 6532,
-    [69] = 7208,
-    [70] = 7672,
-    [71] = 7883,
-    [72] = 7996,
-    [73] = 8166,
-    [74] = 8435,
-    [75] = 8601,
-    [76] = 9042,
-    [77] = 9160,
-    [78] = 9199,
-    [79] = 9663,
-    [80] = 10189,
-    [81] = 10214,
-    [83] = 10311,
-    [84] = 10919,
-    [85] = 10929,
-    [86] = 10941,
-    [87] = 10950,
-    [88] = 10962,
-    [89] = 10997,
-    [90] = 11006,
-    [91] = 11016,
-    [92] = 11023,
-    [93] = 11044,
-    [94] = 11060,
-    [95] = 11241,
-    [96] = 11290,
-    [97] = 11297,
-    [98] = 11308,
-    [99] = 11318,
-    [100] = 11368,
-    [101] = 11375
+    610,
+    620,
+    [5] = 694,
+    [6] = 912,
+    [7] = 1006,
+    [8] = 1142,
+    [9] = 1218,
+    [10] = 1262,
+    [11] = 1424,
+    [12] = 1523,
+    [13] = 1609,
+    [15] = 1698,
+    [17] = 1753,
+    [18] = 1810,
+    [19] = 1839,
+    [20] = 1863,
+    [21] = 1923,
+    [23] = 1953,
+    [24] = 2102,
+    [25] = 2123,
+    [26] = 2143,
+    [27] = 2179,
+    [28] = 2214,
+    [29] = 2251,
+    [30] = 2295,
+    [31] = 2325,
+    [32] = 2452,
+    [34] = 2563,
+    [35] = 2596,
+    [36] = 2631,
+    [37] = 2655,
+    [38] = 2701,
+    [39] = 2724,
+    [41] = 2871,
+    [42] = 2985,
+    [43] = 3234,
+    [44] = 3544,
+    [45] = 3791,
+    [46] = 3875,
+    [47] = 3938,
+    [48] = 3954,
+    [50] = 4101,
+    [51] = 4115,
+    [52] = 4169,
+    [53] = 4180,
+    [54] = 4198,
+    [55] = 4211,
+    [56] = 4240,
+    [57] = 4260,
+    [58] = 4334,
+    [59] = 4635,
+    [60] = 4654,
+    [61] = 4657,
+    [62] = 4669,
+    [63] = 4854,
+    [65] = 4882,
+    [66] = 5082,
+    [67] = 5324,
+    [68] = 6171,
+    [69] = 6222,
+    [70] = 6911,
+    [71] = 7375,
+    [72] = 7586,
+    [73] = 7699,
+    [74] = 7869,
+    [75] = 8138,
+    [76] = 8304,
+    [77] = 8745,
+    [78] = 8863,
+    [79] = 8902,
+    [80] = 9366,
+    [81] = 9892,
+    [83] = 9917,
+    [84] = 10525,
+    [85] = 10535,
+    [86] = 10547,
+    [87] = 10556,
+    [88] = 10568,
+    [89] = 10603,
+    [90] = 10612,
+    [91] = 10622,
+    [92] = 10629,
+    [93] = 10650,
+    [94] = 10666,
+    [95] = 10847,
+    [96] = 10896,
+    [97] = 10903,
+    [98] = 10914,
+    [99] = 10924,
+    [100] = 10974,
+    [101] = 10981
 }
 
 -- Misc AOT variable imports

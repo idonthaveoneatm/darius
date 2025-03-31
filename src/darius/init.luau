@@ -53,6 +53,7 @@ function darius:Window(windowProperty)
         IsMobile = false,
 		Offset = 0,
         Theme = {},
+		Workspace = "",
         noOffset = false,
 		Parent = Instance.new("Part")
 	},{
@@ -65,35 +66,24 @@ function darius:Window(windowProperty)
 		windowProperty.Offset and "" or "Offset"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
-
+	--[[
 	didPass, failedItems = typecheck(windowProperty,{
 		Config = "",
 	},{
 		windowProperty.UseConfig and "" or "Config"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
+	]]
 
 	-- Warn
 
 	setWarnTitle(windowProperty.Title)
 
-	-- Theme
-
-	theme.init()
-	local defaultTheme = theme.getTheme().uid
-	if windowProperty.Theme then
-		didPass, failedItems = typecheck(windowProperty.Theme, {
-			Name = "",
-			Colors = {}
-		})
-		assert(didPass, table.concat(failedItems, "\n"))
-		theme.set(theme.create(windowProperty.Theme.Name, windowProperty.Theme.Colors))
-	end
-
 	-- Data
 
 	data.add({string = ""}, "selectedTab")
 	data.add({boolean = false}, "isFirst")
+	local setTheme = data.add({tbl = {}}, "setTheme")
 	data.add({number = windowProperty.noOffset and 0 or 58}, "absoluteOffset")
 	data.add({name = randomString(32)}, "instanceName")
 	data.add({binds = {}}, "currentBinds")
@@ -111,27 +101,53 @@ function darius:Window(windowProperty)
 	local useConfig = data.add({boolean = false}, "useConfig")
 	local windowData = data.add({data = windowProperty})
 
+	-- Files
+
+	local path = {"darius",`/{windowProperty.Workspace}`,`/configurations`}
+	local built = ""
+	for i=1,#path do
+		built = built..path[i]
+		if not customFunctions.isfolder(built) then
+			customFunctions.makefolder(built)
+		end
+	end
+	flagCreator.path = `darius/{windowProperty.Workspace}/configurations`
+	path = {"darius",`/{windowProperty.Workspace}`,`/themes`}
+	built = ""
+	for i=1,#path do
+		built = built..path[i]
+		if not customFunctions.isfolder(built) then
+			customFunctions.makefolder(built)
+		end
+	end
+	theme.path = `darius/{windowProperty.Workspace}/themes`
+
+	darius.Folder = `darius/{windowProperty.Workspace}`
+
+	-- Themes
+
+	theme.init()
+	local defaultTheme = theme.getTheme().uid
+	if windowProperty.Theme then
+		didPass, failedItems = typecheck(windowProperty.Theme, {
+			Name = "",
+			Colors = {}
+		})
+		assert(didPass, table.concat(failedItems, "\n"))
+		setTheme:update("tbl", windowProperty.Theme)
+		task.wait()
+		theme.set(theme.create(windowProperty.Theme.Name, windowProperty.Theme.Colors, nil, nil, true))
+	end
+
+	-- Configs
+
+	flagCreator.init()
+
 	-- Flags
 
 	local config
 	if windowProperty.UseConfig then
 		useConfig:update("boolean", windowProperty.UseConfig)
-		config = windowProperty.Config
-
-		local path = {"darius",`/{config}`}
-		local built = ""
-		for i=1,#path do
-			built = built..path[i]
-			if not customFunctions.isfolder(built) then
-				customFunctions.makefolder(built)
-			end
-		end
-		darius.Folder = built
-		config = built.."/config.json"
-		darius.File = config
-		if not customFunctions.isfile(config) then
-			customFunctions.writefile(config, "{}")
-		end
 	end
 
 	darius.flags = {}
@@ -217,6 +233,9 @@ function darius:Window(windowProperty)
 			property.tab = tab
 			return addComponent("colorpicker", tabFrame, property)
 		end
+		function components:ButtonGroup()
+			return addComponent("buttonGroup", tabFrame, {tab = tab})
+		end
 		return tabs[tab.uid]
 	end
 	darius.Destroyed = false
@@ -238,9 +257,8 @@ function darius:Window(windowProperty)
 		if not windowProperty.UseConfig then
 			return
 		end
-		flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
-		flagCreator.config:set(config)
-		configLoaded:update("boolean", true)
+		--flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
+		--configLoaded:update("boolean", true)
 	end
 	function darius:SetTheme(newTheme)
 		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
@@ -260,7 +278,8 @@ function darius:Window(windowProperty)
 	end
 	function darius:CreateSettings()
 		local _settings = tabs:Tab({
-			Name = "⚙️ Settings"
+			Name = "Settings",
+			Image = icons.cog
 		})
 		local themeTable = theme.getTheme().palette
 		local cachedTheme = {}
@@ -400,7 +419,176 @@ function darius:Window(windowProperty)
 				customFunctions.printFileSystem()
 			end
 		})
+
 		_settings:Divider()
+
+		-- Configuration Manager
+
+		local configNames = {}
+		table.foreach(flagCreator.getConfigs(), function(_, _config)
+			table.insert(configNames, {
+				DisplayValue = _config.name,
+				Value = _config.uid
+			})
+		end)
+		local selectedConfig = ""
+
+		local configs = _settings:Dropdown({
+			Name = "Configs",
+			Items = configNames,
+			AlwaysOpen = true,
+			Callback = function(uid)
+				selectedConfig = uid
+			end
+		})
+		local configButtons = _settings:ButtonGroup()
+		configButtons:Button({
+			Name = "Load",
+			Callback = function()
+				if selectedConfig ~= "" then
+					flagCreator.set(selectedConfig)
+					local _config = flagCreator.find(selectedConfig)
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = `Set configuration to "{_config.name}"`,
+						Duration = 3,
+						Image = icons.check
+					})
+				else
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "No configuration selected",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+				end
+			end
+		})
+		local function refreshConfigList()
+			table.clear(configNames)
+			table.foreach(flagCreator.getConfigs(), function(_, _config)
+				table.insert(configNames, {
+					DisplayValue = _config.name,
+					Value = _config.uid
+				})
+			end)
+			configs:SetItems(configNames)
+		end
+
+		-- Create
+
+		local createA, createB, createC
+		local configName = ""
+		configButtons:Button({
+			Name = "Create",
+			Callback = function()
+				configButtons:Invisible()
+				configs:Invisible()
+				createA:Visible()
+				createB:Visible()
+				createC:Visible()
+			end
+		})
+
+		createA = _settings:TextBox({
+			Visible = false,
+			Name = "Name your configuration",
+			Callback = function(name)
+				configName = name
+			end
+		})
+		createB = _settings:Button({
+			Visible = false,
+			Name = "Complete new configuration",
+			Callback = function()
+				if configName ~= "" then
+					flagCreator.create(configName, nil, false, nil)
+
+					refreshConfigList()
+
+					configButtons:Visible()
+					configs:Visible()
+					createA:Invisible()
+					createB:Invisible()
+					createC:Invisible()
+					createA:SetInput("")
+
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = `Created "{configName}"`,
+						Duration = 3,
+						Image = icons.check
+					})
+				else
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "Name cannot be empty",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+				end
+			end
+		})
+		createC = _settings:Button({
+			Visible = false,
+			Name = "Cancel",
+			Callback = function()
+				configButtons:Visible()
+				configs:Visible()
+				createA:Invisible()
+				createB:Invisible()
+				createC:Invisible()
+				createA:SetInput("")
+			end
+		})
+
+		-- Save
+
+		configButtons:Button({
+			Name = "Save",
+			Callback = function()
+				if selectedConfig ~= "" then
+					flagCreator.save(selectedConfig)
+					local _config = flagCreator.find(selectedConfig)
+					darius:Notify({
+						Title = windowProperty.Title,
+						Body = `Saved configuration "{_config.name}"`,
+						Duration = 3,
+						Image = icons.check
+					})
+				else
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "No configuration selected",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+				end
+			end
+		})
+
+		-- Delete
+
+		configButtons:Button({
+			Name = "Delete",
+			Callback = function()
+				if selectedConfig == "" then
+					darius:Notify({
+						Title = "Configuration Error",
+						Body = "No configuration selected",
+						Duration = 3,
+						Image = icons.alert,
+						ImageColor = theme.get("red")
+					})
+					return
+				end
+				flagCreator.delete(selectedConfig)
+				refreshConfigList()
+			end
+		})
 	end
 
 	if customFunctions.getgenv then

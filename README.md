@@ -34,9 +34,35 @@ local window = darius:Window({
     HideBind = Enum.KeyCode.T,
     Parent = target, -- Defaults to game.CoreGui
     UseConfig = false,
-    Config = "config",
+    Workspace = "mainWorkspace", -- the name of the darius workspace for configs and themes
     IsMobile = false,
-    Theme = {} -- Custom theme on launch
+    Theme = { -- Custom theme on launch
+        Name = "custom theme",
+        Colors = {
+            background = Color3.fromHex("#1C1726"),
+            background2 = Color3.fromHex("#0F0C15"),
+
+            text = Color3.fromHex("#EDEBF2"),
+            text2 = Color3.fromHex("#B7A6D4"),
+
+            selectedTab = Color3.fromHex("#1D1827"),
+
+            colorpickerBar = Color3.fromHex("#DCE1E5"),
+
+            notificationButton = Color3.fromHex("#222427"),
+
+            mobileButtonBackground = Color3.fromHex("#DCE1E5"),
+            mobileButtonText = Color3.fromHex("#2C2F33"),
+            mobileButtonImage = Color3.fromHex("#2C2F33"),
+
+            disabledBackground = Color3.fromHex("#2A2C31"),
+            disabledText = Color3.fromHex("#D6DCE0"),
+
+            toggled = Color3.fromHex("#B7A6D4"),
+
+            red = Color3.fromHex("#B7A6D4"),
+            orange = Color3.fromHex("#B7A6D4")
+    }
 })
 ```
 ### Setting the theme
@@ -56,6 +82,8 @@ text2
 
 selectedTab
 
+scrollBar
+
 colorpickerBar
 
 notificationButton
@@ -74,7 +102,7 @@ orange
 ]]
 ```
 ### Settings Page
-Adding this function **after** you create your tabs adds a "⚙️ Settings" tab with a theme manager. (config manager soon)
+Adding this function **after** you create your tabs adds a "⚙️ Settings" tab with a theme and configuration manager.
 ```lua
 darius:CreateSettings()
 ```
@@ -118,14 +146,12 @@ end)
 -- Types are the same as the ones found for each component
 ```
 ### Darius Folder and File
-If `UseConfig = true` then `darius.Folder` and `darius.File` will give you strings to the folder and the config file created.
+Gives you strings to the folder created for the `Workspace` provided.
 ```lua
 ...
-    UseConfig = true,
-    Config = "darius rocks",
+    Workspace = "darius rocks",
 ...
 print(darius.Folder) --> darius/darius rocks
-print(darius.File) --> darius/darius rocks/config.json
 ```
 ### Destroying Darius
 You can also connect functions to run when Darius is destroyed by connectiong to `darius.OnDestruction`. You can also check if Darius has been destroyed with `darius.Destroyed`.
@@ -161,6 +187,11 @@ local button = tab:Button({
     DisabledText = "Hey you cant use this!"
 })
 ```
+## Create Button Group
+This was made specifically for the configuration manager and allows you to add buttons in a horizontal list. It only has the `:Button` component
+```lua
+tab:ButtonGroup()
+```
 ### Returned Functions
 ```lua
 button:SetCallback(function()
@@ -187,6 +218,7 @@ local dropdown = tab:Dropdown({
     Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
     Alphabetical = true, -- Defaults false
+    AlwaysOpen = true, -- Defaults false
     DisabledText = "Hey you cant use this!",
     FLAG = "dropdown_SingleSelection",
     Default = "" or {}, -- Table if Multiselect and string if not
@@ -349,12 +381,12 @@ tab:Divider()
 ```lua
 tab:KeybindList()
 ```
-## Universal Returned Functions
-**EXCLUDES** :Tab :Window :Label :Divider :Paragraph :KeybindList
+## Universal*ish* Returned Functions
+**EXCLUDES** :Tab :Window :Label :Divider :Paragraph :KeybindList :ButtonGroup
 ```lua
 <Component>:Enable()
 <Component>:Disable()
 <Component>:SetName("New Name")
-<Component>:Visible() -- Includes :Label and :Paragraph
-<Component>:Invisibile() -- Includes :Label and :Paragraph
+<Component>:Visible() -- Includes :Label :Paragraph :ButtonGroup
+<Component>:Invisibile() -- Includes :Label :Paragraph :ButtonGroup
 ```
