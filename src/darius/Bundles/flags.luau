@@ -20,9 +20,6 @@ local types = {
     ['toggle'] = function(flag)
         local boolean = flag.status.boolean
         connections.add(observe(boolean):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(boolean)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -31,9 +28,6 @@ local types = {
     ['dropdown'] = function(flag)
         local observable = flag.status.multiselect and flag.status.items or flag.status.item
         connections.add(observe(observable):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(observable)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -42,9 +36,6 @@ local types = {
     ['keybind'] = function(flag)
         local observable = flag.status.mobile and flag.status.coordinate or flag.status.keycode
         connections.add(observe(observable):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(observable)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -53,9 +44,6 @@ local types = {
     ['slider'] = function(flag)
         local percentageOf = flag.status.percentageOf
         connections.add(observe(percentageOf):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(percentageOf)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -64,9 +52,6 @@ local types = {
     ['textbox'] = function(flag)
         local correctText = flag.status.correctText
         connections.add(observe(correctText):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(correctText)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -76,16 +61,10 @@ local types = {
         local color = flag.status.color
         local transparency = flag.status.transparency
         connections.add(observe(color):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             flag.user.Value = {get(color), get(transparency)}
             flag.bindableEvent:Fire(unpack(flag.user.Value))
         end))
         connections.add(observe(transparency):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             flag.user.Value = {get(color), get(transparency)}
             flag.bindableEvent:Fire(unpack(flag.user.Value))
         end))

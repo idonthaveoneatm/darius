@@ -46,9 +46,11 @@ return function(property)
         BackgroundTransparency = 1,
 
         [children] = {
-            UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4))
+            UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,3))
         }
     }
+
+    local absSize = value(buttonGroup.AbsoluteSize)
 
     local returnTable = {}
     function returnTable:Button(_property)
@@ -82,7 +84,7 @@ return function(property)
         local callback = _property.Callback
         local isEnabled = _property.IsEnabled or value(true)
         local disabledText = _property.DisabledText or value("Component Disabled")
-        local visible = _property.Visible or value(true)
+        local _visible = _property.Visible or value(true)
 
         -- Variables
 
@@ -102,13 +104,13 @@ return function(property)
                 return get(isSelected)
             end),
             Visible = computed(function()
-                if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
+                if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(_visible) then
                     return false
                 end
                 return true
             end),
             Size = computed(function()
-                return UDim2.new(1/get(buttonCount),get(buttonCount)-1 < 0 and 0 or -(((get(buttonCount)-1)*4)/get(buttonCount)),0,36)
+                return UDim2.new(1/get(buttonCount) - (get(buttonCount) - 1 == 0 and 0 or ((((get(buttonCount)-1)*3)/get(buttonCount))/get(absSize).X)),0,0,36)
             end),
             Parent = buttonGroup,
             BackgroundColor3 = theme.background2,
@@ -224,10 +226,10 @@ return function(property)
             isEnabled:set(false)
         end
         function returnFunctions:Visible()
-            visible:set(true)
+            _visible:set(true)
         end
         function returnFunctions:Invisible()
-            visible:set(false)
+            _visible:set(false)
         end
         return returnFunctions
     end

@@ -42,20 +42,6 @@ function themeSystem.find(uid)
     return false
 end
 
-function themeSystem.export()
-    for _,theme in themes do
-        local ctheme = {}
-        ctheme.name = theme.name
-        ctheme.uid = theme.uid
-        ctheme.fromSet = theme.fromSet
-        ctheme.palette = {}
-        for i,v in theme.palette do
-            ctheme.palette[i] = v:ToHex()
-        end
-        customFunctions.writefile(`{themeSystem.path}/{theme.uid}.json`, HttpService:JSONEncode(ctheme))
-    end
-end
-
 function themeSystem.create(name, palette, uid, fromFile, fromSet)
     fromFile = fromFile or false
     if uid == "original" and fromFile then
@@ -95,7 +81,17 @@ function themeSystem.create(name, palette, uid, fromFile, fromSet)
         fromSet = fromSet or false,
         palette = palette
     })
-    themeSystem.export()
+
+    local ctheme = {}
+    ctheme.name = name
+    ctheme.uid = uid
+    ctheme.fromSet = fromSet
+    ctheme.palette = {}
+    for i,v in palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+    
     return uid
 end
 
@@ -134,8 +130,24 @@ function themeSystem.set(uid)
     return true, "successfully set new theme"
 end
 
-function themeSystem.import(name, palette)
-    themeSystem.create(name, palette)
+function themeSystem.save(uid)
+    local results = {themeSystem.find(uid)}
+    if results[1] then
+        local theme = results[2]
+        local ctheme = {}
+        ctheme.name = theme.name
+        ctheme.uid = uid
+        ctheme.fromSet = theme.fromSet
+        ctheme.palette = {}
+        for i,v in get(currentTheme) do
+            ctheme.palette[i] = v:ToHex()
+        end
+        theme.palette = get(currentTheme)
+        customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+        return true
+    else
+        return false
+    end
 end
 
 function themeSystem.get(name)
