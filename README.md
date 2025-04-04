@@ -3,7 +3,7 @@ A Roblox user interface built using [Fusion 0.2](https://elttob.uk/Fusion/0.2/).
 
 Developed by - griffin(@idonthaveoneatm)
 
-Join the Discord [here](https://discord.gg/GtWwgVvm7r) and create a ticket if you want to report a problem. You can also ontact me via Discord **@griffindoescooking** with the ID of `691337507157311661`.
+Join the Discord [here](https://discord.gg/GtWwgVvm7r) and create a ticket if you want to report a problem. You can also contact me via Discord **@griffindoescooking** with the ID of `691337507157311661`.
 
 Video of user interface: [https://www.youtube.com/watch?v=-yLwTmJhK7A](https://www.youtube.com/watch?v=-yLwTmJhK7A)
 ### Credits:
