@@ -13,11 +13,13 @@ local _warn = require(script.Parent.Parent.components.warn)
 local randomString = require(script.Parent.Parent.utilities.randomString)
 local customFunctions = require(script.Parent.Parent.utilities.customFunctions)
 local functionsOnChange = {}
+local functionsOnCreate = {}
 
 local currentTheme = value({})
 local _currentTheme = value({})
 local dariusUID = ""
 observe(currentTheme):onChange(function()
+    task.wait()
     for _,func in ipairs(functionsOnChange) do
         task.spawn(func)
     end
@@ -91,7 +93,11 @@ function themeSystem.create(name, palette, uid, fromFile, fromSet)
         ctheme.palette[i] = v:ToHex()
     end
     customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
-    
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v)
+        end
+    end)
     return uid
 end
 
@@ -111,6 +117,26 @@ function themeSystem.edit(name, color)
     ctheme[name] = color
     currentTheme:set(ctheme)
 end
+function themeSystem.editTheme(uid:string, property:string, new:any)
+    local results = {themeSystem.find(uid)}
+    if not results[1] then
+        return false
+    end
+    local theme = results[2]
+    theme[property] = new
+
+    local ctheme = {}
+    ctheme.name = theme.name
+    ctheme.uid = uid
+    ctheme.fromSet = theme.fromSet
+    ctheme.palette = {}
+    for i,v in theme.palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+
+    return true
+end
 
 function themeSystem.set(uid)
     local results = {themeSystem.find(uid)}
@@ -129,6 +155,18 @@ function themeSystem.set(uid)
     _currentTheme:set(theme)
     return true, "successfully set new theme"
 end
+function themeSystem.export()
+    local theme = get(_currentTheme)
+    local ctheme = {}
+    ctheme.name = theme.name
+    ctheme.uid = theme.uid
+    ctheme.fromSet = theme.fromSet
+    ctheme.palette = {}
+    for i,v in theme.palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    return HttpService:JSONEncode(ctheme)
+end
 
 function themeSystem.save(uid)
     local results = {themeSystem.find(uid)}
@@ -136,14 +174,15 @@ function themeSystem.save(uid)
         local theme = results[2]
         local ctheme = {}
         ctheme.name = theme.name
-        ctheme.uid = uid
+        ctheme.uid = theme.uid
         ctheme.fromSet = theme.fromSet
         ctheme.palette = {}
-        for i,v in get(currentTheme) do
+        for i,v in theme.palette do
             ctheme.palette[i] = v:ToHex()
         end
         theme.palette = get(currentTheme)
         customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+        themeSystem.set(uid)
         return true
     else
         return false
@@ -180,6 +219,9 @@ end
 
 function themeSystem.onChange(func)
     table.insert(functionsOnChange, func)
+end
+function themeSystem.onCreate(func)
+    table.insert(functionsOnCreate, func)
 end
 
 function themeSystem.getTheme()

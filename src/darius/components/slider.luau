@@ -38,24 +38,26 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
+		IsEnabled = false,
+		Visible = false,
+		Callback = function()end,
+
         FLAG = "",
-        IsEnabled = false,
 		Default = 0,
-        Callback = function()end,
 		Min = 0,
         Max = 0,
 		DisplayAsPercent = false,
 		DecimalPlace = 0,
-		Visible = false,
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Default and "" or "Default",
 		property.Min and "" or "Min",
 		property.Max and "" or "Max",
-		property.Visible and "" or "Visible",
 		property.DisplayAsPercent and "" or "DisplayAsPercent",
 		property.DecimalPlace and "" or "DecimalPlace",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -73,27 +75,26 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local callback = property.Callback
+
 	local max = property.Max
 	local min = property.Min
 	local displayAsPercent = property.DisplayAsPercent or value(false)
 	local roundTo = property.DecimalPlace or value(0)
-	local isEnabled = property.IsEnabled or value(true)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local visible = property.Visible or value(true)
 	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
 	if not get(default) then
 		default = value(get(min))
 	end
-	local flag = property.FLAG or value(slider.uid)
-	local _flag
-	if get(flag) ~= "" then
-		_flag = flagCreator.register(get(flag), {
-			percentageOf = value(get(min))
-		},"slider", get(flag) == slider.uid)
-		_flag.user.Value = get(_flag.status.percentageOf)
-	end
+
+	local flag = (property.FLAG and get(property.FLAG) ~= "") and get(property.FLAG) or slider.uid
+	local _flag = flagCreator.register(flag, {
+		percentageOf = value(get(min))
+	},"slider", flag == slider.uid)
+	_flag.user.Value = get(_flag.status.percentageOf)
 
 	-- Variables
 
@@ -393,8 +394,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noPercentageOf = true
 			if file ~= nil then
 				_flag.status.percentageOf:set(file)

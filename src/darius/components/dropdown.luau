@@ -35,10 +35,11 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
+		IsEnabled = false,
 		Visible = false,
-        IsEnabled = false,
         Callback = function()end,
+
+		FLAG = "",
         Items = {},
         Multiselect = true,
         Regex = function()end,
@@ -47,9 +48,10 @@ return function(property)
 		AlwaysOpen = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
-		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
 		property.IgnoreConfig and "" or "IgnoreConfig",
@@ -80,17 +82,19 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local callback = property.Callback
+
 	local items = value({})
 	local multiselect = property.Multiselect or value(false)
 	local default = property.Default
-	local visible = property.Visible or value(true)
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local isEnabled = property.IsEnabled or value(true)
 	local alphabetical = property.Alphabetical or value(false)
 	local alwaysOpen = property.AlwaysOpen or value(false)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
+
 	local flag = property.FLAG or value(dropdown.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -101,36 +105,39 @@ return function(property)
 		},"dropdown", get(flag) == dropdown.uid)
 		_flag.user.Value = get(multiselect) and get(_flag.status.items) or  get(_flag.status.item)
 	end
+	local _items = _flag.status.items
+	local _item = _flag.status.item
 
 	-- Variables
 
-	
+
 	local searchRef = value()
 
 	local isDropped = value(false)
 	local lastReturnedValue = value(get(multiselect) and {} or "")
 	local itemElements = value({})
-	local displayValues = {}
+	local displayValues = value({})
 	local hasSelectedAll = value(false)
 
-	observe(_flag.status.items):onChange(function()
-		if #get(_flag.status.items) == #get(items) then
+	observe(_items):onChange(function()
+		if #get(_items) == #get(items) then
 			hasSelectedAll:set(true)
 		else
 			hasSelectedAll:set(false)
 		end
+
 		local _cbTable = {}
-		for _,v in get(_flag.status.items) do
+		for _,v in get(_items) do
 			table.insert(_cbTable, get(regex)(v))
 		end
 		task.wait()
 		task.spawn(get(callback), _cbTable)
-		lastReturnedValue:set(get(_flag.status.items))
+		lastReturnedValue:set(get(_items))
 	end)
-	observe(_flag.status.item):onChange(function()
+	observe(_item):onChange(function()
 		task.wait()
-		task.spawn(get(callback), get(regex)(get(_flag.status.item)))
-		lastReturnedValue:set(get(regex)(get(_flag.status.item)))
+		task.spawn(get(callback), get(regex)(get(_item)))
+		lastReturnedValue:set(get(regex)(get(_item)))
 	end)
 	local isSelected = value(get(selectedTab.string) == get(dropdown.tab).uid)
 	observe(selectedTab.string):onChange(function()
@@ -152,7 +159,7 @@ return function(property)
 		end),
 		Size = animate(function()
 			if get(isDropped) then
-				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4) or 6) + math.clamp((#get(items)*34), 34, 136))
+				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4 + 6) or 6) + math.clamp((#get(items)*34), 34, 136))
 			end
 			return UDim2.new(1,0,0,36)
 		end, 40, 1),
@@ -242,13 +249,13 @@ return function(property)
 								Position = UDim2.new(0,0,0.5,0),
 								Text = computed(function()
 									if get(multiselect) then
-										return get(name).." "..tostring(#get(_flag.status.items)).."/"..tostring(#get(items))
+										return get(name).." "..tostring(#get(_items)).."/"..tostring(#get(items))
 									end
 									if typeof(get(lastReturnedValue)) == "table" then
 										return get(name)
 									end
-									if displayValues[get(lastReturnedValue)] then
-										return `{get(name)}: {displayValues[get(lastReturnedValue)]}`
+									if get(displayValues)[get(lastReturnedValue)] then
+										return `{get(name)}: {get(displayValues)[get(lastReturnedValue)]}`
 									end
 									return `{get(name)}: {get(lastReturnedValue)}`
 								end),
@@ -336,7 +343,7 @@ return function(property)
 									table.insert(tableToSet, get(regex)(item))
 								end
 							end
-							_flag.status.items:set(tableToSet)
+							_items:set(tableToSet)
 						end,
 
 						[children] = {
@@ -408,18 +415,21 @@ return function(property)
 			end
 			local cleanedItem = get(regex)(itemValue)
 			if itemDisplayValue then
-				displayValues[itemValue] = itemDisplayValue
+				local _displayValues = get(displayValues)
+
+				_displayValues[itemValue] = itemDisplayValue
+				displayValues:set(_displayValues)
 			end
 
-			observe(_flag.status.items):onChange(function()
-				if table.find(get(_flag.status.items), cleanedItem) then
+			observe(_items):onChange(function()
+				if table.find(get(_items), cleanedItem) then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
 				end
 			end)
-			observe(_flag.status.item):onChange(function()
-				if get(_flag.status.item) == cleanedItem then
+			observe(_item):onChange(function()
+				if get(_item) == cleanedItem then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
@@ -434,16 +444,17 @@ return function(property)
 
 				[onevent "Activated"] = function()
 					if get(multiselect) then
-						local _items = get(_flag.status.items)
+						local _items2 = get(_items)
 						isItemSelected:set(not get(isItemSelected))
 						if get(isItemSelected) then
-							table.insert(_items, cleanedItem)
+							table.insert(_items2, cleanedItem)
 						else
-							table.remove(_items, table.find(_items, cleanedItem))
+							table.remove(_items2, table.find(_items2, cleanedItem))
 						end
-						_flag.status.items:set(_items)
+
+						_items:set(_items2)
 					else
-						_flag.status.item:set(cleanedItem)
+						_item:set(cleanedItem)
 						if get(alwaysOpen) then
 							return
 						end
@@ -531,25 +542,24 @@ return function(property)
 	end
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noChange = true
 			if file ~= nil then
 				noChange = false
 			end
 			if get(multiselect) then
-				_flag.status.items:set(file)
+				_items:set(file)
 			else
-				_flag.status.item:set(file)
+				_item:set(file)
 			end
 			if noChange then
 				if get(multiselect) then
 					if default and #get(default) > 0 then
-						_flag.status.items:set(get(default))
+						_items:set(get(default))
 					end
 				else
 					if default then
-						_flag.status.item:set(get(default))
+						_item:set(get(default))
 					end
 				end
 			end
@@ -557,15 +567,15 @@ return function(property)
 		if _flag.private then
 			if get(multiselect) then
 				if default and #get(default) > 0 then
-					_flag.status.items:set(get(default))
+					_items:set(get(default))
 				end
 			else
 				if default then
 					for _,v in get(items) do
 						if typeof(v) == "table" and v.Value == get(default) then
-							_flag.status.item:set(get(default))
+							_item:set(get(default))
 						elseif v == get(default) then
-							_flag.status.item:set(get(default))
+							_item:set(get(default))
 						end
 					end
 				end
@@ -574,11 +584,11 @@ return function(property)
 	else
 		if get(multiselect) then
 			if default and #get(default) > 0 then
-				_flag.status.items:set(get(default))
+				_items:set(get(default))
 			end
 		else
 			if default then
-				_flag.status.item:set(get(default))
+				_item:set(get(default))
 			end
 		end
 	end
@@ -612,20 +622,20 @@ return function(property)
 			else
 				if get(lastReturnedValue) == cleanedItem then
 					foundAnything = true
-					_flag.status.item:set(cleanedItem)
+					_item:set(cleanedItem)
 					break
 				end
 			end
 		end
 		if foundAnything then
 			if get(multiselect) then
-				_flag.status.items:set(multiselectTable)
+				_items:set(multiselectTable)
 			end
 		else
 			if get(multiselect) then
-				_flag.status.items:set({})
+				_items:set({})
 			else
-				_flag.status.item:set("")
+				_item:set("")
 			end
 		end
 	end
@@ -648,7 +658,7 @@ return function(property)
 			end
 		end
 		assert(hasItem, ":SelectItem couldn't find "..item)
-		_flag.status.item:set(item)
+		_item:set(item)
 	end
 	function returnFunctions:SelectItems(newSelecteds) -- Sets items used when Multiselect is true
 		assert(get(multiselect), ":SelectItems requires Multiselect to be true")
@@ -670,7 +680,7 @@ return function(property)
 				table.remove(newSelecteds, i)
 			end
 		end
-		_flag.status.items:set(newSelecteds)
+		_items:set(newSelecteds)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)

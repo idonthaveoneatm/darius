@@ -41,17 +41,19 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
+		IsEnabled = false,
 		Visible = false,
-        IsEnabled = false,
         Callback = function()end,
+
+		FLAG = "",
 		Bind = Enum.KeyCode.Q,
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
-		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Bind and "" or "Bind",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
@@ -73,12 +75,25 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local bind = property.Bind
-	local visible = property.Visible or value(true)
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
+	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
+
+	local flag = property.FLAG or value(keybind.uid)
+	local _flag
+	if get(flag) ~= "" then
+		_flag = flagCreator.register(get(flag), {
+			coordinate = value(nil),
+			keycode = value(nil),
+			mobile = get(isMobile.boolean)
+		},"keybind", get(flag) == keybind.uid)
+		_flag.user.Value = get(isMobile.boolean) and get(_flag.status.coordinate) or get(_flag.status.keycode)
+	end
+
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -98,33 +113,9 @@ return function(property)
 			}
 			bindData:update("bindData", _bindData)
 			currentBinds:update("binds", _currentBinds)
+			_flag.status.keycode:set(get(keyCode).Name)
 		end
 	end
-	local flag = property.FLAG or value(keybind.uid)
-	local _flag
-	if get(flag) ~= "" then
-		_flag = flagCreator.register(get(flag), {
-			coordinate = value(Vector2.new(0,0)),
-			keycode = value(nil),
-			mobile = get(isMobile.boolean)
-		},"keybind", get(flag) == keybind.uid)
-		_flag.user.Value = get(isMobile.boolean) and get(_flag.status.coordinate) or get(_flag.status.keycode)
-	end
-
-	observe(_flag.status.keycode):onChange(function()
-		if get(keyCode) and get(keyCode).Name == get(_flag.status.keycode) then
-			return
-		end
-		local success, result = pcall(function()
-			return Enum.KeyCode[get(_flag.status.keycode)]
-		end)
-		if success then
-			checkKeyCode(result, "RAHHH")
-		end
-	end)
-	observe(keyCode):onChange(function()
-		_flag.status.keycode:set(get(keyCode).Name)
-	end)
 
 	-- Variables
 
@@ -155,14 +146,6 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
-	local function findKeyCode(keyName)
-		for _,v in Enum.KeyCode do
-			if v.Name and v.Name == keyName then
-				return v
-			end
-		end
-		return nil
-	end
 
 	-- Keybind
 
@@ -410,17 +393,28 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig)  then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noKeyCode = true
 			if file.keycode ~= nil then
-				_flag.status.keycode:set(file.keycode)
+				if get(keyCode) and get(keyCode).Name == file.keycode then
+					return
+				end
+				local success, result = pcall(function()
+					return Enum.KeyCode[file.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "File1")
+				end
 				noKeyCode = false
 			end
 			if noKeyCode then
 				if bind then
 					_flag.status.keycode:set(get(bind).Name)
 				end
+			end
+			if get(isMobile.boolean) and file.coordinate then
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
+				hasPlaced:set(true)
 			end
 		end)
 		if _flag.private then

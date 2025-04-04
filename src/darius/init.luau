@@ -233,6 +233,9 @@ function darius:Window(windowProperty)
 			property.tab = tab
 			return addComponent("colorpicker", tabFrame, property)
 		end
+		function components:KeybindList()
+			return addComponent("keybindList", tabFrame, {tab = tab})
+		end
 		function components:ButtonGroup()
 			return addComponent("buttonGroup", tabFrame, {tab = tab})
 		end
@@ -253,449 +256,533 @@ function darius:Window(windowProperty)
 		references:clear()
 		bindableEvent:Destroy()
 	end
-	function darius:LoadConfig()
-		if not windowProperty.UseConfig then
-			return
-		end
-		--flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
-		--configLoaded:update("boolean", true)
-	end
-	function darius:SetTheme(newTheme)
-		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
+
+	function darius:SetTheme(uid)
+		local _didPass, _failedItems = typecheck({['New Theme'] = uid}, {['New Theme'] = ""})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-		--theme.set(newTheme)
+
+		if theme.find(uid) then
+			theme.set(uid)
+		end
+	end
+	function darius:GetThemeUID()
+		return theme.getTheme().uid
+	end
+	function darius:ImportTheme(...)
+		local args = {...}
+		if #args == 1 then
+			didPass, failedItems = typecheck(args,{[1] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return theme.create(`Import_{randomString(5)}`, args[1])
+		elseif #args == 2 then
+			didPass, failedItems = typecheck(args,{[1] = "",[2] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return theme.create(args[1], args[2])
+		end
 	end
 	function darius:ExportTheme()
-		local _currentTheme = theme.getTheme()
-		local ctheme = {}
-		ctheme.name = _currentTheme.name
-		ctheme.uid = _currentTheme.uid
-		ctheme.palette = {}
-		for i,v in _currentTheme.palette do
-			ctheme.palette[i] = v:ToHex()
-		end
-		return HttpService:JSONEncode(ctheme)
+		return theme.export()
 	end
+
+	function darius:SetConfiguration(uid)
+		flagCreator.set(uid)
+	end
+	function darius:GetConfigurationUID()
+		return flagCreator.getConfig().uid
+	end
+	function darius:ImportConfiguration(...)
+		local args = {...}
+		if #args == 1 then
+			didPass, failedItems = typecheck(args,{[1] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return flagCreator.create(`Import_{randomString(5)}`, nil, nil, args[1])
+		elseif #args == 2 then
+			didPass, failedItems = typecheck(args,{[1] = "",[2] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return flagCreator.create(args[1], nil, nil, args[2])
+		end
+	end
+	function darius:ExportConfiguration()
+		return flagCreator.export()
+	end
+
 	function darius:CreateSettings()
 		local _settings = tabs:Tab({
 			Name = "Settings",
 			Image = icons.cog
 		})
-		local themeTable = theme.getTheme().palette
-		local cachedTheme = {}
-		local colorNames = {}
-		local savedThemesNames = {}
-		table.foreach(themeTable,function(i)
-			table.insert(colorNames, i)
-		end)
-		table.foreach(theme.getThemes(), function(_, _theme)
-			table.insert(savedThemesNames, {
-				DisplayValue = _theme.name,
-				Value = _theme.uid
-			})
-		end)
 
-		local _name = ""
-		local _colorPicker,_reset,_themeNames,_delete,_save
+		-- Theme Manager
 
-		local savedThemesDD = _settings:Dropdown({
-			Name = "Current Theme",
-			Items = savedThemesNames,
-			Default = theme.getTheme().uid,
-			Callback = function(uid)
-				theme.set(uid)
-				themeTable = theme.getTheme().palette
-				table.clear(cachedTheme)
-				table.foreach(themeTable, function(i,v)
-					cachedTheme[i] = v
-				end)
-				if _colorPicker and _name ~= "" then
-					_colorPicker:SetColor(theme.get(_name))
-				end
-				if uid == "original" and _delete then
-					_delete:Disable()
-				elseif uid ~= "original" and _delete then
-					_delete:Enable()
-				end
-				if uid == "original" and _save then
-					_save:Disable()
-				elseif uid ~= "original" and _save then
-					_save:Enable()
-				end
-			end
-		})
-		local function refreshThemes(value)
-			table.clear(savedThemesNames)
+		do
+			local themeTable = theme.getTheme().palette
+			local cachedTheme = {}
+			local colorNames = {}
+			local savedThemesNames = {}
+			table.foreach(themeTable,function(i)
+				table.insert(colorNames, i)
+			end)
 			table.foreach(theme.getThemes(), function(_, _theme)
 				table.insert(savedThemesNames, {
 					DisplayValue = _theme.name,
 					Value = _theme.uid
 				})
 			end)
-			savedThemesDD:SetItems(savedThemesNames)
-			savedThemesDD:SelectItem(value)
-		end
 
-
-		local themeGroup = _settings:ButtonGroup()
-
-		local isToggledE = false
-		local displayReset = false
-		local function editToggle(value)
-			if value then
-				_themeNames:Visible()
-				_colorPicker:Visible()
-				if displayReset then
-					_reset:Visible()
+			local _name = ""
+			local _colorPicker,_reset,_themeNames,_delete,_save,_changeName,_confirmName
+			local isToggledE = false
+			local displayReset = false
+			local function editToggle(value)
+				if value then
+					_themeNames:Visible()
+					_colorPicker:Visible()
+					if displayReset then
+						_reset:Visible()
+					end
+					if theme.getTheme().uid ~= "original" then
+						_changeName:Visible()
+						_confirmName:Visible()
+					else
+						_changeName:Invisible()
+						_confirmName:Invisible()
+					end
+				else
+					_reset:Invisible()
+					_colorPicker:Invisible()
+					_themeNames:Invisible()
+					_changeName:Invisible()
+					_confirmName:Invisible()
 				end
-			else
-				_reset:Invisible()
-				_colorPicker:Invisible()
-				_themeNames:Invisible()
 			end
-		end
-		local isToggledC = false
-		local _nameTheme,_createTheme,_cancelTheme
-		local function createToggle(value)
-			if value then
-				_nameTheme:Visible()
-				_createTheme:Visible()
-				_cancelTheme:Visible()
-			else
-				_nameTheme:Invisible()
-				_createTheme:Invisible()
-				_cancelTheme:Invisible()
-			end
-		end
 
-		-- Edit Button
-
-		themeGroup:Button({
-			Name = "Edit",
-			Callback = function()
-				isToggledC = false
-				createToggle(false)
-				isToggledE = not isToggledE
-				editToggle(isToggledE)
-			end
-		})
-
-		_themeNames = _settings:Dropdown({
-			Name = "Colors",
-			Visible = false,
-			Items = colorNames,
-			Callback = function(v)
-				_name = v
-				_colorPicker:SetColor(theme.get(_name))
-				_colorPicker:Enable()
-				_colorPicker:SetName(`Editing: {_name}`)
-			end
-		})
-		_colorPicker = _settings:ColorPicker({
-			Name = "Editing Color: ",
-			IsEnabled = false,
-			Visible = false,
-			DisabledText = "Select Color First!",
-			HideTransparency = true,
-			Callback = function(color)
-				local currentTheme = theme.getTheme().palette
-				if currentTheme[_name].R ~= color.R or currentTheme[_name].G ~= color.G or currentTheme[_name].B ~= color.B then
-					displayReset = true
-					_reset:Visible()
-				elseif currentTheme[_name].R == color.R or currentTheme[_name].G == color.G or currentTheme[_name].B == color.B then
-					displayReset = false
+			local savedThemesDD = _settings:Dropdown({
+				Name = "Current Theme",
+				Items = savedThemesNames,
+				Default = theme.getTheme().uid,
+				Callback = function(uid)
+					theme.set(uid)
+					if _colorPicker and _name ~= "" then
+						_colorPicker:SetColor(theme.get(_name))
+					end
+					if uid == "original" and _delete then
+						_delete:Disable()
+					elseif uid ~= "original" and _delete then
+						_delete:Enable()
+					end
+					if uid == "original" and _save then
+						_save:Disable()
+					elseif uid ~= "original" and _save then
+						_save:Enable()
+					end
+					if _confirmName then
+						editToggle(isToggledE)
+					end
 				end
-				theme.edit(_name, color)
-			end
-		})
-		_reset = _settings:Button({
-			Name = "Reset Color",
-			Visible = false,
-			Callback = function()
-				displayReset = false
-				_colorPicker:SetColor(cachedTheme[_name])
-				_reset:Invisible()
-			end
-		})
-
-		-- Create Button
-
-		local _themeName = ""
-		themeGroup:Button({
-			Name = "Create",
-			Callback = function()
-				isToggledE = false
-				editToggle(false)
-				isToggledC = not isToggledC
-				createToggle(isToggledC)
-			end
-		})
-
-		_nameTheme = _settings:TextBox({
-			Name = "Name your theme",
-			Visible = false,
-			Callback = function(v)
-				_themeName = v
-			end
-		})
-		_createTheme = _settings:Button({
-			Name = "Create theme",
-			Visible = false,
-			Callback = function()
-				if _themeName == "" then
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = "Theme name cannot be empty!",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
+			})
+			local function refreshThemes(value:string?)
+				table.clear(savedThemesNames)
+				table.foreach(theme.getThemes(), function(_, _theme)
+					table.insert(savedThemesNames, {
+						DisplayValue = _theme.name,
+						Value = _theme.uid
 					})
-					return
+				end)
+				savedThemesDD:SetItems(savedThemesNames)
+				if value then
+					savedThemesDD:SelectItem(value)
 				end
-				local newTheme = theme.create(_themeName, theme.getColors())
-				local response = {theme.set(newTheme)}
+			end
 
-				if response[1] then
-					refreshThemes(newTheme)
+			theme.onChange(function()
+				savedThemesDD:SelectItem(theme.getTheme().uid)
+				table.clear(cachedTheme)
+				table.foreach(theme.getTheme().palette, function(i,v)
+					cachedTheme[i] = v
+				end)
+			end)
+			theme.onCreate(function()
+				refreshThemes()
+			end)
+
+			local themeGroup = _settings:ButtonGroup()
+			local isToggledC = false
+			local _nameTheme,_createTheme,_cancelTheme
+			local function createToggle(value)
+				if value then
+					_nameTheme:Visible()
+					_createTheme:Visible()
+					_cancelTheme:Visible()
+				else
+					_nameTheme:Invisible()
+					_createTheme:Invisible()
+					_cancelTheme:Invisible()
+				end
+			end
+
+			-- Edit Button
+
+			themeGroup:Button({
+				Name = "Edit",
+				Callback = function()
 					isToggledC = false
+					createToggle(false)
+					isToggledE = not isToggledE
+					editToggle(isToggledE)
+				end
+			})
+
+			_themeNames = _settings:Dropdown({
+				Name = "Colors",
+				Visible = false,
+				Items = colorNames,
+				Callback = function(v)
+					_name = v
+					_colorPicker:SetColor(theme.get(_name))
+					_colorPicker:Enable()
+					_colorPicker:SetName(`Editing: {_name}`)
+				end
+			})
+			_colorPicker = _settings:ColorPicker({
+				Name = "Editing Color: ",
+				IsEnabled = false,
+				Visible = false,
+				DisabledText = "Select Color First!",
+				HideTransparency = true,
+				Callback = function(color)
+					local currentTheme = theme.getTheme().palette
+					if currentTheme[_name]:ToHex() ~= color:ToHex() then
+						displayReset = true
+						_reset:Visible()
+					else
+						_reset:Invisible()
+						displayReset = false
+					end
+					theme.edit(_name, color)
+				end
+			})
+			_reset = _settings:Button({
+				Name = "Reset Color",
+				Visible = false,
+				Callback = function()
+					displayReset = false
+					_colorPicker:SetColor(cachedTheme[_name])
+					_reset:Invisible()
+				end
+			})
+			local newName = ""
+			_changeName = _settings:TextBox({
+				Name = "New Name",
+				Visible = false,
+				Callback = function(v)
+					newName = v
+				end
+			})
+			_confirmName = _settings:Button({
+				Name = "Set Name",
+				Visible = false,
+				Callback = function()
+					theme.editTheme(theme.getTheme().uid, "name", newName)
+					refreshThemes()
+					_changeName:SetInput("")
+				end
+			})
+
+			-- Create Button
+
+			local _themeName = ""
+			themeGroup:Button({
+				Name = "Create",
+				Callback = function()
+					isToggledE = false
+					editToggle(false)
+					isToggledC = not isToggledC
 					createToggle(isToggledC)
 				end
-			end
-		})
-		_cancelTheme = _settings:Button({
-			Name = "Cancel",
-			Visible = false,
-			Callback = function()
-				isToggledC = false
-				createToggle(isToggledC)
-				_nameTheme:SetInput("")
-			end
-		})
+			})
 
-		-- Save Button
-
-		_save = themeGroup:Button({
-			Name = "Save",
-			DisabledText = "Disabled",
-			Callback = function()
-				local response = theme.save(theme.getTheme().uid)
-				if response then
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Saved theme with uid "{theme.getTheme().uid}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Theme Manager Error",
-						Body = `Couldn't find/save theme with uid "{theme.getTheme().uid}"`,
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
+			_nameTheme = _settings:TextBox({
+				Name = "Name your theme",
+				Visible = false,
+				Callback = function(v)
+					_themeName = v
 				end
-			end
-		})
+			})
+			_createTheme = _settings:Button({
+				Name = "Create theme",
+				Visible = false,
+				Callback = function()
+					if _themeName == "" then
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = "Theme name cannot be empty!",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+						return
+					end
+					local newTheme = theme.create(_themeName, theme.getColors())
+					local response = {theme.set(newTheme)}
 
-		-- Delete Button
-
-		_delete = themeGroup:Button({
-			Name = "Delete",
-			DisabledText = "Disabled",
-			Callback = function()
-				local response = {theme.find(theme.getTheme().uid)}
-				if response[1] then
-					local _theme = response[2]
-					theme.delete(_theme.uid)
-					refreshThemes(defaultTheme)
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Deleted theme with uid "{_theme.uid}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Theme Manager Error",
-						Body = `Couldn't find theme with uid "{theme.getTheme().uid}"`,
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
+					if response[1] then
+						refreshThemes(newTheme)
+						isToggledC = false
+						createToggle(isToggledC)
+					end
 				end
-			end
-		})
+			})
+			_cancelTheme = _settings:Button({
+				Name = "Cancel",
+				Visible = false,
+				Callback = function()
+					isToggledC = false
+					createToggle(isToggledC)
+					_nameTheme:SetInput("")
+				end
+			})
+
+			-- Save Button
+
+			_save = themeGroup:Button({
+				Name = "Save",
+				DisabledText = "Disabled",
+				Callback = function()
+					local response = theme.save(theme.getTheme().uid)
+					if response then
+						task.wait()
+						local currentTheme = theme.getTheme().palette
+						if currentTheme[_name]:ToHex() ~= cachedTheme[_name]:ToHex() then
+							displayReset = true
+							_reset:Visible()
+						else
+							_reset:Invisible()
+							displayReset = false
+						end
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Saved theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Theme Manager Error",
+							Body = `Couldn't find/save theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+
+			-- Delete Button
+
+			_delete = themeGroup:Button({
+				Name = "Delete",
+				DisabledText = "Disabled",
+				Callback = function()
+					local response = {theme.find(theme.getTheme().uid)}
+					if response[1] then
+						local _theme = response[2]
+						theme.delete(_theme.uid)
+						refreshThemes(defaultTheme)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Deleted theme with uid "{_theme.uid}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Theme Manager Error",
+							Body = `Couldn't find theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+		end
 
 		_settings:Divider()
 
 		-- Configuration Manager
 
-		local configNames = {}
-		table.foreach(flagCreator.getConfigs(), function(_, _config)
-			table.insert(configNames, {
-				DisplayValue = _config.name,
-				Value = _config.uid
-			})
-		end)
-		local selectedConfig = ""
-
-		local configs = _settings:Dropdown({
-			Name = "Configs",
-			Items = configNames,
-			AlwaysOpen = true,
-			Callback = function(uid)
-				selectedConfig = uid
-			end
-		})
-		local configButtons = _settings:ButtonGroup()
-		configButtons:Button({
-			Name = "Load",
-			Callback = function()
-				if selectedConfig ~= "" then
-					flagCreator.set(selectedConfig)
-					local _config = flagCreator.find(selectedConfig)
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Set configuration to "{_config.name}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "No configuration selected",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
-				end
-			end
-		})
-		local function refreshConfigList()
-			table.clear(configNames)
+		do
+			local configNames = {}
 			table.foreach(flagCreator.getConfigs(), function(_, _config)
 				table.insert(configNames, {
 					DisplayValue = _config.name,
 					Value = _config.uid
 				})
 			end)
-			configs:SetItems(configNames)
-		end
+			local selectedConfig = ""
 
-		-- Create
-
-		local createA, createB, createC
-		local configName = ""
-		configButtons:Button({
-			Name = "Create",
-			Callback = function()
-				configButtons:Invisible()
-				configs:Invisible()
-				createA:Visible()
-				createB:Visible()
-				createC:Visible()
+			local configs = _settings:Dropdown({
+				Name = "Configs",
+				Items = configNames,
+				AlwaysOpen = true,
+				Callback = function(uid)
+					selectedConfig = uid
+				end
+			})
+			local configButtons = _settings:ButtonGroup()
+			configButtons:Button({
+				Name = "Load",
+				Callback = function()
+					if selectedConfig ~= "" then
+						flagCreator.set(selectedConfig)
+						local _config = flagCreator.find(selectedConfig)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Set configuration to "{_config.name}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+			local function refreshConfigList(value)
+				table.clear(configNames)
+				table.foreach(flagCreator.getConfigs(), function(_, _config)
+					table.insert(configNames, {
+						DisplayValue = _config.name,
+						Value = _config.uid
+					})
+				end)
+				configs:SetItems(configNames)
+				if value then
+					configs:SelectItem(value)
+				end
 			end
-		})
+			flagCreator.onCreate(refreshConfigList)
+			flagCreator.onSelect(refreshConfigList)
 
-		createA = _settings:TextBox({
-			Visible = false,
-			Name = "Name your configuration",
-			Callback = function(name)
-				configName = name
-			end
-		})
-		createB = _settings:Button({
-			Visible = false,
-			Name = "Complete new configuration",
-			Callback = function()
-				if configName ~= "" then
-					flagCreator.create(configName, nil, false, nil)
+			-- Create
 
-					refreshConfigList()
+			local createA, createB, createC
+			local configName = ""
+			configButtons:Button({
+				Name = "Create",
+				Callback = function()
+					configButtons:Invisible()
+					configs:Invisible()
+					createA:Visible()
+					createB:Visible()
+					createC:Visible()
+				end
+			})
 
+			createA = _settings:TextBox({
+				Visible = false,
+				Name = "Name your configuration",
+				Callback = function(name)
+					configName = name
+				end
+			})
+			createB = _settings:Button({
+				Visible = false,
+				Name = "Complete new configuration",
+				Callback = function()
+					if configName ~= "" then
+						flagCreator.create(configName, nil, false, nil)
+
+						refreshConfigList()
+
+						configButtons:Visible()
+						configs:Visible()
+						createA:Invisible()
+						createB:Invisible()
+						createC:Invisible()
+
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Created "{configName}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+						createA:SetInput("")
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "Name cannot be empty",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+			createC = _settings:Button({
+				Visible = false,
+				Name = "Cancel",
+				Callback = function()
 					configButtons:Visible()
 					configs:Visible()
 					createA:Invisible()
 					createB:Invisible()
 					createC:Invisible()
-
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Created "{configName}"`,
-						Duration = 3,
-						Image = icons.check
-					})
 					createA:SetInput("")
-				else
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "Name cannot be empty",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
 				end
-			end
-		})
-		createC = _settings:Button({
-			Visible = false,
-			Name = "Cancel",
-			Callback = function()
-				configButtons:Visible()
-				configs:Visible()
-				createA:Invisible()
-				createB:Invisible()
-				createC:Invisible()
-				createA:SetInput("")
-			end
-		})
+			})
 
-		-- Save
+			-- Save
 
-		configButtons:Button({
-			Name = "Save",
-			Callback = function()
-				if selectedConfig ~= "" then
-					flagCreator.save(selectedConfig)
-					local _config = flagCreator.find(selectedConfig)
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Saved configuration "{_config.name}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "No configuration selected",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
+			configButtons:Button({
+				Name = "Save",
+				Callback = function()
+					if selectedConfig ~= "" then
+						flagCreator.save(selectedConfig)
+						local _config = flagCreator.find(selectedConfig)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Saved configuration "{_config.name}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
 				end
-			end
-		})
+			})
 
-		-- Delete
+			-- Delete
 
-		configButtons:Button({
-			Name = "Delete",
-			Callback = function()
-				if selectedConfig == "" then
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "No configuration selected",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
-					return
+			configButtons:Button({
+				Name = "Delete",
+				Callback = function()
+					if selectedConfig == "" then
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+						return
+					end
+					flagCreator.delete(selectedConfig)
+					refreshConfigList()
 				end
-				flagCreator.delete(selectedConfig)
-				refreshConfigList()
-			end
-		})
+			})
+		end
 	end
 
 	if customFunctions.getgenv then

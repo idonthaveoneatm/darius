@@ -240,6 +240,9 @@ function darius:Window(windowProperty)
 			property.tab = tab
 			return addComponent("colorpicker", tabFrame, property)
 		end
+		function components:KeybindList()
+			return addComponent("keybindList", tabFrame, {tab = tab})
+		end
 		function components:ButtonGroup()
 			return addComponent("buttonGroup", tabFrame, {tab = tab})
 		end
@@ -260,449 +263,533 @@ function darius:Window(windowProperty)
 		references:clear()
 		bindableEvent:Destroy()
 	end
-	function darius:LoadConfig()
-		if not windowProperty.UseConfig then
-			return
-		end
-		--flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
-		--configLoaded:update("boolean", true)
-	end
-	function darius:SetTheme(newTheme)
-		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
+
+	function darius:SetTheme(uid)
+		local _didPass, _failedItems = typecheck({['New Theme'] = uid}, {['New Theme'] = ""})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-		--theme.set(newTheme)
+
+		if theme.find(uid) then
+			theme.set(uid)
+		end
+	end
+	function darius:GetThemeUID()
+		return theme.getTheme().uid
+	end
+	function darius:ImportTheme(...)
+		local args = {...}
+		if #args == 1 then
+			didPass, failedItems = typecheck(args,{[1] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return theme.create(`Import_{randomString(5)}`, args[1])
+		elseif #args == 2 then
+			didPass, failedItems = typecheck(args,{[1] = "",[2] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return theme.create(args[1], args[2])
+		end
 	end
 	function darius:ExportTheme()
-		local _currentTheme = theme.getTheme()
-		local ctheme = {}
-		ctheme.name = _currentTheme.name
-		ctheme.uid = _currentTheme.uid
-		ctheme.palette = {}
-		for i,v in _currentTheme.palette do
-			ctheme.palette[i] = v:ToHex()
-		end
-		return HttpService:JSONEncode(ctheme)
+		return theme.export()
 	end
+
+	function darius:SetConfiguration(uid)
+		flagCreator.set(uid)
+	end
+	function darius:GetConfigurationUID()
+		return flagCreator.getConfig().uid
+	end
+	function darius:ImportConfiguration(...)
+		local args = {...}
+		if #args == 1 then
+			didPass, failedItems = typecheck(args,{[1] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return flagCreator.create(`Import_{randomString(5)}`, nil, nil, args[1])
+		elseif #args == 2 then
+			didPass, failedItems = typecheck(args,{[1] = "",[2] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return flagCreator.create(args[1], nil, nil, args[2])
+		end
+	end
+	function darius:ExportConfiguration()
+		return flagCreator.export()
+	end
+
 	function darius:CreateSettings()
 		local _settings = tabs:Tab({
 			Name = "Settings",
 			Image = icons.cog
 		})
-		local themeTable = theme.getTheme().palette
-		local cachedTheme = {}
-		local colorNames = {}
-		local savedThemesNames = {}
-		table.foreach(themeTable,function(i)
-			table.insert(colorNames, i)
-		end)
-		table.foreach(theme.getThemes(), function(_, _theme)
-			table.insert(savedThemesNames, {
-				DisplayValue = _theme.name,
-				Value = _theme.uid
-			})
-		end)
 
-		local _name = ""
-		local _colorPicker,_reset,_themeNames,_delete,_save
+		-- Theme Manager
 
-		local savedThemesDD = _settings:Dropdown({
-			Name = "Current Theme",
-			Items = savedThemesNames,
-			Default = theme.getTheme().uid,
-			Callback = function(uid)
-				theme.set(uid)
-				themeTable = theme.getTheme().palette
-				table.clear(cachedTheme)
-				table.foreach(themeTable, function(i,v)
-					cachedTheme[i] = v
-				end)
-				if _colorPicker and _name ~= "" then
-					_colorPicker:SetColor(theme.get(_name))
-				end
-				if uid == "original" and _delete then
-					_delete:Disable()
-				elseif uid ~= "original" and _delete then
-					_delete:Enable()
-				end
-				if uid == "original" and _save then
-					_save:Disable()
-				elseif uid ~= "original" and _save then
-					_save:Enable()
-				end
-			end
-		})
-		local function refreshThemes(value)
-			table.clear(savedThemesNames)
+		do
+			local themeTable = theme.getTheme().palette
+			local cachedTheme = {}
+			local colorNames = {}
+			local savedThemesNames = {}
+			table.foreach(themeTable,function(i)
+				table.insert(colorNames, i)
+			end)
 			table.foreach(theme.getThemes(), function(_, _theme)
 				table.insert(savedThemesNames, {
 					DisplayValue = _theme.name,
 					Value = _theme.uid
 				})
 			end)
-			savedThemesDD:SetItems(savedThemesNames)
-			savedThemesDD:SelectItem(value)
-		end
 
-
-		local themeGroup = _settings:ButtonGroup()
-
-		local isToggledE = false
-		local displayReset = false
-		local function editToggle(value)
-			if value then
-				_themeNames:Visible()
-				_colorPicker:Visible()
-				if displayReset then
-					_reset:Visible()
+			local _name = ""
+			local _colorPicker,_reset,_themeNames,_delete,_save,_changeName,_confirmName
+			local isToggledE = false
+			local displayReset = false
+			local function editToggle(value)
+				if value then
+					_themeNames:Visible()
+					_colorPicker:Visible()
+					if displayReset then
+						_reset:Visible()
+					end
+					if theme.getTheme().uid ~= "original" then
+						_changeName:Visible()
+						_confirmName:Visible()
+					else
+						_changeName:Invisible()
+						_confirmName:Invisible()
+					end
+				else
+					_reset:Invisible()
+					_colorPicker:Invisible()
+					_themeNames:Invisible()
+					_changeName:Invisible()
+					_confirmName:Invisible()
 				end
-			else
-				_reset:Invisible()
-				_colorPicker:Invisible()
-				_themeNames:Invisible()
 			end
-		end
-		local isToggledC = false
-		local _nameTheme,_createTheme,_cancelTheme
-		local function createToggle(value)
-			if value then
-				_nameTheme:Visible()
-				_createTheme:Visible()
-				_cancelTheme:Visible()
-			else
-				_nameTheme:Invisible()
-				_createTheme:Invisible()
-				_cancelTheme:Invisible()
-			end
-		end
 
-		-- Edit Button
-
-		themeGroup:Button({
-			Name = "Edit",
-			Callback = function()
-				isToggledC = false
-				createToggle(false)
-				isToggledE = not isToggledE
-				editToggle(isToggledE)
-			end
-		})
-
-		_themeNames = _settings:Dropdown({
-			Name = "Colors",
-			Visible = false,
-			Items = colorNames,
-			Callback = function(v)
-				_name = v
-				_colorPicker:SetColor(theme.get(_name))
-				_colorPicker:Enable()
-				_colorPicker:SetName(`Editing: {_name}`)
-			end
-		})
-		_colorPicker = _settings:ColorPicker({
-			Name = "Editing Color: ",
-			IsEnabled = false,
-			Visible = false,
-			DisabledText = "Select Color First!",
-			HideTransparency = true,
-			Callback = function(color)
-				local currentTheme = theme.getTheme().palette
-				if currentTheme[_name].R ~= color.R or currentTheme[_name].G ~= color.G or currentTheme[_name].B ~= color.B then
-					displayReset = true
-					_reset:Visible()
-				elseif currentTheme[_name].R == color.R or currentTheme[_name].G == color.G or currentTheme[_name].B == color.B then
-					displayReset = false
+			local savedThemesDD = _settings:Dropdown({
+				Name = "Current Theme",
+				Items = savedThemesNames,
+				Default = theme.getTheme().uid,
+				Callback = function(uid)
+					theme.set(uid)
+					if _colorPicker and _name ~= "" then
+						_colorPicker:SetColor(theme.get(_name))
+					end
+					if uid == "original" and _delete then
+						_delete:Disable()
+					elseif uid ~= "original" and _delete then
+						_delete:Enable()
+					end
+					if uid == "original" and _save then
+						_save:Disable()
+					elseif uid ~= "original" and _save then
+						_save:Enable()
+					end
+					if _confirmName then
+						editToggle(isToggledE)
+					end
 				end
-				theme.edit(_name, color)
-			end
-		})
-		_reset = _settings:Button({
-			Name = "Reset Color",
-			Visible = false,
-			Callback = function()
-				displayReset = false
-				_colorPicker:SetColor(cachedTheme[_name])
-				_reset:Invisible()
-			end
-		})
-
-		-- Create Button
-
-		local _themeName = ""
-		themeGroup:Button({
-			Name = "Create",
-			Callback = function()
-				isToggledE = false
-				editToggle(false)
-				isToggledC = not isToggledC
-				createToggle(isToggledC)
-			end
-		})
-
-		_nameTheme = _settings:TextBox({
-			Name = "Name your theme",
-			Visible = false,
-			Callback = function(v)
-				_themeName = v
-			end
-		})
-		_createTheme = _settings:Button({
-			Name = "Create theme",
-			Visible = false,
-			Callback = function()
-				if _themeName == "" then
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = "Theme name cannot be empty!",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
+			})
+			local function refreshThemes(value:string?)
+				table.clear(savedThemesNames)
+				table.foreach(theme.getThemes(), function(_, _theme)
+					table.insert(savedThemesNames, {
+						DisplayValue = _theme.name,
+						Value = _theme.uid
 					})
-					return
+				end)
+				savedThemesDD:SetItems(savedThemesNames)
+				if value then
+					savedThemesDD:SelectItem(value)
 				end
-				local newTheme = theme.create(_themeName, theme.getColors())
-				local response = {theme.set(newTheme)}
+			end
 
-				if response[1] then
-					refreshThemes(newTheme)
+			theme.onChange(function()
+				savedThemesDD:SelectItem(theme.getTheme().uid)
+				table.clear(cachedTheme)
+				table.foreach(theme.getTheme().palette, function(i,v)
+					cachedTheme[i] = v
+				end)
+			end)
+			theme.onCreate(function()
+				refreshThemes()
+			end)
+
+			local themeGroup = _settings:ButtonGroup()
+			local isToggledC = false
+			local _nameTheme,_createTheme,_cancelTheme
+			local function createToggle(value)
+				if value then
+					_nameTheme:Visible()
+					_createTheme:Visible()
+					_cancelTheme:Visible()
+				else
+					_nameTheme:Invisible()
+					_createTheme:Invisible()
+					_cancelTheme:Invisible()
+				end
+			end
+
+			-- Edit Button
+
+			themeGroup:Button({
+				Name = "Edit",
+				Callback = function()
 					isToggledC = false
+					createToggle(false)
+					isToggledE = not isToggledE
+					editToggle(isToggledE)
+				end
+			})
+
+			_themeNames = _settings:Dropdown({
+				Name = "Colors",
+				Visible = false,
+				Items = colorNames,
+				Callback = function(v)
+					_name = v
+					_colorPicker:SetColor(theme.get(_name))
+					_colorPicker:Enable()
+					_colorPicker:SetName(`Editing: {_name}`)
+				end
+			})
+			_colorPicker = _settings:ColorPicker({
+				Name = "Editing Color: ",
+				IsEnabled = false,
+				Visible = false,
+				DisabledText = "Select Color First!",
+				HideTransparency = true,
+				Callback = function(color)
+					local currentTheme = theme.getTheme().palette
+					if currentTheme[_name]:ToHex() ~= color:ToHex() then
+						displayReset = true
+						_reset:Visible()
+					else
+						_reset:Invisible()
+						displayReset = false
+					end
+					theme.edit(_name, color)
+				end
+			})
+			_reset = _settings:Button({
+				Name = "Reset Color",
+				Visible = false,
+				Callback = function()
+					displayReset = false
+					_colorPicker:SetColor(cachedTheme[_name])
+					_reset:Invisible()
+				end
+			})
+			local newName = ""
+			_changeName = _settings:TextBox({
+				Name = "New Name",
+				Visible = false,
+				Callback = function(v)
+					newName = v
+				end
+			})
+			_confirmName = _settings:Button({
+				Name = "Set Name",
+				Visible = false,
+				Callback = function()
+					theme.editTheme(theme.getTheme().uid, "name", newName)
+					refreshThemes()
+					_changeName:SetInput("")
+				end
+			})
+
+			-- Create Button
+
+			local _themeName = ""
+			themeGroup:Button({
+				Name = "Create",
+				Callback = function()
+					isToggledE = false
+					editToggle(false)
+					isToggledC = not isToggledC
 					createToggle(isToggledC)
 				end
-			end
-		})
-		_cancelTheme = _settings:Button({
-			Name = "Cancel",
-			Visible = false,
-			Callback = function()
-				isToggledC = false
-				createToggle(isToggledC)
-				_nameTheme:SetInput("")
-			end
-		})
+			})
 
-		-- Save Button
-
-		_save = themeGroup:Button({
-			Name = "Save",
-			DisabledText = "Disabled",
-			Callback = function()
-				local response = theme.save(theme.getTheme().uid)
-				if response then
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Saved theme with uid "{theme.getTheme().uid}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Theme Manager Error",
-						Body = `Couldn't find/save theme with uid "{theme.getTheme().uid}"`,
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
+			_nameTheme = _settings:TextBox({
+				Name = "Name your theme",
+				Visible = false,
+				Callback = function(v)
+					_themeName = v
 				end
-			end
-		})
+			})
+			_createTheme = _settings:Button({
+				Name = "Create theme",
+				Visible = false,
+				Callback = function()
+					if _themeName == "" then
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = "Theme name cannot be empty!",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+						return
+					end
+					local newTheme = theme.create(_themeName, theme.getColors())
+					local response = {theme.set(newTheme)}
 
-		-- Delete Button
-
-		_delete = themeGroup:Button({
-			Name = "Delete",
-			DisabledText = "Disabled",
-			Callback = function()
-				local response = {theme.find(theme.getTheme().uid)}
-				if response[1] then
-					local _theme = response[2]
-					theme.delete(_theme.uid)
-					refreshThemes(defaultTheme)
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Deleted theme with uid "{_theme.uid}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Theme Manager Error",
-						Body = `Couldn't find theme with uid "{theme.getTheme().uid}"`,
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
+					if response[1] then
+						refreshThemes(newTheme)
+						isToggledC = false
+						createToggle(isToggledC)
+					end
 				end
-			end
-		})
+			})
+			_cancelTheme = _settings:Button({
+				Name = "Cancel",
+				Visible = false,
+				Callback = function()
+					isToggledC = false
+					createToggle(isToggledC)
+					_nameTheme:SetInput("")
+				end
+			})
+
+			-- Save Button
+
+			_save = themeGroup:Button({
+				Name = "Save",
+				DisabledText = "Disabled",
+				Callback = function()
+					local response = theme.save(theme.getTheme().uid)
+					if response then
+						task.wait()
+						local currentTheme = theme.getTheme().palette
+						if currentTheme[_name]:ToHex() ~= cachedTheme[_name]:ToHex() then
+							displayReset = true
+							_reset:Visible()
+						else
+							_reset:Invisible()
+							displayReset = false
+						end
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Saved theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Theme Manager Error",
+							Body = `Couldn't find/save theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+
+			-- Delete Button
+
+			_delete = themeGroup:Button({
+				Name = "Delete",
+				DisabledText = "Disabled",
+				Callback = function()
+					local response = {theme.find(theme.getTheme().uid)}
+					if response[1] then
+						local _theme = response[2]
+						theme.delete(_theme.uid)
+						refreshThemes(defaultTheme)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Deleted theme with uid "{_theme.uid}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Theme Manager Error",
+							Body = `Couldn't find theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+		end
 
 		_settings:Divider()
 
 		-- Configuration Manager
 
-		local configNames = {}
-		table.foreach(flagCreator.getConfigs(), function(_, _config)
-			table.insert(configNames, {
-				DisplayValue = _config.name,
-				Value = _config.uid
-			})
-		end)
-		local selectedConfig = ""
-
-		local configs = _settings:Dropdown({
-			Name = "Configs",
-			Items = configNames,
-			AlwaysOpen = true,
-			Callback = function(uid)
-				selectedConfig = uid
-			end
-		})
-		local configButtons = _settings:ButtonGroup()
-		configButtons:Button({
-			Name = "Load",
-			Callback = function()
-				if selectedConfig ~= "" then
-					flagCreator.set(selectedConfig)
-					local _config = flagCreator.find(selectedConfig)
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Set configuration to "{_config.name}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "No configuration selected",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
-				end
-			end
-		})
-		local function refreshConfigList()
-			table.clear(configNames)
+		do
+			local configNames = {}
 			table.foreach(flagCreator.getConfigs(), function(_, _config)
 				table.insert(configNames, {
 					DisplayValue = _config.name,
 					Value = _config.uid
 				})
 			end)
-			configs:SetItems(configNames)
-		end
+			local selectedConfig = ""
 
-		-- Create
-
-		local createA, createB, createC
-		local configName = ""
-		configButtons:Button({
-			Name = "Create",
-			Callback = function()
-				configButtons:Invisible()
-				configs:Invisible()
-				createA:Visible()
-				createB:Visible()
-				createC:Visible()
+			local configs = _settings:Dropdown({
+				Name = "Configs",
+				Items = configNames,
+				AlwaysOpen = true,
+				Callback = function(uid)
+					selectedConfig = uid
+				end
+			})
+			local configButtons = _settings:ButtonGroup()
+			configButtons:Button({
+				Name = "Load",
+				Callback = function()
+					if selectedConfig ~= "" then
+						flagCreator.set(selectedConfig)
+						local _config = flagCreator.find(selectedConfig)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Set configuration to "{_config.name}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+			local function refreshConfigList(value)
+				table.clear(configNames)
+				table.foreach(flagCreator.getConfigs(), function(_, _config)
+					table.insert(configNames, {
+						DisplayValue = _config.name,
+						Value = _config.uid
+					})
+				end)
+				configs:SetItems(configNames)
+				if value then
+					configs:SelectItem(value)
+				end
 			end
-		})
+			flagCreator.onCreate(refreshConfigList)
+			flagCreator.onSelect(refreshConfigList)
 
-		createA = _settings:TextBox({
-			Visible = false,
-			Name = "Name your configuration",
-			Callback = function(name)
-				configName = name
-			end
-		})
-		createB = _settings:Button({
-			Visible = false,
-			Name = "Complete new configuration",
-			Callback = function()
-				if configName ~= "" then
-					flagCreator.create(configName, nil, false, nil)
+			-- Create
 
-					refreshConfigList()
+			local createA, createB, createC
+			local configName = ""
+			configButtons:Button({
+				Name = "Create",
+				Callback = function()
+					configButtons:Invisible()
+					configs:Invisible()
+					createA:Visible()
+					createB:Visible()
+					createC:Visible()
+				end
+			})
 
+			createA = _settings:TextBox({
+				Visible = false,
+				Name = "Name your configuration",
+				Callback = function(name)
+					configName = name
+				end
+			})
+			createB = _settings:Button({
+				Visible = false,
+				Name = "Complete new configuration",
+				Callback = function()
+					if configName ~= "" then
+						flagCreator.create(configName, nil, false, nil)
+
+						refreshConfigList()
+
+						configButtons:Visible()
+						configs:Visible()
+						createA:Invisible()
+						createB:Invisible()
+						createC:Invisible()
+
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Created "{configName}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+						createA:SetInput("")
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "Name cannot be empty",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+			createC = _settings:Button({
+				Visible = false,
+				Name = "Cancel",
+				Callback = function()
 					configButtons:Visible()
 					configs:Visible()
 					createA:Invisible()
 					createB:Invisible()
 					createC:Invisible()
-
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Created "{configName}"`,
-						Duration = 3,
-						Image = icons.check
-					})
 					createA:SetInput("")
-				else
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "Name cannot be empty",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
 				end
-			end
-		})
-		createC = _settings:Button({
-			Visible = false,
-			Name = "Cancel",
-			Callback = function()
-				configButtons:Visible()
-				configs:Visible()
-				createA:Invisible()
-				createB:Invisible()
-				createC:Invisible()
-				createA:SetInput("")
-			end
-		})
+			})
 
-		-- Save
+			-- Save
 
-		configButtons:Button({
-			Name = "Save",
-			Callback = function()
-				if selectedConfig ~= "" then
-					flagCreator.save(selectedConfig)
-					local _config = flagCreator.find(selectedConfig)
-					darius:Notify({
-						Title = windowProperty.Title,
-						Body = `Saved configuration "{_config.name}"`,
-						Duration = 3,
-						Image = icons.check
-					})
-				else
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "No configuration selected",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
+			configButtons:Button({
+				Name = "Save",
+				Callback = function()
+					if selectedConfig ~= "" then
+						flagCreator.save(selectedConfig)
+						local _config = flagCreator.find(selectedConfig)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Saved configuration "{_config.name}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
 				end
-			end
-		})
+			})
 
-		-- Delete
+			-- Delete
 
-		configButtons:Button({
-			Name = "Delete",
-			Callback = function()
-				if selectedConfig == "" then
-					darius:Notify({
-						Title = "Configuration Error",
-						Body = "No configuration selected",
-						Duration = 3,
-						Image = icons.alert,
-						ImageColor = theme.get("red")
-					})
-					return
+			configButtons:Button({
+				Name = "Delete",
+				Callback = function()
+					if selectedConfig == "" then
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+						return
+					end
+					flagCreator.delete(selectedConfig)
+					refreshConfigList()
 				end
-				flagCreator.delete(selectedConfig)
-				refreshConfigList()
-			end
-		})
+			})
+		end
 	end
 
 	if customFunctions.getgenv then
@@ -724,7 +811,17 @@ end)() end,
     end
 })
 end)() end,
-    function()local wax,script,require=ImportGlobals(3)local ImportGlobals return (function(...)local fusion = require(game:GetObjects("rbxassetid://110500042647914")[1])
+    function()local wax,script,require=ImportGlobals(3)local ImportGlobals return (function(...)local utilities = require(script.Parent.Parent.utilities)
+local customFunctions = utilities.customFunctions
+
+local fusion
+local oldidentity
+if customFunctions.getthreadidentity() < 5 then
+    oldidentity = customFunctions.getthreadidentity()
+    customFunctions.setthreadidentity(5)
+end
+fusion = require(game:GetObjects("rbxassetid://110500042647914")[1])
+customFunctions.setthreadidentity(oldidentity)
 return fusion
 end)() end,
     function()local wax,script,require=ImportGlobals(4)local ImportGlobals return (function(...)local randomString = require(script.Parent.Parent.utilities.randomString)
@@ -818,6 +915,8 @@ local funcs = {}
 local flags = data.add({list = {}},"flags")
 local names = {}
 local preregistered = {}
+local functionsOnCreate = {}
+local functionsOnSelect = {}
 
 local types = {
     ['toggle'] = function(flag)
@@ -882,6 +981,9 @@ local cleaner = {
         if status.keycode then
             clean.keycode = get(status.keycode)
         end
+        if get(status.coordinate) then
+            clean.coordinate = {X = get(status.coordinate).X, Y = get(status.coordinate).Y}
+        end
         return clean
     end,
     ['dropdown'] = function(status)
@@ -892,8 +994,8 @@ local cleaner = {
         if status.keycode then
             clean.keycode = get(status.keycode)
         end
-        if status.coordinate then
-            clean.coordinate = get(status.coordinate)
+        if get(status.coordinate) then
+            clean.coordinate = {X = get(status.coordinate).X, Y = get(status.coordinate).Y}
         end
         return clean
     end,
@@ -904,12 +1006,12 @@ local cleaner = {
         return get(status.correctText)
     end,
     ['colorpicker'] = function(status)
-        return {color = get(status.color), transparency = get(status.transparency)}
+        return {color = get(status.color):ToHex(), transparency = get(status.transparency)}
     end
 }
 
 local configs = {}
-funcs.currentConfig = ""
+funcs.currentConfig = {}
 funcs.path = ""
 
 function funcs.preregister(name)
@@ -955,6 +1057,7 @@ function funcs.register(name, default, type, private)
     end
     local _flag
     if not preregistered[name] then
+        local fileChange = (fusion.New "BindableEvent" {})
         _flag = {
             name = name,
             status = default,
@@ -962,7 +1065,8 @@ function funcs.register(name, default, type, private)
             private = private,
             preregistered = false,
             bindableEvent = flagEvent,
-            file = value({}),
+            file = fileChange.Event,
+            fileEvent = fileChange,
             user = {
                 Value = nil,
                 OnChange = setmetatable(onChange,{
@@ -1021,7 +1125,12 @@ function funcs.create(name, uid, fromFile, tbl)
         end
     end
     table.insert(configs, config)
-
+    customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v)
+        end
+    end)
     return uid
 end
 
@@ -1038,7 +1147,7 @@ function funcs.load(fileTable)
         if not flag then
             continue
         end
-        flag.file:set(v)
+        flag.fileEvent:Fire(v)
     end
 end
 
@@ -1047,8 +1156,13 @@ function funcs.set(uid)
     if not config then
         return
     end
-    funcs.currentConfig = uid
+    funcs.currentConfig = config
     funcs.load(config.flagValues)
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v, uid)
+        end
+    end)
 end
 
 function funcs.save(uid)
@@ -1074,9 +1188,21 @@ function funcs.delete(uid)
         end
     end
 end
+function funcs.export()
+    return HttpService:JSONEncode(funcs.currentConfig)
+end
 
 function funcs.getConfigs()
     return configs
+end
+function funcs.getConfig()
+    return funcs.currentConfig
+end
+function funcs.onCreate(func)
+    table.insert(functionsOnCreate, func)
+end
+function funcs.onSelect(func)
+    table.insert(functionsOnSelect, func)
 end
 
 return funcs
@@ -1100,7 +1226,17 @@ end)() end,
     ['cog'] = "rbxassetid://10709810948"
 }
 end)() end,
-    function()local wax,script,require=ImportGlobals(7)local ImportGlobals return (function(...)local lucide = loadstring(game:GetObjects("rbxassetid://85554466048193")[1].Source)()
+    function()local wax,script,require=ImportGlobals(7)local ImportGlobals return (function(...)local utilities = require(script.Parent.Parent.utilities)
+local customFunctions = utilities.customFunctions
+
+local lucide
+local oldidentity
+if customFunctions.getthreadidentity() < 5 then
+    oldidentity = customFunctions.getthreadidentity()
+    customFunctions.setthreadidentity(5)
+end
+lucide = loadstring(game:GetObjects("rbxassetid://85554466048193")[1].Source)()
+customFunctions.setthreadidentity(oldidentity)
 return lucide
 end)() end,
     function()local wax,script,require=ImportGlobals(8)local ImportGlobals return (function(...)local cF = require(script.Parent.Parent.utilities.customFunctions)
@@ -1130,11 +1266,13 @@ local _warn = require(script.Parent.Parent.components.warn)
 local randomString = require(script.Parent.Parent.utilities.randomString)
 local customFunctions = require(script.Parent.Parent.utilities.customFunctions)
 local functionsOnChange = {}
+local functionsOnCreate = {}
 
 local currentTheme = value({})
 local _currentTheme = value({})
 local dariusUID = ""
 observe(currentTheme):onChange(function()
+    task.wait()
     for _,func in ipairs(functionsOnChange) do
         task.spawn(func)
     end
@@ -1208,7 +1346,11 @@ function themeSystem.create(name, palette, uid, fromFile, fromSet)
         ctheme.palette[i] = v:ToHex()
     end
     customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
-    
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v)
+        end
+    end)
     return uid
 end
 
@@ -1228,6 +1370,26 @@ function themeSystem.edit(name, color)
     ctheme[name] = color
     currentTheme:set(ctheme)
 end
+function themeSystem.editTheme(uid:string, property:string, new:any)
+    local results = {themeSystem.find(uid)}
+    if not results[1] then
+        return false
+    end
+    local theme = results[2]
+    theme[property] = new
+
+    local ctheme = {}
+    ctheme.name = theme.name
+    ctheme.uid = uid
+    ctheme.fromSet = theme.fromSet
+    ctheme.palette = {}
+    for i,v in theme.palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+
+    return true
+end
 
 function themeSystem.set(uid)
     local results = {themeSystem.find(uid)}
@@ -1246,6 +1408,18 @@ function themeSystem.set(uid)
     _currentTheme:set(theme)
     return true, "successfully set new theme"
 end
+function themeSystem.export()
+    local theme = get(_currentTheme)
+    local ctheme = {}
+    ctheme.name = theme.name
+    ctheme.uid = theme.uid
+    ctheme.fromSet = theme.fromSet
+    ctheme.palette = {}
+    for i,v in theme.palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    return HttpService:JSONEncode(ctheme)
+end
 
 function themeSystem.save(uid)
     local results = {themeSystem.find(uid)}
@@ -1253,14 +1427,15 @@ function themeSystem.save(uid)
         local theme = results[2]
         local ctheme = {}
         ctheme.name = theme.name
-        ctheme.uid = uid
+        ctheme.uid = theme.uid
         ctheme.fromSet = theme.fromSet
         ctheme.palette = {}
-        for i,v in get(currentTheme) do
+        for i,v in theme.palette do
             ctheme.palette[i] = v:ToHex()
         end
         theme.palette = get(currentTheme)
         customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+        themeSystem.set(uid)
         return true
     else
         return false
@@ -1297,6 +1472,9 @@ end
 
 function themeSystem.onChange(func)
     table.insert(functionsOnChange, func)
+end
+function themeSystem.onCreate(func)
+    table.insert(functionsOnCreate, func)
 end
 
 function themeSystem.getTheme()
@@ -1373,9 +1551,9 @@ return function(property)
 		Visible = false,
         Callback = function()end
 	},{
+		property.DisabledText and "" or "DisabledText",
 		property.IsEnabled and "" or "IsEnabled",
-		property.Visible and "" or "Visible",
-		property.DisabledText and "" or "DisabledText"
+		property.Visible and "" or "Visible"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -1389,10 +1567,10 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
+	local visible = property.Visible or value(true)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
-	local visible = property.Visible or value(true)
+	local callback = property.Callback
 
 	-- Variables
 
@@ -1576,7 +1754,7 @@ return function(property)
 
     -- Variables
 
-    local buttonCount = value(0)
+    local visibleCount = value(0)
     local visible = value(true)
 
 	-- Button Group
@@ -1611,8 +1789,6 @@ return function(property)
             _property.DisabledText and "" or "DisabledText"
         })
         assert(didPass, table.concat(failedItems, "\n"))
-
-        buttonCount:set(get(buttonCount) + 1)
 
         -- Data
 
@@ -1652,7 +1828,7 @@ return function(property)
                 return true
             end),
             Size = computed(function()
-                return UDim2.new(1/get(buttonCount) - (get(buttonCount) - 1 == 0 and 0 or ((((get(buttonCount)-1)*3)/get(buttonCount))/get(absSize).X)),0,0,36)
+                return UDim2.new(1/get(visibleCount) - (get(visibleCount) - 1 == 0 and 0 or ((((get(visibleCount)-1)*3)/get(visibleCount))/get(absSize).X)),0,0,36)
             end),
             Parent = buttonGroup,
             BackgroundColor3 = theme.background2,
@@ -1745,6 +1921,17 @@ return function(property)
             }
         }
 
+        if get(_visible) then
+            visibleCount:set(get(visibleCount) + 1)
+        end
+        observe(_visible):onChange(function()
+            if get(_visible) then
+                visibleCount:set(get(visibleCount) + 1)
+            else
+                visibleCount:set(get(visibleCount) - 1)
+            end
+        end)
+
         local returnFunctions = {}
         function returnFunctions:SetName(newText)
             local _didPass, _failedItems = typecheck({['SetName'] = newText}, {SetName = ""})
@@ -1827,19 +2014,21 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
-        Callback = function()end,
-		FLAG = "",
 		Visible = false,
+        Callback = function()end,
+
+		FLAG = "",
 		Color = Color3.new(),
 		Transparency = 0,
 		HideTransparency = true,
 		IgnoreConfig = true
 	},{
-		property.IsEnabled and "" or "IsEnabled",
 		property.DisabledText and "" or "DisabledText",
+		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
 		property.FLAG and "" or "FLAG",
 		property.Color and "" or "Color",
-		property.Visible and "" or "Visible",
 		property.Transparency and "" or "Transparency",
 		property.HideTransparency and "" or "HideTransparency",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -1859,14 +2048,16 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local _color = property.Color or value(Color3.new(1))
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local _transparency = property.Transparency or value(0)
-	local visible = property.Visible or value(true)
 	local hideTransparency = property.HideTransparency or value(false)
+
 	local flag = property.FLAG or value(colorpicker.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -2554,16 +2745,19 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noColor = true
 			local noTransparency = true
 			if file.color ~= nil then
-				local a = string.split(file.color:gsub(" ", ""), ",")
-				table.foreach(a, function(i,v)
-					a[i] = tonumber(v)
-				end)
-				color:set(Color3.new(unpack(a)))
+				if string.find(file.color, ",") then
+					local a = string.split(file.color:gsub(" ", ""), ",")
+					table.foreach(a, function(i,v)
+						a[i] = tonumber(v)
+					end)
+					color:set(Color3.new(unpack(a)))
+				else
+					color:set(Color3.fromHex(`#{file.color}`))
+				end
 				noColor = false
 			end
 			if file.transparency ~= nil then
@@ -2719,10 +2913,11 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
+		IsEnabled = false,
 		Visible = false,
-        IsEnabled = false,
         Callback = function()end,
+
+		FLAG = "",
         Items = {},
         Multiselect = true,
         Regex = function()end,
@@ -2731,9 +2926,10 @@ return function(property)
 		AlwaysOpen = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
-		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
 		property.IgnoreConfig and "" or "IgnoreConfig",
@@ -2764,17 +2960,19 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local callback = property.Callback
+
 	local items = value({})
 	local multiselect = property.Multiselect or value(false)
 	local default = property.Default
-	local visible = property.Visible or value(true)
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local isEnabled = property.IsEnabled or value(true)
 	local alphabetical = property.Alphabetical or value(false)
 	local alwaysOpen = property.AlwaysOpen or value(false)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
+
 	local flag = property.FLAG or value(dropdown.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -2785,36 +2983,39 @@ return function(property)
 		},"dropdown", get(flag) == dropdown.uid)
 		_flag.user.Value = get(multiselect) and get(_flag.status.items) or  get(_flag.status.item)
 	end
+	local _items = _flag.status.items
+	local _item = _flag.status.item
 
 	-- Variables
 
-	
+
 	local searchRef = value()
 
 	local isDropped = value(false)
 	local lastReturnedValue = value(get(multiselect) and {} or "")
 	local itemElements = value({})
-	local displayValues = {}
+	local displayValues = value({})
 	local hasSelectedAll = value(false)
 
-	observe(_flag.status.items):onChange(function()
-		if #get(_flag.status.items) == #get(items) then
+	observe(_items):onChange(function()
+		if #get(_items) == #get(items) then
 			hasSelectedAll:set(true)
 		else
 			hasSelectedAll:set(false)
 		end
+
 		local _cbTable = {}
-		for _,v in get(_flag.status.items) do
+		for _,v in get(_items) do
 			table.insert(_cbTable, get(regex)(v))
 		end
 		task.wait()
 		task.spawn(get(callback), _cbTable)
-		lastReturnedValue:set(get(_flag.status.items))
+		lastReturnedValue:set(get(_items))
 	end)
-	observe(_flag.status.item):onChange(function()
+	observe(_item):onChange(function()
 		task.wait()
-		task.spawn(get(callback), get(regex)(get(_flag.status.item)))
-		lastReturnedValue:set(get(regex)(get(_flag.status.item)))
+		task.spawn(get(callback), get(regex)(get(_item)))
+		lastReturnedValue:set(get(regex)(get(_item)))
 	end)
 	local isSelected = value(get(selectedTab.string) == get(dropdown.tab).uid)
 	observe(selectedTab.string):onChange(function()
@@ -2836,7 +3037,7 @@ return function(property)
 		end),
 		Size = animate(function()
 			if get(isDropped) then
-				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4) or 6) + math.clamp((#get(items)*34), 34, 136))
+				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4 + 6) or 6) + math.clamp((#get(items)*34), 34, 136))
 			end
 			return UDim2.new(1,0,0,36)
 		end, 40, 1),
@@ -2926,13 +3127,13 @@ return function(property)
 								Position = UDim2.new(0,0,0.5,0),
 								Text = computed(function()
 									if get(multiselect) then
-										return get(name).." "..tostring(#get(_flag.status.items)).."/"..tostring(#get(items))
+										return get(name).." "..tostring(#get(_items)).."/"..tostring(#get(items))
 									end
 									if typeof(get(lastReturnedValue)) == "table" then
 										return get(name)
 									end
-									if displayValues[get(lastReturnedValue)] then
-										return `{get(name)}: {displayValues[get(lastReturnedValue)]}`
+									if get(displayValues)[get(lastReturnedValue)] then
+										return `{get(name)}: {get(displayValues)[get(lastReturnedValue)]}`
 									end
 									return `{get(name)}: {get(lastReturnedValue)}`
 								end),
@@ -3020,7 +3221,7 @@ return function(property)
 									table.insert(tableToSet, get(regex)(item))
 								end
 							end
-							_flag.status.items:set(tableToSet)
+							_items:set(tableToSet)
 						end,
 
 						[children] = {
@@ -3092,18 +3293,21 @@ return function(property)
 			end
 			local cleanedItem = get(regex)(itemValue)
 			if itemDisplayValue then
-				displayValues[itemValue] = itemDisplayValue
+				local _displayValues = get(displayValues)
+
+				_displayValues[itemValue] = itemDisplayValue
+				displayValues:set(_displayValues)
 			end
 
-			observe(_flag.status.items):onChange(function()
-				if table.find(get(_flag.status.items), cleanedItem) then
+			observe(_items):onChange(function()
+				if table.find(get(_items), cleanedItem) then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
 				end
 			end)
-			observe(_flag.status.item):onChange(function()
-				if get(_flag.status.item) == cleanedItem then
+			observe(_item):onChange(function()
+				if get(_item) == cleanedItem then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
@@ -3118,16 +3322,17 @@ return function(property)
 
 				[onevent "Activated"] = function()
 					if get(multiselect) then
-						local _items = get(_flag.status.items)
+						local _items2 = get(_items)
 						isItemSelected:set(not get(isItemSelected))
 						if get(isItemSelected) then
-							table.insert(_items, cleanedItem)
+							table.insert(_items2, cleanedItem)
 						else
-							table.remove(_items, table.find(_items, cleanedItem))
+							table.remove(_items2, table.find(_items2, cleanedItem))
 						end
-						_flag.status.items:set(_items)
+
+						_items:set(_items2)
 					else
-						_flag.status.item:set(cleanedItem)
+						_item:set(cleanedItem)
 						if get(alwaysOpen) then
 							return
 						end
@@ -3215,25 +3420,24 @@ return function(property)
 	end
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noChange = true
 			if file ~= nil then
 				noChange = false
 			end
 			if get(multiselect) then
-				_flag.status.items:set(file)
+				_items:set(file)
 			else
-				_flag.status.item:set(file)
+				_item:set(file)
 			end
 			if noChange then
 				if get(multiselect) then
 					if default and #get(default) > 0 then
-						_flag.status.items:set(get(default))
+						_items:set(get(default))
 					end
 				else
 					if default then
-						_flag.status.item:set(get(default))
+						_item:set(get(default))
 					end
 				end
 			end
@@ -3241,15 +3445,15 @@ return function(property)
 		if _flag.private then
 			if get(multiselect) then
 				if default and #get(default) > 0 then
-					_flag.status.items:set(get(default))
+					_items:set(get(default))
 				end
 			else
 				if default then
 					for _,v in get(items) do
 						if typeof(v) == "table" and v.Value == get(default) then
-							_flag.status.item:set(get(default))
+							_item:set(get(default))
 						elseif v == get(default) then
-							_flag.status.item:set(get(default))
+							_item:set(get(default))
 						end
 					end
 				end
@@ -3258,11 +3462,11 @@ return function(property)
 	else
 		if get(multiselect) then
 			if default and #get(default) > 0 then
-				_flag.status.items:set(get(default))
+				_items:set(get(default))
 			end
 		else
 			if default then
-				_flag.status.item:set(get(default))
+				_item:set(get(default))
 			end
 		end
 	end
@@ -3296,20 +3500,20 @@ return function(property)
 			else
 				if get(lastReturnedValue) == cleanedItem then
 					foundAnything = true
-					_flag.status.item:set(cleanedItem)
+					_item:set(cleanedItem)
 					break
 				end
 			end
 		end
 		if foundAnything then
 			if get(multiselect) then
-				_flag.status.items:set(multiselectTable)
+				_items:set(multiselectTable)
 			end
 		else
 			if get(multiselect) then
-				_flag.status.items:set({})
+				_items:set({})
 			else
-				_flag.status.item:set("")
+				_item:set("")
 			end
 		end
 	end
@@ -3332,7 +3536,7 @@ return function(property)
 			end
 		end
 		assert(hasItem, ":SelectItem couldn't find "..item)
-		_flag.status.item:set(item)
+		_item:set(item)
 	end
 	function returnFunctions:SelectItems(newSelecteds) -- Sets items used when Multiselect is true
 		assert(get(multiselect), ":SelectItems requires Multiselect to be true")
@@ -3354,7 +3558,7 @@ return function(property)
 				table.remove(newSelecteds, i)
 			end
 		end
-		_flag.status.items:set(newSelecteds)
+		_items:set(newSelecteds)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
@@ -3414,17 +3618,19 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
+		IsEnabled = false,
 		Visible = false,
-        IsEnabled = false,
         Callback = function()end,
+
+		FLAG = "",
 		Bind = Enum.KeyCode.Q,
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
-		property.Visible and "" or "Visible",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Bind and "" or "Bind",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
@@ -3446,12 +3652,25 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local bind = property.Bind
-	local visible = property.Visible or value(true)
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
+	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
+
+	local flag = property.FLAG or value(keybind.uid)
+	local _flag
+	if get(flag) ~= "" then
+		_flag = flagCreator.register(get(flag), {
+			coordinate = value(nil),
+			keycode = value(nil),
+			mobile = get(isMobile.boolean)
+		},"keybind", get(flag) == keybind.uid)
+		_flag.user.Value = get(isMobile.boolean) and get(_flag.status.coordinate) or get(_flag.status.keycode)
+	end
+
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -3471,33 +3690,9 @@ return function(property)
 			}
 			bindData:update("bindData", _bindData)
 			currentBinds:update("binds", _currentBinds)
+			_flag.status.keycode:set(get(keyCode).Name)
 		end
 	end
-	local flag = property.FLAG or value(keybind.uid)
-	local _flag
-	if get(flag) ~= "" then
-		_flag = flagCreator.register(get(flag), {
-			coordinate = value(Vector2.new(0,0)),
-			keycode = value(nil),
-			mobile = get(isMobile.boolean)
-		},"keybind", get(flag) == keybind.uid)
-		_flag.user.Value = get(isMobile.boolean) and get(_flag.status.coordinate) or get(_flag.status.keycode)
-	end
-
-	observe(_flag.status.keycode):onChange(function()
-		if get(keyCode) and get(keyCode).Name == get(_flag.status.keycode) then
-			return
-		end
-		local success, result = pcall(function()
-			return Enum.KeyCode[get(_flag.status.keycode)]
-		end)
-		if success then
-			checkKeyCode(result, "RAHHH")
-		end
-	end)
-	observe(keyCode):onChange(function()
-		_flag.status.keycode:set(get(keyCode).Name)
-	end)
 
 	-- Variables
 
@@ -3528,14 +3723,6 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
-	local function findKeyCode(keyName)
-		for _,v in Enum.KeyCode do
-			if v.Name and v.Name == keyName then
-				return v
-			end
-		end
-		return nil
-	end
 
 	-- Keybind
 
@@ -3783,17 +3970,28 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig)  then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noKeyCode = true
 			if file.keycode ~= nil then
-				_flag.status.keycode:set(file.keycode)
+				if get(keyCode) and get(keyCode).Name == file.keycode then
+					return
+				end
+				local success, result = pcall(function()
+					return Enum.KeyCode[file.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "File1")
+				end
 				noKeyCode = false
 			end
 			if noKeyCode then
 				if bind then
 					_flag.status.keycode:set(get(bind).Name)
 				end
+			end
+			if get(isMobile.boolean) and file.coordinate then
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
+				hasPlaced:set(true)
 			end
 		end)
 		if _flag.private then
@@ -4804,24 +5002,26 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
+		IsEnabled = false,
+		Visible = false,
+		Callback = function()end,
+
         FLAG = "",
-        IsEnabled = false,
 		Default = 0,
-        Callback = function()end,
 		Min = 0,
         Max = 0,
 		DisplayAsPercent = false,
 		DecimalPlace = 0,
-		Visible = false,
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Default and "" or "Default",
 		property.Min and "" or "Min",
 		property.Max and "" or "Max",
-		property.Visible and "" or "Visible",
 		property.DisplayAsPercent and "" or "DisplayAsPercent",
 		property.DecimalPlace and "" or "DecimalPlace",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -4839,27 +5039,26 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local callback = property.Callback
+
 	local max = property.Max
 	local min = property.Min
 	local displayAsPercent = property.DisplayAsPercent or value(false)
 	local roundTo = property.DecimalPlace or value(0)
-	local isEnabled = property.IsEnabled or value(true)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local visible = property.Visible or value(true)
 	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
 	if not get(default) then
 		default = value(get(min))
 	end
-	local flag = property.FLAG or value(slider.uid)
-	local _flag
-	if get(flag) ~= "" then
-		_flag = flagCreator.register(get(flag), {
-			percentageOf = value(get(min))
-		},"slider", get(flag) == slider.uid)
-		_flag.user.Value = get(_flag.status.percentageOf)
-	end
+
+	local flag = (property.FLAG and get(property.FLAG) ~= "") and get(property.FLAG) or slider.uid
+	local _flag = flagCreator.register(flag, {
+		percentageOf = value(get(min))
+	},"slider", flag == slider.uid)
+	_flag.user.Value = get(_flag.status.percentageOf)
 
 	-- Variables
 
@@ -5159,8 +5358,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noPercentageOf = true
 			if file ~= nil then
 				_flag.status.percentageOf:set(file)
@@ -5398,28 +5596,29 @@ return function(property)
 
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
-        PlaceHolderText = "",
 		DisabledText = "",
+		IsEnabled = false,
+		Visible = false,
+		Callback = function()end,
+
+		FLAG = "",
+        PlaceHolderText = "",
         ClearTextOnFocus = false,
         OnlyNumbers = true,
         OnLeave = true,
-		Visible = false,
         Default = "",
-        FLAG = "",
-        IsEnabled = false,
-        Callback = function()end,
 		IgnoreConfig = true
 	},{
-		property.PlaceHolderText and "" or "PlaceHolderText",
+		property.DisabledText and "" or "DisabledText",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.PlaceHolderText and "" or "PlaceHolderText",
 		property.ClearTextOnFocus and "" or "ClearTextOnFocus",
 		property.OnlyNumbers and "" or "OnlyNumbers",
 		property.OnLeave and "" or "OnLeave",
 		property.Default and "" or "Default",
 		property.FLAG and "" or "FLAG",
-		property.Visible and "" or "Visible",
-		property.DisabledText and "" or "DisabledText",
-		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -5435,17 +5634,18 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local onlyNumbers = property.OnlyNumbers or value(false)
 	local default = property.Default or value("")
 	local onLeave = property.OnLeave or value(false)
 	local clearTextOnFocus = property.ClearTextOnFocus or value(false)
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local ignoreConfig = property.IgnoreConfig or value(false)
 	local placeHolder = property.PlaceHolderText or value("")
-	local visible = property.Visible or value(true)
+
 	local flag = property.FLAG or value(textbox.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -5756,8 +5956,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noCorrectText = true
 			if file ~= nil then
 				if get(onLeave) then
@@ -5869,19 +6068,21 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
-        IsEnabled = false,
-		Default = false,
+		IsEnabled = false,
 		Visible = false,
         Callback = function()end,
+
+        FLAG = "",
+		Default = false,
 		LinkKeybind = true,
 		IgnoreConfig = true,
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
-		property.Default and "" or "Default",
 		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
+		property.Default and "" or "Default",
 		property.LinkKeybind and "" or "LinkKeybind",
 		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -5912,23 +6113,27 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local default = property.Default or value(false)
+	local disabledText = property.DisabledText or value("Component Disabled")
 	local isEnabled = property.IsEnabled or value(true)
 	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
+	local default = property.Default or value(false)
 	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
+
 	local flag = property.FLAG or value(toggle.uid)
 	local _flag
 	if get(flag) ~= "" then
 		_flag = flagCreator.register(get(flag), {
 			boolean = value(false),
-			keycode = value(nil)
+			keycode = value(nil),
+			coordinate = value(nil)
 		},"toggle", get(flag) == toggle.uid)
 		_flag.user.Value = get(_flag.status.boolean)
 	end
+
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -5949,19 +6154,12 @@ return function(property)
 			}
 			bindData:update("bindData", _bindData)
 			currentBinds:update("binds", _currentBinds)
+			_flag.status.keycode:set(get(keyCode).Name)
 		end
 	end
 	observe(_flag.status.boolean):onChange(function()
 		if get(isEnabled) then
 			task.spawn(get(callback), get(_flag.status.boolean))
-		end
-	end)
-	observe(_flag.status.keycode):onChange(function()
-		local success, result = pcall(function()
-			return Enum.KeyCode[get(_flag.status.keycode)]
-		end)
-		if success then
-			checkKeyCode(result, "RAHHH")
 		end
 	end)
 	table.insert(toggles.list, _flag.status.boolean)
@@ -5999,7 +6197,8 @@ return function(property)
 	-- Toggle
 
 	local dragConnection
-	local mobileButton = new "TextButton" {
+	local mobileButton
+	mobileButton = new "TextButton" {
 		Visible = computed(function()
 			if not get(isEnabled) then
 				return get(isEnabled)
@@ -6022,6 +6221,7 @@ return function(property)
 			if dragConnection then
 				dragConnection:Disconnect()
 				dragConnection = nil
+				_flag.status.coordinate:set(mobileButton.AbsolutePosition)
 			else
 				_flag.status.boolean:set(not get(_flag.status.boolean))
 			end
@@ -6283,8 +6483,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noBoolean = true
 			local noKeyCode = true
 			if file.boolean ~= nil then
@@ -6292,7 +6491,15 @@ return function(property)
 				noBoolean = false
 			end
 			if file.keycode ~= nil then
-				_flag.status.keycode:set(file.keycode)
+				if get(keyCode) and get(keyCode).Name == file.keycode then
+					return
+				end
+				local success, result = pcall(function()
+					return Enum.KeyCode[file.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "File1")
+				end
 				noKeyCode = false
 			end
 			if noBoolean then
@@ -6302,6 +6509,10 @@ return function(property)
 				if bind then
 					_flag.status.keycode:set(get(bind).Name)
 				end
+			end
+			if get(isMobile.boolean) and file.coordinate then
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
+				hasPlaced:set(true)
 			end
 		end)
 		if _flag.private then
@@ -7305,6 +7516,20 @@ function functions.listfiles(string:string)
         return cleaned
     end
 end
+function functions.getthreadidentity()
+    if getthreadidentity then
+        return getthreadidentity()
+    else
+        return 5
+    end
+end
+function functions.setthreadidentity(number:number)
+    if setthreadidentity then
+        return setthreadidentity(number)
+    else
+        return 5
+    end
+end
 return functions
 end)() end,
     [42] = function()local wax,script,require=ImportGlobals(42)local ImportGlobals return (function(...)return function(o,s)
@@ -7466,17 +7691,129 @@ local ObjectTree = {
         },
         {
             {
-                29,
+                11,
                 1,
                 {
-                    "layouts"
+                    "components"
                 },
                 {
                     {
-                        30,
+                        20,
                         2,
                         {
-                            "main"
+                            "module"
+                        }
+                    },
+                    {
+                        27,
+                        2,
+                        {
+                            "toggle"
+                        }
+                    },
+                    {
+                        28,
+                        2,
+                        {
+                            "warn"
+                        }
+                    },
+                    {
+                        26,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        15,
+                        2,
+                        {
+                            "divider"
+                        }
+                    },
+                    {
+                        19,
+                        2,
+                        {
+                            "label"
+                        }
+                    },
+                    {
+                        25,
+                        2,
+                        {
+                            "tabFrame"
+                        }
+                    },
+                    {
+                        14,
+                        2,
+                        {
+                            "colorpicker"
+                        }
+                    },
+                    {
+                        16,
+                        2,
+                        {
+                            "dropdown"
+                        }
+                    },
+                    {
+                        21,
+                        2,
+                        {
+                            "notification"
+                        }
+                    },
+                    {
+                        18,
+                        2,
+                        {
+                            "keybindList"
+                        }
+                    },
+                    {
+                        13,
+                        2,
+                        {
+                            "buttonGroup"
+                        }
+                    },
+                    {
+                        23,
+                        2,
+                        {
+                            "slider"
+                        }
+                    },
+                    {
+                        24,
+                        2,
+                        {
+                            "tabButton"
+                        }
+                    },
+                    {
+                        17,
+                        2,
+                        {
+                            "keybind"
+                        }
+                    },
+                    {
+                        22,
+                        2,
+                        {
+                            "paragraph"
+                        }
+                    },
+                    {
+                        12,
+                        2,
+                        {
+                            "button"
                         }
                     }
                 }
@@ -7496,17 +7833,17 @@ local ObjectTree = {
                         }
                     },
                     {
-                        35,
-                        2,
-                        {
-                            "UIPadding"
-                        }
-                    },
-                    {
                         36,
                         2,
                         {
                             "UITextSizeConstraint"
+                        }
+                    },
+                    {
+                        35,
+                        2,
+                        {
+                            "UIPadding"
                         }
                     },
                     {
@@ -7526,129 +7863,68 @@ local ObjectTree = {
                 }
             },
             {
-                11,
-                1,
+                2,
+                2,
                 {
-                    "components"
+                    "Bundles"
                 },
                 {
                     {
-                        18,
+                        5,
                         2,
                         {
-                            "keybindList"
+                            "flags"
                         }
                     },
                     {
-                        13,
+                        8,
                         2,
                         {
-                            "buttonGroup"
+                            "services"
                         }
                     },
                     {
-                        22,
+                        7,
                         2,
                         {
-                            "paragraph"
+                            "lucide"
                         }
                     },
                     {
-                        15,
+                        3,
                         2,
                         {
-                            "divider"
+                            "Fusion"
                         }
                     },
                     {
-                        16,
+                        9,
                         2,
                         {
-                            "dropdown"
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                10,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
                         }
                     },
                     {
-                        19,
+                        6,
                         2,
                         {
-                            "label"
+                            "icons"
                         }
                     },
                     {
-                        27,
+                        4,
                         2,
                         {
-                            "toggle"
-                        }
-                    },
-                    {
-                        23,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        24,
-                        2,
-                        {
-                            "tabButton"
-                        }
-                    },
-                    {
-                        21,
-                        2,
-                        {
-                            "notification"
-                        }
-                    },
-                    {
-                        28,
-                        2,
-                        {
-                            "warn"
-                        }
-                    },
-                    {
-                        26,
-                        2,
-                        {
-                            "textbox"
-                        }
-                    },
-                    {
-                        12,
-                        2,
-                        {
-                            "button"
-                        }
-                    },
-                    {
-                        17,
-                        2,
-                        {
-                            "keybind"
-                        }
-                    },
-                    {
-                        14,
-                        2,
-                        {
-                            "colorpicker"
-                        }
-                    },
-                    {
-                        25,
-                        2,
-                        {
-                            "tabFrame"
-                        }
-                    },
-                    {
-                        20,
-                        2,
-                        {
-                            "module"
+                            "data"
                         }
                     }
                 }
@@ -7661,10 +7937,10 @@ local ObjectTree = {
                 },
                 {
                     {
-                        44,
+                        41,
                         2,
                         {
-                            "getStringBounds"
+                            "customFunctions"
                         }
                     },
                     {
@@ -7675,10 +7951,38 @@ local ObjectTree = {
                         }
                     },
                     {
+                        44,
+                        2,
+                        {
+                            "getStringBounds"
+                        }
+                    },
+                    {
                         47,
                         2,
                         {
                             "tween"
+                        }
+                    },
+                    {
+                        48,
+                        2,
+                        {
+                            "typecheck"
+                        }
+                    },
+                    {
+                        45,
+                        2,
+                        {
+                            "randomString"
+                        }
+                    },
+                    {
+                        42,
+                        2,
+                        {
+                            "drag"
                         }
                     },
                     {
@@ -7703,34 +8007,6 @@ local ObjectTree = {
                         }
                     },
                     {
-                        42,
-                        2,
-                        {
-                            "drag"
-                        }
-                    },
-                    {
-                        41,
-                        2,
-                        {
-                            "customFunctions"
-                        }
-                    },
-                    {
-                        48,
-                        2,
-                        {
-                            "typecheck"
-                        }
-                    },
-                    {
-                        45,
-                        2,
-                        {
-                            "randomString"
-                        }
-                    },
-                    {
                         46,
                         2,
                         {
@@ -7740,68 +8016,17 @@ local ObjectTree = {
                 }
             },
             {
-                2,
-                2,
+                29,
+                1,
                 {
-                    "Bundles"
+                    "layouts"
                 },
                 {
                     {
-                        4,
+                        30,
                         2,
                         {
-                            "data"
-                        }
-                    },
-                    {
-                        9,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                10,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        3,
-                        2,
-                        {
-                            "Fusion"
-                        }
-                    },
-                    {
-                        6,
-                        2,
-                        {
-                            "icons"
-                        }
-                    },
-                    {
-                        8,
-                        2,
-                        {
-                            "services"
-                        }
-                    },
-                    {
-                        5,
-                        2,
-                        {
-                            "flags"
-                        }
-                    },
-                    {
-                        7,
-                        2,
-                        {
-                            "lucide"
+                            "main"
                         }
                     }
                 }
@@ -7813,51 +8038,51 @@ local ObjectTree = {
 -- Line offsets for debugging (only included when minifyTables is false)
 local LineOffsets = {
     8,
-    717,
-    727,
-    730,
     804,
-    1084,
-    1103,
-    1106,
-    1118,
-    1315,
-    [12] = 1343,
-    [13] = 1543,
-    [14] = 1787,
-    [15] = 2634,
-    [16] = 2685,
-    [17] = 3374,
-    [18] = 3838,
-    [19] = 4049,
-    [20] = 4162,
-    [21] = 4332,
-    [22] = 4601,
-    [23] = 4767,
-    [24] = 5208,
-    [25] = 5326,
-    [26] = 5365,
-    [27] = 5829,
-    [28] = 6355,
-    [30] = 6380,
-    [31] = 6988,
-    [32] = 6998,
-    [33] = 7010,
-    [34] = 7019,
-    [35] = 7031,
-    [36] = 7066,
-    [37] = 7075,
-    [38] = 7085,
-    [39] = 7092,
-    [40] = 7113,
-    [41] = 7129,
-    [42] = 7310,
-    [43] = 7359,
-    [44] = 7366,
-    [45] = 7377,
-    [46] = 7387,
-    [47] = 7437,
-    [48] = 7444
+    814,
+    827,
+    901,
+    1210,
+    1229,
+    1242,
+    1254,
+    1493,
+    [12] = 1521,
+    [13] = 1721,
+    [14] = 1974,
+    [15] = 2828,
+    [16] = 2879,
+    [17] = 3578,
+    [18] = 4036,
+    [19] = 4247,
+    [20] = 4360,
+    [21] = 4530,
+    [22] = 4799,
+    [23] = 4965,
+    [24] = 5406,
+    [25] = 5524,
+    [26] = 5563,
+    [27] = 6028,
+    [28] = 6566,
+    [30] = 6591,
+    [31] = 7199,
+    [32] = 7209,
+    [33] = 7221,
+    [34] = 7230,
+    [35] = 7242,
+    [36] = 7277,
+    [37] = 7286,
+    [38] = 7296,
+    [39] = 7303,
+    [40] = 7324,
+    [41] = 7340,
+    [42] = 7535,
+    [43] = 7584,
+    [44] = 7591,
+    [45] = 7602,
+    [46] = 7612,
+    [47] = 7662,
+    [48] = 7669
 }
 
 -- Misc AOT variable imports

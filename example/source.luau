@@ -34,127 +34,15 @@ local window = darius:Window({
     Description = "What the sigma this isn't Quantum UI",
     HideBind = Enum.KeyCode.T,
     UseConfig = true,
-    Config = "dariusTestScript",
+    Workspace = "example",
     IsMobile = false
 })
 
 local tab = window:Tab({
-    Name = randomString(6),
-    Image = randomIcon()
+    Name = "Main",
 })
 local tab2 = window:Tab({
-    Name = randomString(6),
-    Image = randomIcon()
-})
-for i=1,10 do
-    window:Tab({
-        Name = randomString(6),
-        Image = randomIcon()
-    })
-end
-
-tab:Button({
-    Name = "Button",
-    Callback = function()
-        print("Hello World!")
-    end
-})
-
-local ExtractItem = function(itemToClean:string):string
-    cleanedItem = itemToClean:match('<font color="rgb%(.-%)">(.-)</font>')
-    if cleanedItem then
-        cleanedItem = cleanedItem:match("^%s*(.-)%s*$")
-    end
-    return cleanedItem or itemToClean
-end
-
-tab:Dropdown({
-    Name = "Multiselect Dropdown",
-    Items = {
-        {
-            Value = '<font color="rgb(255,0,0)">apple</font>',
-            Image = randomIcon()
-        },
-        'banana',
-        'carrot',
-        'dingleberry',
-        'egg plant',
-        'frank',
-        'grape',
-        'helicopter'
-    },
-    Multiselect = true,
-    Regex = ExtractItem,
-    FLAG = "dropdown_m",
-    Callback = function(value)
-        print(value)
-    end
-})
-tab:Dropdown({
-    Name = "Dropdown",
-    Items = {
-        {
-            Value = '<font color="rgb(255,0,0)">apple</font>',
-            Image = randomIcon()
-        },
-        'banana',
-        'carrot',
-        'dingleberry',
-        'egg plant',
-        'frank',
-        'grape',
-        'helicopter'
-    },
-    Multiselect = false,
-    FLAG = "dropdown",
-    Regex = ExtractItem,
-    Callback = function(value)
-        print(value)
-    end
-})
-
-local a = tab:Toggle({
-    Name = "Toggle",
-    Default = false,
-    LinkKeybind = true,
-    Bind = Enum.KeyCode.E,
-    FLAG = "toggle_lk",
-    Callback = function(value)
-        print(`Toggle: {value}`)
-    end
-})
-local b
-b = tab:Toggle({
-    Name = "Disable first toggle",
-    Default = false,
-    FLAG = "toggle",
-    Callback = function(v)
-        if v then
-            a:Disable()
-            b:SetName("Enable first toggle")
-        else
-            a:Enable()
-            b:SetName("Disable first toggle")
-        end
-    end
-})
-
-tab:Keybind({
-    Name = "Keybind",
-    FLAG = "keybind",
-    Callback = function()
-        print("Keybind ran")
-    end
-})
-
-tab:Slider({
-    Name = "Slider",
-    Min = 0,
-    Max = 100,
-    FLAG = "slider",
-    Callback = function(value)
-        print(`Slider: {value}`)
-    end
+    Name = "test"
 })
 
 tab:TextBox({
@@ -181,24 +69,128 @@ tab:TextBox({
         print(`TextBox: {value}`)
     end
 })
+tab:Toggle({
+    Name = "Toggle",
+    FLAG = "toggle",
+    Callback = function(v)
+        print(`toggle: {v}`)
+    end
+})
+tab:Toggle({
+    Name = "Toggle Link Keybind",
+    FLAG = "toggle_lk",
+    LinkKeybind = true,
+    Callback = function(v)
+        print(`toggle_lk: {v}`)
+    end
+})
+tab:Dropdown({
+    Name = "Dropdown",
+    Items = {"A","B","C",{DisplayValue = "D Display",Value = "D"}},
+    FLAG = "dropdown",
+    Callback = function(v)
+        print(`dropdown: {v}`)
+    end
+})
+tab:Dropdown({
+    Name = "Dropdown Multiselect",
+    Items = {"A","B","C",{DisplayValue = "D Display",Value = "D"}},
+    FLAG = "dropdown_m",
+    Multiselect = true,
+    Callback = function(v)
+        print(`dropdown_m: {table.concat(v,", ")}`)
+    end
+})
+local ExtractItem = function(itemToClean:string):string
+    cleanedItem = itemToClean:match('<font color="rgb%(.-%)">(.-)</font>')
+    if cleanedItem then
+        cleanedItem = cleanedItem:match("^%s*(.-)%s*$")
+    end
+    return cleanedItem or itemToClean
+end
 
+tab:Dropdown({
+    Name = "Rich Text Example",
+    Items = {
+        {
+            Value = '<font color="rgb(255,0,0)">apple</font>',
+            Image = randomIcon()
+        },
+        {
+            Value = "banana",
+            DisplayValue = "Display not banana"
+        },
+        'carrot',
+        'dingleberry',
+        'egg plant',
+        'frank',
+        'grape',
+        'helicopter'
+    },
+    Multiselect = true,
+    Regex = ExtractItem,
+    FLAG = "dropdown_m2",
+    Callback = function(value)
+        print(value)
+    end
+})
+tab:Slider({
+    Name = "Slider",
+    Min = 0,
+    Max = 100,
+    FLAG = "slider",
+    Callback = function(v)
+        print(`slider: {v}`)
+    end
+})
+tab:Keybind({
+    Name = "Keybind",
+    FLAG = "keybind",
+    Callback = function()
+        print("keybind")
+    end
+})
+tab:ColorPicker({
+    Name = "Color Picker",
+    FLAG = "colorpicker",
+    Callback = function(c, t)
+        print(`colorpicker: {c} : {t}`)
+    end
+})
 tab:Label("Label")
 tab:Paragraph({
     Title = "Paragraph",
     Body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
 })
-tab:ColorPicker({
-    Name = "Color Picker",
-    Color = Color3.fromHex('#a49ae6'),
-    Transparency = 0.5,
-    FLAG = "colorpicker",
-    Callback = function(color,transparency)
-        print(`Color Picker: {color}, {transparency}`)
+
+tab:KeybindList()
+
+tab2:Label("Theme Caching")
+
+local cachedTheme = ""
+tab2:Button({
+    Name = "uid",
+    Callback = function()
+        print(darius:GetThemeUID())
+        cachedTheme = darius:GetThemeUID()
+    end
+})
+tab2:Button({
+    Name = "set to cached",
+    Callback = function()
+        darius:SetTheme(cachedTheme)
+    end
+})
+tab2:Button({
+    Name = "import theme",
+    Callback = function()
+        darius:ImportTheme({
+            background = Color3.fromRGB(math.random(0,255),math.random(0,255),math.random(0,255))
+        })
     end
 })
 
-tab:Divider()
-tab:KeybindList()
+tab2:Divider()
 
 local duration = 0
 local title = ""
@@ -262,7 +254,6 @@ tab2:Button({
         })
     end
 })
-darius:LoadConfig()
 
 darius.OnDestruction:Connect(function()
     print("Goodbye Darius!")

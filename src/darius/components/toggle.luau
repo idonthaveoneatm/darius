@@ -41,19 +41,21 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
-        IsEnabled = false,
-		Default = false,
+		IsEnabled = false,
 		Visible = false,
         Callback = function()end,
+
+        FLAG = "",
+		Default = false,
 		LinkKeybind = true,
 		IgnoreConfig = true,
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
-		property.Default and "" or "Default",
 		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
+		property.Default and "" or "Default",
 		property.LinkKeybind and "" or "LinkKeybind",
 		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -84,23 +86,27 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local default = property.Default or value(false)
+	local disabledText = property.DisabledText or value("Component Disabled")
 	local isEnabled = property.IsEnabled or value(true)
 	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
+	local default = property.Default or value(false)
 	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
+
 	local flag = property.FLAG or value(toggle.uid)
 	local _flag
 	if get(flag) ~= "" then
 		_flag = flagCreator.register(get(flag), {
 			boolean = value(false),
-			keycode = value(nil)
+			keycode = value(nil),
+			coordinate = value(nil)
 		},"toggle", get(flag) == toggle.uid)
 		_flag.user.Value = get(_flag.status.boolean)
 	end
+
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -121,19 +127,12 @@ return function(property)
 			}
 			bindData:update("bindData", _bindData)
 			currentBinds:update("binds", _currentBinds)
+			_flag.status.keycode:set(get(keyCode).Name)
 		end
 	end
 	observe(_flag.status.boolean):onChange(function()
 		if get(isEnabled) then
 			task.spawn(get(callback), get(_flag.status.boolean))
-		end
-	end)
-	observe(_flag.status.keycode):onChange(function()
-		local success, result = pcall(function()
-			return Enum.KeyCode[get(_flag.status.keycode)]
-		end)
-		if success then
-			checkKeyCode(result, "RAHHH")
 		end
 	end)
 	table.insert(toggles.list, _flag.status.boolean)
@@ -171,7 +170,8 @@ return function(property)
 	-- Toggle
 
 	local dragConnection
-	local mobileButton = new "TextButton" {
+	local mobileButton
+	mobileButton = new "TextButton" {
 		Visible = computed(function()
 			if not get(isEnabled) then
 				return get(isEnabled)
@@ -194,6 +194,7 @@ return function(property)
 			if dragConnection then
 				dragConnection:Disconnect()
 				dragConnection = nil
+				_flag.status.coordinate:set(mobileButton.AbsolutePosition)
 			else
 				_flag.status.boolean:set(not get(_flag.status.boolean))
 			end
@@ -455,8 +456,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noBoolean = true
 			local noKeyCode = true
 			if file.boolean ~= nil then
@@ -464,7 +464,15 @@ return function(property)
 				noBoolean = false
 			end
 			if file.keycode ~= nil then
-				_flag.status.keycode:set(file.keycode)
+				if get(keyCode) and get(keyCode).Name == file.keycode then
+					return
+				end
+				local success, result = pcall(function()
+					return Enum.KeyCode[file.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "File1")
+				end
 				noKeyCode = false
 			end
 			if noBoolean then
@@ -474,6 +482,10 @@ return function(property)
 				if bind then
 					_flag.status.keycode:set(get(bind).Name)
 				end
+			end
+			if get(isMobile.boolean) and file.coordinate then
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
+				hasPlaced:set(true)
 			end
 		end)
 		if _flag.private then

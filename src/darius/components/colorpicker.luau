@@ -41,19 +41,21 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
-        Callback = function()end,
-		FLAG = "",
 		Visible = false,
+        Callback = function()end,
+
+		FLAG = "",
 		Color = Color3.new(),
 		Transparency = 0,
 		HideTransparency = true,
 		IgnoreConfig = true
 	},{
-		property.IsEnabled and "" or "IsEnabled",
 		property.DisabledText and "" or "DisabledText",
+		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
 		property.FLAG and "" or "FLAG",
 		property.Color and "" or "Color",
-		property.Visible and "" or "Visible",
 		property.Transparency and "" or "Transparency",
 		property.HideTransparency and "" or "HideTransparency",
 		property.IgnoreConfig and "" or "IgnoreConfig"
@@ -73,14 +75,16 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local _color = property.Color or value(Color3.new(1))
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local _transparency = property.Transparency or value(0)
-	local visible = property.Visible or value(true)
 	local hideTransparency = property.HideTransparency or value(false)
+
 	local flag = property.FLAG or value(colorpicker.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -768,16 +772,19 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noColor = true
 			local noTransparency = true
 			if file.color ~= nil then
-				local a = string.split(file.color:gsub(" ", ""), ",")
-				table.foreach(a, function(i,v)
-					a[i] = tonumber(v)
-				end)
-				color:set(Color3.new(unpack(a)))
+				if string.find(file.color, ",") then
+					local a = string.split(file.color:gsub(" ", ""), ",")
+					table.foreach(a, function(i,v)
+						a[i] = tonumber(v)
+					end)
+					color:set(Color3.new(unpack(a)))
+				else
+					color:set(Color3.fromHex(`#{file.color}`))
+				end
 				noColor = false
 			end
 			if file.transparency ~= nil then

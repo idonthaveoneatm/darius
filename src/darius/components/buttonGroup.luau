@@ -34,7 +34,7 @@ return function(property)
 
     -- Variables
 
-    local buttonCount = value(0)
+    local visibleCount = value(0)
     local visible = value(true)
 
 	-- Button Group
@@ -69,8 +69,6 @@ return function(property)
             _property.DisabledText and "" or "DisabledText"
         })
         assert(didPass, table.concat(failedItems, "\n"))
-
-        buttonCount:set(get(buttonCount) + 1)
 
         -- Data
 
@@ -110,7 +108,7 @@ return function(property)
                 return true
             end),
             Size = computed(function()
-                return UDim2.new(1/get(buttonCount) - (get(buttonCount) - 1 == 0 and 0 or ((((get(buttonCount)-1)*3)/get(buttonCount))/get(absSize).X)),0,0,36)
+                return UDim2.new(1/get(visibleCount) - (get(visibleCount) - 1 == 0 and 0 or ((((get(visibleCount)-1)*3)/get(visibleCount))/get(absSize).X)),0,0,36)
             end),
             Parent = buttonGroup,
             BackgroundColor3 = theme.background2,
@@ -202,6 +200,17 @@ return function(property)
                 }
             }
         }
+
+        if get(_visible) then
+            visibleCount:set(get(visibleCount) + 1)
+        end
+        observe(_visible):onChange(function()
+            if get(_visible) then
+                visibleCount:set(get(visibleCount) + 1)
+            else
+                visibleCount:set(get(visibleCount) - 1)
+            end
+        end)
 
         local returnFunctions = {}
         function returnFunctions:SetName(newText)

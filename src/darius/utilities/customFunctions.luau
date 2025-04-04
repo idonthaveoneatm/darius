@@ -177,4 +177,18 @@ function functions.listfiles(string:string)
         return cleaned
     end
 end
+function functions.getthreadidentity()
+    if getthreadidentity then
+        return getthreadidentity()
+    else
+        return 5
+    end
+end
+function functions.setthreadidentity(number:number)
+    if setthreadidentity then
+        return setthreadidentity(number)
+    else
+        return 5
+    end
+end
 return functions

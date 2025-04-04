@@ -3,7 +3,7 @@ A Roblox user interface built using [Fusion 0.2](https://elttob.uk/Fusion/0.2/).
 
 Developed by - griffin(@idonthaveoneatm)
 
-Contact me via Discord **@griffindoescooking** for any problems or questions
+Join the Discord [here](https://discord.gg/GtWwgVvm7r) and create a ticket if you want to report a problem. You can also ontact me via Discord **@griffindoescooking** with the ID of `691337507157311661`.
 
 Video of user interface: [https://www.youtube.com/watch?v=-yLwTmJhK7A](https://www.youtube.com/watch?v=-yLwTmJhK7A)
 ### Credits:
@@ -18,11 +18,20 @@ Each type varies in compatbility
 ```lua
 -- Bundled with wax
 local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/bundled.luau"))()
--- Bundled + Minified via darklua
+-- Bundled with wax + minified with darklua
 local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/minified.luau"))()
 -- rbxm-suite
 local darius = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/rbxmSuite.luau"))()
 ```
+### Compatibility
+Darius requires a specific environment to run the best. The fake functions that Darius creates allows it to still work but at the cost of there being no **real** files and folders or **real** security.
+- Thread identity ≥ 5  *Required*
+- writefile, readfile, isfile, delfolder *Fakes functions*
+- isfolder, makefolder *Fakes functions*
+- listfiles *Fakes function*
+- cloneref *Fakes function*
+- gethui *Fakes function*
+
 ## Create a Window
 ```lua
 local window = darius:Window({
@@ -65,53 +74,119 @@ local window = darius:Window({
     }
 })
 ```
-### Setting the theme
-You can set the colors you want and leave the else to default.
+
+## Theming 
+You are able to use a multitude of different functions to modify the looks of Darius.
+### Importing Theme
+You can create a theme with no name that is given the name "Import_abc12" with a random ending. Otherwise give it a name! This function also returns the unique identifier that is given to each theme so that you can set it as the theme.
 ```lua
-darius:SetTheme({
+-- No Name
+darius:ImportTheme({
     toggled = Color3.fromRGB(255,255,255)
-})
---[[
-List of all color variables:
-
-background
-background2
-
-text
-text2
-
-selectedTab
-
-scrollBar
-
-colorpickerBar
-
-notificationButton
-
-mobileButtonBackground
-mobileButtonText
-mobileButtonImage
-
-disabledBackground
-disabledText
-
-toggled
-
-red
-orange
-]]
+}) --> "C3bb2"
+-- Name
+darius:ImportTheme("New Theme!", {
+    toggled = Color3.fromRGB(255,0,0)
+}) --> "p4W01"
 ```
-### Settings Page
-Adding this function **after** you create your tabs adds a "⚙️ Settings" tab with a theme and configuration manager.
+#### List of all color variables:
+- background
+- background2
+- text
+- text2
+- selectedTab
+- scrollBar
+- colorpickerBar
+- notificationButton
+- mobileButtonBackground
+- mobileButtonText
+- mobileButtonImage
+- disabledBackground
+- disabledText
+- toggled
+- red
+- orange
+### Set Theme
+Using that unique identifier you can now set the theme with `:SetTheme`.
 ```lua
-darius:CreateSettings()
+darius:SetTheme("p4w01")
+```
+### Get Theme Unique Identifier
+Returns the unique identifier of the current theme.
+```lua
+darius:GetThemeUID() --> "p4w01"
 ```
 ### Exporting Theme
 If you want to export the current theme you can use this.
 ```lua
 darius:ExportTheme() --> "{}" is a JSON table of the current theme
 ```
-### Notify a User
+
+## Flags
+This is how you can access the callback'd values with flags. You can place these anywhere in your script after the Darius loadstring and if they are placed before the component with that flag they are considered 'preregistered' in that the OnChange won't be fired when the flag is registered normally but they will for default/configurations. `darius.flags.FLAGNAME.Value`, however, does change from nil to the default/config.
+```lua
+darius.flags.FLAGNAME.Value --> Will be the last set value of the flag
+darius.flags.FLAGNAME.OnChange:Connect(function(value): any -- Is fired every time the value of a flag is changed
+    print(value)
+end)
+-- Types are the same as the ones found for each component
+```
+
+## Configurations
+How to import, export, and set configurations in Darius. This uses flags.
+### Importing Configuration
+These return the unique identifier like themes.
+```lua
+-- No Name
+darius:ImportConfiguration({
+    Lebron = {boolean = false, keycode = "H"}
+}) --> "aZ10F"
+-- Name
+darius:ImportConfiguration("New Configuration", {
+    TheGoat = {boolean = true, keycode = "A"}
+})--> "Bp5bD"
+```
+#### List of flag value formats
+- `:Toggle` = `{boolean = <boolean>, keycode = <string>, coordinate = {X = <number>, Y = <number>}}`
+    - The `keycode` is the .Name of a Enum.KeyCode
+- `:TextBox` = `<string>`
+- `:Slider` = `<number>`
+- `:Dropdown` = If `Multiselect` then `{<string>,<string>}` else it is `<string>`
+- `:Keybind` = `{keycode = <string>, coordinate = {X = <number>, Y = <number>}}`
+    - The `keycode` is the .Name of a Enum.KeyCode
+- `:ColorPicker` = `{color = <string>, transparency = <number>}`
+    - The color is the Hex code
+### Setting Configuration
+Using a unique identifier you can set the configuration.
+```lua
+darius:SetConfiguration("Bp5bD")
+```
+### Getting Configuration Unique Identifier
+Returns current configuration's unique identifier.
+```lua
+darius:GetConfigurationUID() --> "Bp5bD"
+```
+### Exporting Configuration
+If you want to export the current configuration you can use this.
+```lua
+darius:ExportConfiguration() --> "{}" is a JSON table of the current configuration
+```
+### Darius Folder
+Gives you strings to the folder created for the `Workspace` provided.
+```lua
+...
+    Workspace = "darius rocks",
+...
+print(darius.Folder) --> darius/darius rocks
+```
+
+## Settings Page
+Adding this function **after** you create your tabs adds a "⚙️ Settings" tab with a theme and configuration manager.
+```lua
+darius:CreateSettings()
+```
+
+## Notify the User
 ```lua
 darius:Notify({
     Title = "the title",
@@ -131,30 +206,9 @@ darius:Notify({
     }
 })
 ```
-### Loading config
-Place this at the **END** of your implementation of the user interface. See [here](https://github.com/idonthaveoneatm/darius/blob/main/example/source.luau) for an example.
-```lua
-darius:LoadConfig()
-```
-### Flags
-This is how you can access the callback'd values with flags. You can place these anywhere in your script after the Darius loadstring and if they are before they are considered 'preregistered' in that the OnChange won't be fired when the flag is registered normally but they will for default/config. `darius.flags.FLAGNAME.Value`, however, does change from nil to the default/config.
-```lua
-darius.flags.FLAGNAME.Value --> Will be the last set value of the flag
-darius.flags.FLAGNAME.OnChange:Connect(function(value): any -- Is fired every time the value of a flag is changed
-    print(value)
-end)
--- Types are the same as the ones found for each component
-```
-### Darius Folder and File
-Gives you strings to the folder created for the `Workspace` provided.
-```lua
-...
-    Workspace = "darius rocks",
-...
-print(darius.Folder) --> darius/darius rocks
-```
-### Destroying Darius
-You can also connect functions to run when Darius is destroyed by connectiong to `darius.OnDestruction`. You can also check if Darius has been destroyed with `darius.Destroyed`.
+
+## Destroying Darius
+You can connect functions to run when Darius is destroyed by connectiong to `darius.OnDestruction`. You can also check if Darius has been destroyed with `darius.Destroyed`. All toggles will be toggled off on destruction.
 ```lua
 darius.OnDestruction:Connect(function()
     print("Destroying Darius")
@@ -164,6 +218,7 @@ darius:Destroy()
 print(darius.Destroyed) --> true
 -- In console it would print "Destroying Darius"
 ```
+
 ## Create a Tab
 ```lua
 local tab = window:Tab({
@@ -187,17 +242,17 @@ local button = tab:Button({
     DisabledText = "Hey you cant use this!"
 })
 ```
-## Create Button Group
-This was made specifically for the configuration manager and allows you to add buttons in a horizontal list. It only has the `:Button` component
-```lua
-tab:ButtonGroup()
-```
 ### Returned Functions
 ```lua
 button:SetCallback(function()
     print("Goodbye World!")
 end)
 button:Fire()
+```
+## Create Button Group
+This was made specifically for the configuration manager and allows you to add buttons in a horizontal list. It only has the `:Button` component
+```lua
+tab:ButtonGroup()
 ```
 ## Create a Dropdown
 ```lua
@@ -217,9 +272,10 @@ local dropdown = tab:Dropdown({
     -- Optional
     Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
+    IgnoreConfig = true, -- Defaults false
+    DisabledText = "Hey you cant use this!",
     Alphabetical = true, -- Defaults false
     AlwaysOpen = true, -- Defaults false
-    DisabledText = "Hey you cant use this!",
     FLAG = "dropdown_SingleSelection",
     Default = "" or {}, -- Table if Multiselect and string if not
     Multiselect = false,
@@ -247,6 +303,7 @@ local toggle = tab:Toggle({
     -- Optional
     Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
+    IgnoreConfig = true, -- Defaults false
     DisabledText = "Hey you cant use this!",
     FLAG = "toggle_LinkKeybind",
     Default = false,
@@ -270,6 +327,7 @@ local keybind = tab:Keybind({
     -- Optional
     Visible = false, -- Defaults true
     IsEnabled = false, -- Defaults true
+    IgnoreConfig = true, -- Defaults false
     DisabledText = "Hey you cant use this!",
     FLAG = "keybind",
     Bind = Enum.KeyCode.F
@@ -291,7 +349,8 @@ local slider = tab:Slider({
 
     -- Optional
     Visible = false, -- Defaults true
-    IsEnabled = false, -- Defaults to true
+    IsEnabled = false, -- Defaults true
+    IgnoreConfig = true, -- Defaults false
     DisabledText = "Hey you cant use this!",
     FLAG = "slider",
     Default = 10,
@@ -301,7 +360,7 @@ local slider = tab:Slider({
 ```
 ### Returned Functions
 ```lua
-slider:SetValue(10) -- Fires callback
+slider:SetValue(10)
 ```
 ## Create a TextBox
 ```lua
@@ -313,7 +372,8 @@ local textbox = tab:TextBox({
 
     -- Optional
     Visible = false, -- Defaults true
-    IsEnabled = false,
+    IsEnabled = false, -- Defaults true
+    IgnoreConfig = true, -- Defaults false
     DisabledText = "Hey you cant use this!",
     FLAG = "textbox",
     Default = "Hey",
@@ -337,9 +397,9 @@ local colorpicker = tab:ColorPicker({
 
     -- Optional
     Visible = false, -- Defaults true
+    IsEnabled = false, -- Defaults true
+    IgnoreConfig = true, -- Defaults false
     HideTransparency = true, -- Defaults false
-    IsEnabled = false,
-    DisabledText = "Hey you cant use this!",
     FLAG = "colorpicker",
     Color = Color3.fromHex("#a49ae6"), -- Best color
     Transparency = 0.5
@@ -382,7 +442,7 @@ tab:Divider()
 tab:KeybindList()
 ```
 ## Universal*ish* Returned Functions
-**EXCLUDES** :Tab :Window :Label :Divider :Paragraph :KeybindList :ButtonGroup
+**EXCLUDES** `:Tab :Window :Label :Divider :Paragraph :KeybindList :ButtonGroup`
 ```lua
 <Component>:Enable()
 <Component>:Disable()

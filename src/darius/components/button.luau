@@ -31,9 +31,9 @@ return function(property)
 		Visible = false,
         Callback = function()end
 	},{
+		property.DisabledText and "" or "DisabledText",
 		property.IsEnabled and "" or "IsEnabled",
-		property.Visible and "" or "Visible",
-		property.DisabledText and "" or "DisabledText"
+		property.Visible and "" or "Visible"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -47,10 +47,10 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
+	local visible = property.Visible or value(true)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
-	local visible = property.Visible or value(true)
+	local callback = property.Callback
 
 	-- Variables
 

@@ -15,6 +15,8 @@ local funcs = {}
 local flags = data.add({list = {}},"flags")
 local names = {}
 local preregistered = {}
+local functionsOnCreate = {}
+local functionsOnSelect = {}
 
 local types = {
     ['toggle'] = function(flag)
@@ -79,6 +81,9 @@ local cleaner = {
         if status.keycode then
             clean.keycode = get(status.keycode)
         end
+        if get(status.coordinate) then
+            clean.coordinate = {X = get(status.coordinate).X, Y = get(status.coordinate).Y}
+        end
         return clean
     end,
     ['dropdown'] = function(status)
@@ -89,8 +94,8 @@ local cleaner = {
         if status.keycode then
             clean.keycode = get(status.keycode)
         end
-        if status.coordinate then
-            clean.coordinate = get(status.coordinate)
+        if get(status.coordinate) then
+            clean.coordinate = {X = get(status.coordinate).X, Y = get(status.coordinate).Y}
         end
         return clean
     end,
@@ -101,12 +106,12 @@ local cleaner = {
         return get(status.correctText)
     end,
     ['colorpicker'] = function(status)
-        return {color = get(status.color), transparency = get(status.transparency)}
+        return {color = get(status.color):ToHex(), transparency = get(status.transparency)}
     end
 }
 
 local configs = {}
-funcs.currentConfig = ""
+funcs.currentConfig = {}
 funcs.path = ""
 
 function funcs.preregister(name)
@@ -152,6 +157,7 @@ function funcs.register(name, default, type, private)
     end
     local _flag
     if not preregistered[name] then
+        local fileChange = (fusion.New "BindableEvent" {})
         _flag = {
             name = name,
             status = default,
@@ -159,7 +165,8 @@ function funcs.register(name, default, type, private)
             private = private,
             preregistered = false,
             bindableEvent = flagEvent,
-            file = value({}),
+            file = fileChange.Event,
+            fileEvent = fileChange,
             user = {
                 Value = nil,
                 OnChange = setmetatable(onChange,{
@@ -218,7 +225,12 @@ function funcs.create(name, uid, fromFile, tbl)
         end
     end
     table.insert(configs, config)
-
+    customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v)
+        end
+    end)
     return uid
 end
 
@@ -235,7 +247,7 @@ function funcs.load(fileTable)
         if not flag then
             continue
         end
-        flag.file:set(v)
+        flag.fileEvent:Fire(v)
     end
 end
 
@@ -244,8 +256,13 @@ function funcs.set(uid)
     if not config then
         return
     end
-    funcs.currentConfig = uid
+    funcs.currentConfig = config
     funcs.load(config.flagValues)
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v, uid)
+        end
+    end)
 end
 
 function funcs.save(uid)
@@ -271,9 +288,21 @@ function funcs.delete(uid)
         end
     end
 end
+function funcs.export()
+    return HttpService:JSONEncode(funcs.currentConfig)
+end
 
 function funcs.getConfigs()
     return configs
+end
+function funcs.getConfig()
+    return funcs.currentConfig
+end
+function funcs.onCreate(func)
+    table.insert(functionsOnCreate, func)
+end
+function funcs.onSelect(func)
+    table.insert(functionsOnSelect, func)
 end
 
 return funcs

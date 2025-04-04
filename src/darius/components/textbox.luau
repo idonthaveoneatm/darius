@@ -34,28 +34,29 @@ return function(property)
 
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
-        PlaceHolderText = "",
 		DisabledText = "",
+		IsEnabled = false,
+		Visible = false,
+		Callback = function()end,
+
+		FLAG = "",
+        PlaceHolderText = "",
         ClearTextOnFocus = false,
         OnlyNumbers = true,
         OnLeave = true,
-		Visible = false,
         Default = "",
-        FLAG = "",
-        IsEnabled = false,
-        Callback = function()end,
 		IgnoreConfig = true
 	},{
-		property.PlaceHolderText and "" or "PlaceHolderText",
+		property.DisabledText and "" or "DisabledText",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.PlaceHolderText and "" or "PlaceHolderText",
 		property.ClearTextOnFocus and "" or "ClearTextOnFocus",
 		property.OnlyNumbers and "" or "OnlyNumbers",
 		property.OnLeave and "" or "OnLeave",
 		property.Default and "" or "Default",
 		property.FLAG and "" or "FLAG",
-		property.Visible and "" or "Visible",
-		property.DisabledText and "" or "DisabledText",
-		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -71,17 +72,18 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local onlyNumbers = property.OnlyNumbers or value(false)
 	local default = property.Default or value("")
 	local onLeave = property.OnLeave or value(false)
 	local clearTextOnFocus = property.ClearTextOnFocus or value(false)
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local ignoreConfig = property.IgnoreConfig or value(false)
 	local placeHolder = property.PlaceHolderText or value("")
-	local visible = property.Visible or value(true)
+
 	local flag = property.FLAG or value(textbox.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -392,8 +394,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noCorrectText = true
 			if file ~= nil then
 				if get(onLeave) then
