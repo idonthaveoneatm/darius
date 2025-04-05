@@ -27,7 +27,7 @@ local function randomIcon():string
 end
 
 local format = "bundled"
-local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/{format}.luau`))()
+local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/beta/{format}.luau?t={tostring(tick())}`))()
 
 local window = darius:Window({
     Title = "Darius",

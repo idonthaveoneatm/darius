@@ -89,21 +89,21 @@ SetInput''end}ad:Button{Name='Save',Callback=function()if ab~=''then v.save(ab)l
 function()if ab==''then y:Notify{Title='Configuration Error',Body='No configuration selected',Duration=3,Image=h.alert,
 ImageColor=i.get'red'}return end v.delete(ab)ae()end}end end if q.getgenv then q.getgenv().dariusInstance=y else _G.
 dariusInstance=y end return y[J.uid]end return y end)()end,function()local aa,ab,ac=a(2)local ad return(function(...)
-return setmetatable({},{__index=function(ae,af)if ab:FindFirstChild(af)then return ac(ab[af])else error('no bundle: '..
-af)end end})end)()end,function()local aa,ab,ac=a(3)local ad return(function(...)local ae=ac(ab.Parent.Parent.utilities)
-local af,ag,ah=(ae.customFunctions)if af.getthreadidentity()<5 then ah=af.getthreadidentity()af.setthreadidentity(5)end
-ag=ac(game:GetObjects'rbxassetid://110500042647914'[1])af.setthreadidentity(ah)return ag end)()end,function()local aa,ab
-,ac=a(4)local ad return(function(...)local ae,af=ac(ab.Parent.Parent.utilities.randomString),ac(ab.Parent.Fusion)local
-ag,ah,ai=af.Value,{},{}type uid=string type tag=string function ai.update(aj:string,ak:string,al:string)if ak~='uid'and
-ai.find(aj)and ai.find(aj)[ak]then local am=ai.find(aj)am[ak]:set(al)elseif not ai.find(aj)then error(
-"couldn't find uid: "..aj)elseif ak=='uid'or ak=='__tag'then error('cannot edit property '..ak)elseif not ai.find(aj)[ak
-]then else error'how?'end end function ai.find(aj:uid|tag):table local ak for al=1,#ah do if ah[al].uid==aj or ah[al].
-__tag==aj then ak=ah[al]end end if not ak then warn('no data found by identifier: '..tostring(aj))return ak end return
-ak end function ai.delete(aj:string)local ak=ai.find(aj)local al,am=table.find(ah,ak),{}for an=1,#ah do if an~=al then
-table.insert(am,ah[an])end end ah=am am=nil end function ai.add(aj:table,ak:string,al:boolean):table al=al or false if
-not al then for am,an in aj do aj[am]=ag(an)end end aj.__tag=ak or nil aj.uid=ae(16)setmetatable(aj,{__index={update=
-function(am,an,ao)ai.update(am.uid,an,ao)end,delete=function()ai.delete(aj.uid)end}})table.insert(ah,aj)return ai.find(
-aj.uid)end return ai end)()end,function()local aa,ab,ac=a(5)local ad return(function(...)local ae,af,ag=ac(ab.Parent).
+local ae=ac(ab.Parent.utilities)local af,ag,ah=(ae.customFunctions)if af.getthreadidentity()<5 then ah=af.
+getthreadidentity()af.setthreadidentity(5)end ag=ac(game:GetObjects'rbxassetid://110500042647914'[1])af.
+setthreadidentity(ah)return setmetatable({},{__index=function(ai,aj)if aj=='Fusion'then return ag end if ab:
+FindFirstChild(aj)then return ac(ab[aj])else error('no bundle: '..aj)end end})end)()end,function()local aa,ab,ac=a(3)
+local ad return(function(...)local ae,af=ac(ab.Parent.Parent.utilities.randomString),ac(ab.Parent)local ag=af.Fusion
+local ah,ai,aj=ag.Value,{},{}type uid=string type tag=string function aj.update(ak:string,al:string,am:string)if al~=
+'uid'and aj.find(ak)and aj.find(ak)[al]then local an=aj.find(ak)an[al]:set(am)elseif not aj.find(ak)then error(
+"couldn't find uid: "..ak)elseif al=='uid'or al=='__tag'then error('cannot edit property '..al)elseif not aj.find(ak)[al
+]then else error'how?'end end function aj.find(ak:uid|tag):table local al for am=1,#ai do if ai[am].uid==ak or ai[am].
+__tag==ak then al=ai[am]end end if not al then warn('no data found by identifier: '..tostring(ak))return al end return
+al end function aj.delete(ak:string)local al=aj.find(ak)local am,an=table.find(ai,al),{}for ao=1,#ai do if ao~=am then
+table.insert(an,ai[ao])end end ai=an an=nil end function aj.add(ak:table,al:string,am:boolean):table am=am or false if
+not am then for an,ao in ak do ak[an]=ah(ao)end end ak.__tag=al or nil ak.uid=ae(16)setmetatable(ak,{__index={update=
+function(an,ao,ap)aj.update(an.uid,ao,ap)end,delete=function()aj.delete(ak.uid)end}})table.insert(ai,ak)return aj.find(
+ak.uid)end return aj end)()end,function()local aa,ab,ac=a(4)local ad return(function(...)local ae,af,ag=ac(ab.Parent).
 data,ac(ab.Parent.Parent.utilities).get,ac(ab.Parent).services local ah,ai=ag.HttpService,ac(ab.Parent).Fusion local aj,
 ak,al=ai.Observer,ai.Value,ac(ab.Parent.Parent.utilities)local am,an,ao,ap,aq,ar,as,at,b,c=al.connections,al.
 customFunctions,al.randomString,{},ae.add({list={}},'flags'),{},{},{},{},{}ap.currentConfig={}ap.path=''local d,e={
@@ -144,52 +144,52 @@ find(f)for h,i in af(aq.list)do if i.private then continue end if i.type=='unkno
 find(f)if g then if an.isfile(`{ap.path}/{g.uid}.json`)then an.delfile(`{ap.path}/{g.uid}.json`)table.remove(c,h)end end
 end function ap.export()return ah:JSONEncode(ap.currentConfig)end function ap.getConfigs()return c end function ap.
 getConfig()return ap.currentConfig end function ap.onCreate(f)table.insert(at,f)end function ap.onSelect(f)table.insert(
-b,f)end return ap end)()end,function()local aa,ab,ac=a(6)local ad return(function(...)return{lock=
+b,f)end return ap end)()end,function()local aa,ab,ac=a(5)local ad return(function(...)return{lock=
 'rbxassetid://10723434711',maximize='rbxassetid://15556636376',minimize='rbxassetid://15556637715',close=
 'rbxassetid://10747384394',circle='rbxassetid://18804307590',normalDropdown='rbxassetid://10723433811',multiDropdown=
 'rbxassetid://10734884548',fingerprint='rbxassetid://10723375250',check='rbxassetid://10709790644',command=
 'rbxassetid://10723416765',input='rbxassetid://10734982297',search='rbxassetid://10734943674',finger=
 'rbxassetid://10734929723',alert='rbxassetid://10709752996',paint='rbxassetid://10734910187',cog=
-'rbxassetid://10709810948'}end)()end,function()local aa,ab,ac=a(7)local ad return(function(...)local ae=ac(ab.Parent.
+'rbxassetid://10709810948'}end)()end,function()local aa,ab,ac=a(6)local ad return(function(...)local ae=ac(ab.Parent.
 Parent.utilities)local af,ag,ah=(ae.customFunctions)if af.getthreadidentity()<5 then ah=af.getthreadidentity()af.
 setthreadidentity(5)end ag=loadstring(game:GetObjects'rbxassetid://85554466048193'[1].Source)()af.setthreadidentity(ah)
-return ag end)()end,function()local aa,ab,ac=a(8)local ad return(function(...)local ae=ac(ab.Parent.Parent.utilities.
+return ag end)()end,function()local aa,ab,ac=a(7)local ad return(function(...)local ae=ac(ab.Parent.Parent.utilities.
 customFunctions)local af,ag=ae.cloneref,{}ag=setmetatable(ag,{__index=function(ah,ai)return af(game:GetService(ai))end})
-return ag end)()end,function()local aa,ab,ac=a(9)local ad return(function(...)local ae,af={},ac(ab.Parent.services)local
-ag,ah,ai,aj=af.HttpService,ac(ab.Parent.data),ac(ab.Parent.Fusion),ac(ab.default)local ak,al,am,an,ao,ap,aq,ar,as=ai.
-Value,ai.Observer,ac(ab.Parent.Parent.utilities.get),ac(ab.Parent.Parent.utilities.animate),ac(ab.Parent.Parent.
-components.warn),ac(ab.Parent.Parent.utilities.randomString),ac(ab.Parent.Parent.utilities.customFunctions),{},{}local
-at,b,c=ak{},ak{},''al(at):onChange(function()task.wait()for d,e in ipairs(ar)do task.spawn(e)end end)local d,e,f={},{},{
-}table.foreach(aj,function(g)table.insert(f,g)end)ae.path=''function ae.find(g)for h,i in d do if i.uid==g then return
-true,i end end return false end function ae.create(g,h,i,j,k)j=j or false if i=='original'and j then return end for l,m
-in f do if h[m]==nil then h[m]=aj[m]end if typeof(h[m])~='Color3'then ao(m.." isn't type Color3")end end for n,o in h do
-if not table.find(f,n)then ao('Incorrect value removed "'..tostring(n)..'"')h[n]=nil end end if k and j then table.
-insert(e,i)end if k and not j then for p,q in e do local r=ae.find(q)if r.name==g then return q.uid end end end i=i or
-ap(5)table.insert(d,{name=g,uid=i,fromSet=k or false,palette=h})local p={}p.name=g p.uid=i p.fromSet=k p.palette={}for q
-,r in h do p.palette[q]=r:ToHex()end aq.writefile(`{ae.path}/{i}.json`,ag:JSONEncode(p))task.spawn(function()for s,t in
-as do task.spawn(t)end end)return i end function ae.delete(g)local h={ae.find(g)}if not h[1]then return false,
-'no theme found'end local i=table.find(d,h[2])ae.set(c)table.remove(d,i)aq.delfile(`{ae.path}/{h[2].uid}.json`)end
-function ae.edit(g,h)local i=am(at)i[g]=h at:set(i)end function ae.editTheme(g:string,h:string,i:any)local j={ae.find(g)
-}if not j[1]then return false end local k=j[2]k[h]=i local o={}o.name=k.name o.uid=g o.fromSet=k.fromSet o.palette={}for
-p,q in k.palette do o.palette[p]=q:ToHex()end aq.writefile(`{ae.path}/{g}.json`,ag:JSONEncode(o))return true end
-function ae.set(g)local h,i,j={ae.find(g)}if h[1]then i,j=h[2],h[2].palette else return false,'no theme found'end local
-k={}table.foreach(j,function(o,p)k[o]=p end)at:set(k)b:set(i)return true,'successfully set new theme'end function ae.
-export()local g,h=am(b),{}h.name=g.name h.uid=g.uid h.fromSet=g.fromSet h.palette={}for i,j in g.palette do h.palette[i]
-=j:ToHex()end return ag:JSONEncode(h)end function ae.save(g)local h={ae.find(g)}if h[1]then local i,j=h[2],{}j.name=i.
-name j.uid=i.uid j.fromSet=i.fromSet j.palette={}for k,o in i.palette do j.palette[k]=o:ToHex()end i.palette=am(at)aq.
-writefile(`{ae.path}/{g}.json`,ag:JSONEncode(j))ae.set(g)return true else return false end end function ae.get(g)local h
-=am(at)if h[g]then return h[g]else error(g.." isn't a theme element")end end for g,h in f do ae[h]=an(function()return
-am(at)[h]end,40,1)end function ae.init()c=ae.create('darius',aj,'original')ae.set(c)for i,j in aq.listfiles(ae.path)do
-local k=ag:JSONDecode(aq.readfile(j))table.foreach(k.palette,function(o,p)local q=Color3.fromHex(`#{p}`)k.palette[o]=q
-end)ae.create(k.name,k.palette,k.uid,true,k.fromSet)end end function ae.onChange(i)table.insert(ar,i)end function ae.
-onCreate(i)table.insert(as,i)end function ae.getTheme()return am(b)end function ae.getThemes()return d end function ae.
-getColors()return am(at)end return ae end)()end,function()local aa,ab,ac=a(10)local ad return(function(...)return{
-background=Color3.fromHex'#2C2F33',background2=Color3.fromHex'#222427',text=Color3.fromHex'#DCE1E5',text2=Color3.fromHex
-'#737C8A',selectedTab=Color3.fromHex'#1A1A1B',scrollBar=Color3.fromHex'#DCE1E5',colorpickerBar=Color3.fromHex'#DCE1E5',
+return ag end)()end,function()local aa,ab,ac=a(8)local ad return(function(...)local ae,af={},ac(ab.Parent.services)local
+ag,ah=af.HttpService,ac(ab.Parent)local ai,aj=ah.Fusion,ac(ab.default)local ak,al,am,an,ao,ap,aq,ar,as=ai.Value,ai.
+Observer,ac(ab.Parent.Parent.utilities.get),ac(ab.Parent.Parent.utilities.animate),ac(ab.Parent.Parent.components.warn),
+ac(ab.Parent.Parent.utilities.randomString),ac(ab.Parent.Parent.utilities.customFunctions),{},{}local at,b,c=ak{},ak{},
+''al(at):onChange(function()task.wait()for d,e in ipairs(ar)do task.spawn(e)end end)local d,e,f={},{},{}table.foreach(aj
+,function(g)table.insert(f,g)end)ae.path=''function ae.find(g)for h,i in d do if i.uid==g then return true,i end end
+return false end function ae.create(g,h,i,j,k)j=j or false if i=='original'and j then return end for l,m in f do if h[m]
+==nil then h[m]=aj[m]end if typeof(h[m])~='Color3'then ao(m.." isn't type Color3")end end for n,o in h do if not table.
+find(f,n)then ao('Incorrect value removed "'..tostring(n)..'"')h[n]=nil end end if k and j then table.insert(e,i)end if
+k and not j then for p,q in e do local r=ae.find(q)if r.name==g then return q.uid end end end i=i or ap(5)table.insert(d
+,{name=g,uid=i,fromSet=k or false,palette=h})local p={}p.name=g p.uid=i p.fromSet=k p.palette={}for q,r in h do p.
+palette[q]=r:ToHex()end aq.writefile(`{ae.path}/{i}.json`,ag:JSONEncode(p))task.spawn(function()for s,t in as do task.
+spawn(t)end end)return i end function ae.delete(g)local h={ae.find(g)}if not h[1]then return false,'no theme found'end
+local i=table.find(d,h[2])ae.set(c)table.remove(d,i)aq.delfile(`{ae.path}/{h[2].uid}.json`)end function ae.edit(g,h)
+local i=am(at)i[g]=h at:set(i)end function ae.editTheme(g:string,h:string,i:any)local j={ae.find(g)}if not j[1]then
+return false end local k=j[2]k[h]=i local o={}o.name=k.name o.uid=g o.fromSet=k.fromSet o.palette={}for p,q in k.palette
+do o.palette[p]=q:ToHex()end aq.writefile(`{ae.path}/{g}.json`,ag:JSONEncode(o))return true end function ae.set(g)local
+h,i,j={ae.find(g)}if h[1]then i,j=h[2],h[2].palette else return false,'no theme found'end local k={}table.foreach(j,
+function(o,p)k[o]=p end)at:set(k)b:set(i)return true,'successfully set new theme'end function ae.export()local g,h=am(b)
+,{}h.name=g.name h.uid=g.uid h.fromSet=g.fromSet h.palette={}for i,j in g.palette do h.palette[i]=j:ToHex()end return ag
+:JSONEncode(h)end function ae.save(g)local h={ae.find(g)}if h[1]then local i,j=h[2],{}j.name=i.name j.uid=i.uid j.
+fromSet=i.fromSet j.palette={}for k,o in i.palette do j.palette[k]=o:ToHex()end i.palette=am(at)aq.writefile(`{ae.path}/{
+g}.json`,ag:JSONEncode(j))ae.set(g)return true else return false end end function ae.get(g)local h=am(at)if h[g]then
+return h[g]else error(g.." isn't a theme element")end end for g,h in f do ae[h]=an(function()return am(at)[h]end,40,1)
+end function ae.init()c=ae.create('darius',aj,'original')ae.set(c)for i,j in aq.listfiles(ae.path)do local k=ag:
+JSONDecode(aq.readfile(j))table.foreach(k.palette,function(o,p)local q=Color3.fromHex(`#{p}`)k.palette[o]=q end)ae.
+create(k.name,k.palette,k.uid,true,k.fromSet)end end function ae.onChange(i)table.insert(ar,i)end function ae.onCreate(i
+)table.insert(as,i)end function ae.getTheme()return am(b)end function ae.getThemes()return d end function ae.getColors()
+return am(at)end return ae end)()end,function()local aa,ab,ac=a(9)local ad return(function(...)return{background=Color3.
+fromHex'#2C2F33',background2=Color3.fromHex'#222427',text=Color3.fromHex'#DCE1E5',text2=Color3.fromHex'#737C8A',
+selectedTab=Color3.fromHex'#1A1A1B',scrollBar=Color3.fromHex'#DCE1E5',colorpickerBar=Color3.fromHex'#DCE1E5',
 notificationButton=Color3.fromHex'#222427',mobileButtonBackground=Color3.fromHex'#DCE1E5',mobileButtonText=Color3.
 fromHex'#2C2F33',mobileButtonImage=Color3.fromHex'#2C2F33',disabledBackground=Color3.fromHex'#2A2C31',disabledText=
 Color3.fromHex'#D6DCE0',toggled=Color3.fromHex'#DCE1E5',red=Color3.fromRGB(255,105,97),orange=Color3.fromHex'#ff9b61'}
-end)()end,[12]=function()local aa,ab,ac=a(12)local ad return(function(...)local ae=ab.Parent.Parent return function(af)
+end)()end,[11]=function()local aa,ab,ac=a(11)local ad return(function(...)local ae=ab.Parent.Parent return function(af)
 local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,aq,ar=ak.New,ak.
 Children,ak.Value,ak.Observer,ak.OnEvent,ak.Computed,ac(ae.utilities)local as,at,b,c,d=ar.get,ar.animate,ar.typecheck,ar
 .customFont,ac(ae.simpleElements)local e,f,g,h=d.UIPadding,d.UICorner,b(af,{Name='',DisabledText='',IsEnabled=false,
@@ -216,7 +216,7 @@ ai.text2,ImageTransparency=v}}}}}local w={}function w.SetName(x,y)local z,A=b({S
 concat(A,'\n'))p:set(y)end function w.SetCallback(x,y)local z,A=b({SetCallback=y},{SetCallback=function()end})assert(z,
 table.concat(A,'\n'))t:set(y)end function w.Fire(x)task.spawn(as(t))end function w.Enable(x)r:set(true)end function w.
 Disable(x)r:set(false)end function w.Visible(x)q:set(true)end function w.Invisible(x)q:set(false)end return w end end)()
-end,[13]=function()local aa,ab,ac=a(13)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local
+end,[12]=function()local aa,ab,ac=a(12)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local
 ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,aq,ar=ak.New,ak.
 Children,ak.Value,ak.Observer,ak.OnEvent,ak.Computed,ac(ae.utilities)local as,at,b,c,d=ar.get,ar.animate,ar.typecheck,ar
 .customFont,ac(ae.simpleElements)local e,f,g,h,i,j,k,o,p,q,r=d.UIListLayout,Enum.SortOrder,Enum.FillDirection,Enum.
@@ -248,7 +248,7 @@ end end)local J={}function J.SetName(K,L)local M,N=b({SetName=L},{SetName=''})as
 function J.SetCallback(K,L)local M,N=b({SetCallback=L},{SetCallback=function()end})assert(M,table.concat(N,'\n'))D:set(L
 )end function J.Fire(K)task.spawn(as(D))end function J.Enable(K)E:set(true)end function J.Disable(K)E:set(false)end
 function J.Visible(K)G:set(true)end function J.Invisible(K)G:set(false)end return J end function u.Visible(v)r:set(true)
-end function u.Invisible(v)r:set(false)end return u end end)()end,[14]=function()local aa,ab,ac=a(14)local ad return(
+end function u.Invisible(v)r:set(false)end return u end end)()end,[13]=function()local aa,ab,ac=a(13)local ad return(
 function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak,al=ag.data,ag.
 themeSystem,ag.icons,ag.flags,ag.services local am,an,ao=al.RunService,al.UserInputService,ag.Fusion local ap,aq,ar,as,
 at,b,c,d=ao.New,ao.Children,ao.Value,ao.Observer,ao.OnEvent,ao.Computed,ao.Ref,ac(ae.utilities)local e,f,g,h,i,j,k=d.get
@@ -374,14 +374,14 @@ end function aF.SetColor(aG,aH)local aI,aJ=g({SetColor=aH},{SetColor=Color3.new(
 set(aH)az:set(({e(Q):ToHSV()})[1])aA:set(({e(Q):ToHSV()})[2])aB:set(({e(Q):ToHSV()})[3])end function aF.SetTransparency(
 aG,aH)local aI,aJ=g({SetTransparency=aH},{SetTransparency=0})assert(aI,table.concat(aJ,'\n'))R:set(aH)end function aF.
 Enable(aG)H:set(true)end function aF.Disable(aG)H:set(false)end function aF.Visible(aG)I:set(true)end function aF.
-Invisible(aG)I:set(false)end return aF end end)()end,[15]=function()local aa,ab,ac=a(15)local ad return(function(...)
+Invisible(aG)I:set(false)end return aF end end)()end,[14]=function()local aa,ab,ac=a(14)local ad return(function(...)
 local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion
 local ak,al,am,an,ao=aj.New,aj.Children,aj.Value,aj.Observer,ac(ae.utilities)local ap,aq,ar,as,at=ao.get,ao.animate,ah.
 find'selectedTab',ah.add(af),af.Parent local au=am(ap(ar.string)==ap(as.tab).uid)an(ar.string):onChange(function()au:
 set(ap(ar.string)==ap(as.tab).uid)end)local av=aq(function()return ap(au)and 0 or 1 end,40,1)ak'Frame'{Parent=at,Size=
 UDim2.new(1,0,0,16),BackgroundTransparency=1,[al]={ak'Frame'{Size=UDim2.new(1,0,0,2),AnchorPoint=Vector2.new(0.5,0.5),
-Position=UDim2.fromScale(0.5,0.5),BackgroundColor3=ai.text2,BackgroundTransparency=av}}}end end)()end,[16]=function()
-local aa,ab,ac=a(16)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)
+Position=UDim2.fromScale(0.5,0.5),BackgroundColor3=ai.text2,BackgroundTransparency=av}}}end end)()end,[15]=function()
+local aa,ab,ac=a(15)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)
 local ah,ai,aj,ak,al=ag.data,ag.themeSystem,ag.icons,ag.flags,ag.Fusion local am,an,ao,ap,aq,ar,as,at=al.New,al.Children
 ,al.Value,al.Observer,al.OnEvent,al.Computed,al.Ref,ac(ae.utilities)local au,av,aw,ax,ay=at.get,at.animate,at.typecheck,
 at.customFont,ac(ae.simpleElements)local az,aA,aB,aC,aD,aE,aF,aG,aH=ay.UIListLayout,ay.UIPadding,ay.UICorner,Enum.
@@ -473,7 +473,7 @@ H=true break end end assert(H,":SelectItem couldn't find "..E)t:set(E)end functi
 '\n'))for H,I in E do local J=false for K,L in au(g)do local M=typeof(L)=='table'and au(p)(L.Value)or au(p)(L)if I==M
 then J=true break end end if J then E[H]=au(p)(I)else table.remove(E,H)end end s:set(E)end function C.Enable(D)d:set(
 true)end function C.Disable(D)d:set(false)end function C.Visible(D)e:set(true)end function C.Invisible(D)e:set(false)end
-return C end end)()end,[17]=function()local aa,ab,ac=a(17)local ad return(function(...)local ae=ab.Parent.Parent return
+return C end end)()end,[16]=function()local aa,ab,ac=a(16)local ad return(function(...)local ae=ab.Parent.Parent return
 function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak,al=ag.data,ag.themeSystem,ag.icons,ag.flags,ag.services local am,an
 =al.UserInputService,ag.Fusion local ao,ap,aq,ar,as,at,au=an.New,an.Children,an.Value,an.Observer,an.OnEvent,an.Computed
 ,ac(ae.utilities)local av,aw,ax,ay,az,aA,aB,aC=au.get,au.animate,au.typecheck,au.connections,au.customFont,au.references
@@ -539,7 +539,7 @@ private then if u then x.status.keycode:set(av(u).Name)end end else if u then x.
 local H={}function H.SetName(I,J)local K,L=ax({SetName=J},{SetName=''})assert(K,table.concat(L,'\n'))p:set(J)end
 function H.SetBind(I,J:EnumItem)local K,L=ax({SetBind=J},{SetBind=Enum.keyCode.C})assert(K,table.concat(L,'\n'))z(J,
 'At :SetBind')end function H.Enable(I)r:set(true)end function H.Disable(I)r:set(false)end function H.Visible(I)s:set(
-true)end function H.Invisible(I)s:set(false)end return H end end)()end,[18]=function()local aa,ab,ac=a(18)local ad
+true)end function H.Invisible(I)s:set(false)end return H end end)()end,[17]=function()local aa,ab,ac=a(17)local ad
 return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.
 themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,aq,ar=ak.New,ak.Children,ak.Value,ak.Computed,ak.Observer,ak.OnEvent
 ,ac(ae.simpleElements)local as,at,au,av,aw,ax,ay,az,aA=ar.UICorner,ar.UIPadding,ar.UITextSizeConstraint,ar.UIListLayout,
@@ -570,7 +570,7 @@ true,RichText=true,Position=UDim2.fromOffset(4,25),BackgroundTransparency=1,Text
 TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,TextSize=16,FontFace=aE('Montserrat',Enum.FontWeight.Medium),
 TextColor3=ai.text2,Text=aM,Size=ao(function()return UDim2.new(1,-4,0,aB(d))end)}}}ap(aH.binds):onChange(function()i(aB(
 aH.binds))end)i(aB(aH.binds))aM:set(e(aB(aH.binds)))ap(aH.binds):onChange(function()aM:set(e(aB(aH.binds)))end)end end)(
-)end,[19]=function()local aa,ab,ac=a(19)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local
+)end,[18]=function()local aa,ab,ac=a(18)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local
 ag=ac(ae.Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.Value,aj.
 Computed,aj.Observer,ac(ae.simpleElements)local aq,ar,as=ap.UICorner,ap.UIPadding,ac(ae.utilities)local at,au,av,aw=as.
 get,as.typecheck,as.animate,as.customFont local ax,ay=au(af,{Text='',Visible=false},{af.Visible and''or'Visible'})
@@ -584,7 +584,7 @@ TextTransparency=aG,Size=UDim2.new(1,0,0,18),Position=UDim2.new(0,0,0.5,0),Ancho
 =Enum.TextXAlignment.Left,TextColor3=ai.text,Text=an(function()return at(aD)end),[al]={ak'UITextSizeConstraint'{
 MinTextSize=1,MaxTextSize=18}}}}}local aH={}function aH.SetText(aI,aJ)local aK,aL=au({SetText=aJ},{SetText=''})assert(aK
 ,table.concat(aL,'\n'))aD:set(aJ)end function aH.Visible(aI)aE:set(true)end function aH.Invisible(aI)aE:set(false)end
-return aH end end)()end,[20]=function()local aa,ab,ac=a(20)local ad return(function(...)local ae=ab.Parent.Parent return
+return aH end end)()end,[19]=function()local aa,ab,ac=a(19)local ad return(function(...)local ae=ab.Parent.Parent return
 function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,aq,
 ar=ak.New,ak.Children,ak.Value,ak.Observer,ak.OnEvent,ak.Computed,ac(ae.utilities)local as,at,au,av,aw,ax,ay,az=ar.get,
 ar.animate,ar.typecheck,ar.customFont,ar.drag,ar.references,ar.connections,ac(ae.simpleElements)local aA,aB,aC,aD,aE,aF,
@@ -605,8 +605,8 @@ AutomaticSize.Y,[am]={al'TextLabel'{Size=UDim2.new(1,-40,0,18),BackgroundTranspa
 FontWeight.Bold),TextColor3=ai.text,TextScaled=true,Text=aL,TextXAlignment=Enum.TextXAlignment.Left,RichText=true},al
 'Frame'{Size=UDim2.new(1,0,0,0),Position=UDim2.fromOffset(0,26),BackgroundTransparency=1,AutomaticSize=Enum.
 AutomaticSize.Y,[am]=aM}}}}}}}}}local e,f=aw(d,15)local g=f:Connect(function()c:set(false)end)ay.add(e)ay.add(g)d.
-Destroying:Once(function()e:Disconnect()g:Disconnect()end)return d,function(...)aM:set(...)end end end)()end,[21]=
-function()local aa,ab,ac=a(21)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.
+Destroying:Once(function()e:Disconnect()g:Disconnect()end)return d,function(...)aM:set(...)end end end)()end,[20]=
+function()local aa,ab,ac=a(20)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.
 Bundles)local ah,ai=ag.themeSystem,ag.Fusion local aj,ak,al,am,an,ao=ai.New,ai.OnEvent,ai.Children,ai.Value,ai.Computed,
 ac(ae.utilities)local ap,aq,ar,as,at,au=ao.get,ao.animate,ao.getStringBounds,ao.customFont,ao.typecheck,ac(ae.
 simpleElements)local av,aw,ax,ay,az,aA,aB,aC,aD=au.UICorner,au.UIPadding,au.UIListLayout,Enum.SortOrder,Enum.
@@ -643,7 +643,7 @@ true,TextColor3=ah.text2,Text=aF},aj'Frame'{Visible=an(function()return#ap(aJ)>0
 task.spawn(function()repeat task.wait()until ap(aL)local k,o=(tick())repeat o=tick()-k b:set(f(1,math.clamp(o,0,ap(aG)))
 )task.wait()until o>ap(aG)end)task.spawn(function()aK:set(true)repeat task.wait()until ap(aL)task.wait(ap(aG))task.wait(
 0.2)aL:set(false)task.wait(0.4)aK:set(false)task.delay(0.3,function()aM:set(true)end)task.wait(2)h:Destroy()end)end end
-)()end,[22]=function()local aa,ab,ac=a(22)local ad return(function(...)local ae=ab.Parent.Parent return function(af)
+)()end,[21]=function()local aa,ab,ac=a(21)local ad return(function(...)local ae=ab.Parent.Parent return function(af)
 local ag=ac(ae.Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.
 Value,aj.Computed,aj.Observer,ac(ae.simpleElements)local aq,ar,as,at=ap.UICorner,ap.UIPadding,ap.UITextSizeConstraint,
 ac(ae.utilities)local au,av,aw,ax,ay=at.get,at.animate,at.getStringBounds,at.customFont,at.typecheck local az,aA=ay(af,{
@@ -666,7 +666,7 @@ TextYAlignment=Enum.TextYAlignment.Top,TextSize=12,FontFace=ax('Montserrat',Enum
 Text=aG,Size=an(function()return UDim2.new(1,-4,0,au(aK))end)}}}local aL={}function aL.SetBody(aM,b)local c,d=ay({
 SetBody=b},{SetBody=''})assert(c,table.concat(d,'\n'))aG:set(b)end function aL.SetTitle(aM,b)local c,d=ay({SetTitle=b},{
 SetTitle=''})assert(c,table.concat(d,'\n'))aF:set(b)end function aL.Visible(aM)aH:set(true)end function aL.Invisible(aM)
-aH:set(false)end return aL end end)()end,[23]=function()local aa,ab,ac=a(23)local ad return(function(...)local ae=ab.
+aH:set(false)end return aL end end)()end,[22]=function()local aa,ab,ac=a(22)local ad return(function(...)local ae=ab.
 Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak,al=ag.data,ag.themeSystem,ag.icons,ag.flags,ag
 .services local am,an,ao=al.UserInputService,al.RunService,ag.Fusion local ap,aq,ar,as,at,au,av,aw=ao.New,ao.Children,ao
 .Value,ao.Observer,ao.OnEvent,ao.Computed,ao.Ref,ac(ae.utilities)local ax,ay,az,aA,aB=aw.get,aw.animate,aw.typecheck,aw.
@@ -731,7 +731,7 @@ percentageOf:set(D)E=false end if E then t.status.percentageOf:set(ax(r))end end
 SetName=''})assert(G,table.concat(H,'\n'))e:set(F)end function D.SetValue(E,F)local G,H=az({SetValue=F},{SetValue=0})
 assert(G,table.concat(H,'\n'))t.status.percentageOf:set(math.clamp(F,ax(k),ax(j)))end function D.Enable(E)g:set(true)end
 function D.Disable(E)g:set(false)end function D.Visible(E)h:set(true)end function D.Invisible(E)h:set(false)end return D
-end end)()end,[24]=function()local aa,ab,ac=a(24)local ad return(function(...)local ae=ab.Parent.Parent return function(
+end end)()end,[23]=function()local aa,ab,ac=a(23)local ad return(function(...)local ae=ab.Parent.Parent return function(
 af)local ag=ac(ae.Bundles)local ah,ai,aj=ag.data,ag.themeSystem,ag.Fusion local ak,al,am,an,ao,ap=aj.New,aj.Children,aj.
 Value,aj.Observer,aj.OnEvent,ac(ae.utilities)local aq,ar,as,at,au=ap.get,ap.animate,ap.typecheck,ap.customFont,ac(ae.
 simpleElements)local av,aw,ax,ay,az,aA,aB,aC,aD=au.UIListLayout,au.UIPadding,au.UICorner,Enum.SortOrder,Enum.
@@ -746,14 +746,14 @@ return aq(aL)and 0 or 0.6 end,40,1)},ak'TextLabel'{Size=aq(aJ)and UDim2.new(1,-2
 'Montserrat',Enum.FontWeight.Bold),TextColor3=ai.text2,TextScaled=true,Text=aI,BackgroundTransparency=1,TextXAlignment=
 Enum.TextXAlignment.Left,TextTransparency=ar(function()return aq(aL)and 0 or 0.6 end,40,1),[al]={ak
 'UITextSizeConstraint'{MinTextSize=1,MaxTextSize=16}}}}}if not aq(aF.boolean)then aF:update('boolean',true)aE:update(
-'string',aG.uid)end return aG end end)()end,[25]=function()local aa,ab,ac=a(25)local ad return(function(...)local ae=ab.
+'string',aG.uid)end return aG end end)()end,[24]=function()local aa,ab,ac=a(24)local ad return(function(...)local ae=ab.
 Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai=ag.data,ag.Fusion local aj,ak,al,am=ai.New,ai.
 Children,ai.Computed,ac(ae.simpleElements)local an,ao,ap,aq,ar,as,at=am.UIListLayout,Enum.SortOrder,Enum.FillDirection,
 Enum.HorizontalAlignment,Enum.VerticalAlignment,ac(ae.utilities).get,ah.find'selectedTab'return aj'ScrollingFrame'{
 ZIndex=al(function()return(as(at.string)==af.uid)and 1 or 0 end),Name=af.uid,Parent=af.Parent,Size=UDim2.new(1,0,1,0),
 BackgroundTransparency=1,AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollBarThickness=0,ScrollingDirection=Enum.
 ScrollingDirection.Y,CanvasSize=UDim2.new(1,0,1,0),[ak]={an(ao.LayoutOrder,ap.Vertical,aq.Center,ar.Top,UDim.new(0,4))}}
-end end)()end,[26]=function()local aa,ab,ac=a(26)local ad return(function(...)local ae=ab.Parent.Parent return function(
+end end)()end,[25]=function()local aa,ab,ac=a(25)local ad return(function(...)local ae=ab.Parent.Parent return function(
 af)local ag=ac(ae.Bundles)local ah,ai,aj,ak,al=ag.data,ag.themeSystem,ag.icons,ag.flags,ag.Fusion local am,an,ao,ap,aq,
 ar,as,at=al.New,al.Children,al.Value,al.Computed,al.Observer,al.Ref,al.OnEvent,ac(ae.utilities)local au,av,aw,ax,ay=at.
 get,at.animate,at.customFont,at.typecheck,ac(ae.simpleElements)local az,aA,aB,aC,aD,aE,aF,aG,aH,aI=ay.UIPadding,ay.
@@ -813,7 +813,7 @@ au(j)then v:set(true)end w:set(au(i))if au(j)then v:set(false)end end else if au
 au(j)then v:set(false)end end local C={}function C.SetName(D,E)local F,G=ax({SetName=E},{SetName=''})assert(F,table.
 concat(G,'\n'))c:set(E)end function C.SetInput(D,E)local F,G=ax({SetInput=E},{SetInput=au(h)and 1 or''})assert(F,table.
 concat(G,'\n'))w:set(E)end function C.Enable(D)e:set(true)end function C.Disable(D)e:set(false)end function C.Visible(D)
-f:set(true)end function C.Invisible(D)f:set(false)end return C end end)()end,[27]=function()local aa,ab,ac=a(27)local ad
+f:set(true)end function C.Invisible(D)f:set(false)end return C end end)()end,[26]=function()local aa,ab,ac=a(26)local ad
 return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak,al=ag.data,ag.
 themeSystem,ag.icons,ag.flags,ag.services local am,an=al.UserInputService,ag.Fusion local ao,ap,aq,ar,as,at,au=an.New,an
 .Children,an.Value,an.Observer,an.OnEvent,an.Computed,ac(ae.utilities)local av,aw,ax,ay,az,aA,aB,aC=au.get,au.animate,au
@@ -893,10 +893,10 @@ set(av(w).Name)end end local K={}function K.SetName(L,M)local N,O=ax({SetName=M}
 ))A.status.boolean:set(M)end function K.SetBind(L,M:EnumItem)assert(av(y),'Requires LinkKeybind')local N,O=ax({SetBind=M
 },{SetBind=Enum.keyCode.C})assert(N,table.concat(O,'\n'))C(M,'At :SetBind')end function K.Enable(L)s:set(true)end
 function K.Disable(L)s:set(false)end function K.Visible(L)t:set(true)end function K.Invisible(L)t:set(false)end return K
-end end)()end,[28]=function()local aa,ab,ac=a(28)local ad return(function(...)local ae,af,ag=ab.Parent.Parent,'',{}table
+end end)()end,[27]=function()local aa,ab,ac=a(27)local ad return(function(...)local ae,af,ag=ab.Parent.Parent,'',{}table
 .insert(ag,function(ah)local ai,aj,ak=ac(ae.Bundles),ac(ab.Parent.notification),ac(ae.utilities).references local al,am=
 ai.icons,ai.themeSystem aj{Parent=ak.get'notificationList',Title=af,Body=ah,Duration=3,Image=al.alert,ImageColor=am.get
-'red'}end)table.insert(ag,function(ah)af=ah end)return ag end)()end,[30]=function()local aa,ab,ac=a(30)local ad return(
+'red'}end)table.insert(ag,function(ah)af=ah end)return ag end)()end,[29]=function()local aa,ab,ac=a(29)local ad return(
 function(...)local ae=ab.Parent.Parent return function(af,ag)local ah=ac(ae.Bundles)local ai=ah.services local aj,ak,al,
 am,an=ai.UserInputService,ah.themeSystem,ah.icons,ah.data,ah.Fusion local ao,ap,aq,ar,as,at,au,av=an.New,an.Children,an.
 Value,an.Ref,an.Computed,an.Observer,an.OnEvent,ac(ae.simpleElements)local aw,ax,ay,az,aA,aB,aC,aD,aE=av.UIListLayout,av
@@ -990,18 +990,18 @@ Y.Scale,K.Position.Y.Offset)J=aH(aG.get'container',15)end if(L.Y-(H.screenSize.A
 )and 0.2 or 0.32)then J:Disconnect()K.Position=UDim2.new(K.Position.X.Scale,K.Position.X.Offset,0.5,aF(g.number))J=aH(aG
 .get'container',15)end if-((L.Y-(H.screenSize.AbsoluteSize.Y+aF(g.number)))/aF(u)+1)>(aF(v)and 8 or 0.935)then J:
 Disconnect()K.Position=UDim2.new(K.Position.X.Scale,K.Position.X.Offset,0.5,aF(g.number))J=aH(aG.get'container',15)end
-end))end end)()end,[31]=function()local aa,ab,ac=a(31)local ad return(function(...)return setmetatable({},{__index=
-function(ae,af)if ab:FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end end})end)()end,[32]=
-function()local aa,ab,ac=a(32)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)return function(
+end))end end)()end,[30]=function()local aa,ab,ac=a(30)local ad return(function(...)return setmetatable({},{__index=
+function(ae,af)if ab:FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end end})end)()end,[31]=
+function()local aa,ab,ac=a(31)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(
 af:number,ag:Enum.AspectType,ah:Enum.DominantAxis)ag=ag or Enum.AspectType.FitWithinMaxSize ah=ah or Enum.DominantAxis.
-Height return ae.New'UIAspectRatioConstraint'{AspectRatio=af,AspectType=ag,DominantAxis=ah}end end)()end,[33]=function()
-local aa,ab,ac=a(33)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)return function(af,ag)ag=ag
-or 0 return ae.New'UICorner'{CornerRadius=UDim.new(ag,af)}end end)()end,[34]=function()local aa,ab,ac=a(34)local ad
-return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)return function(af,ag,ah,ai,aj)return ae.New
+Height return ae.New'UIAspectRatioConstraint'{AspectRatio=af,AspectType=ag,DominantAxis=ah}end end)()end,[32]=function()
+local aa,ab,ac=a(32)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(af,ag)ag=
+ag or 0 return ae.New'UICorner'{CornerRadius=UDim.new(ag,af)}end end)()end,[33]=function()local aa,ab,ac=a(33)local ad
+return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(af,ag,ah,ai,aj)return ae.New
 'UIListLayout'{SortOrder=af or Enum.SortOrder.LayoutOrder,FillDirection=ag or Enum.FillDirection.Vertical,
 HorizontalAlignment=ah or Enum.HorizontalAlignment.Center,VerticalAlignment=ai or Enum.VerticalAlignment.Center,Padding=
-aj or UDim.new(0,0)}end end)()end,[35]=function()local aa,ab,ac=a(35)local ad return(function(...)local ae=ac(ab.Parent.
-Parent.Bundles.Fusion)return function(...)local af={...}if#af==1 then return ae.New'UIPadding'{PaddingTop=typeof(...)==
+aj or UDim.new(0,0)}end end)()end,[34]=function()local aa,ab,ac=a(34)local ad return(function(...)local ae=ac(ab.Parent.
+Parent.Bundles).Fusion return function(...)local af={...}if#af==1 then return ae.New'UIPadding'{PaddingTop=typeof(...)==
 'number'and UDim.new(0,...)or...,PaddingRight=typeof(...)=='number'and UDim.new(0,...)or...,PaddingBottom=typeof(...)==
 'number'and UDim.new(0,...)or...,PaddingLeft=typeof(...)=='number'and UDim.new(0,...)or...}elseif#af==2 then return ae.
 New'UIPadding'{PaddingTop=typeof(af[1])=='number'and UDim.new(0,af[1])or af[1],PaddingRight=typeof(af[2])=='number'and
@@ -1011,18 +1011,18 @@ UDim.new(0,af[1])or af[1],PaddingRight=typeof(af[2])=='number'and UDim.new(0,af[
 =='number'and UDim.new(0,af[3])or af[3],PaddingLeft=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2]}else return ae.
 New'UIPadding'{PaddingTop=typeof(af[1])=='number'and UDim.new(0,af[1])or af[1],PaddingRight=typeof(af[2])=='number'and
 UDim.new(0,af[2])or af[2],PaddingBottom=typeof(af[3])=='number'and UDim.new(0,af[3])or af[3],PaddingLeft=typeof(af[4])==
-'number'and UDim.new(0,af[4])or af[4]}end end end)()end,[36]=function()local aa,ab,ac=a(36)local ad return(function(...)
-local ae=ac(ab.Parent.Parent.Bundles.Fusion)return function(af:number?,ag:number?)return ae.New'UITextSizeConstraint'{
-MinTextSize=af,MaxTextSize=ag}end end)()end,[37]=function()local aa,ab,ac=a(37)local ad return(function(...)return
+'number'and UDim.new(0,af[4])or af[4]}end end end)()end,[35]=function()local aa,ab,ac=a(35)local ad return(function(...)
+local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(af:number?,ag:number?)return ae.New'UITextSizeConstraint'{
+MinTextSize=af,MaxTextSize=ag}end end)()end,[36]=function()local aa,ab,ac=a(36)local ad return(function(...)return
 setmetatable({},{__index=function(ae,af)if ab:FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end
-end})end)()end,[38]=function()local aa,ab,ac=a(38)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.
-Fusion)local af,ag=ae.Computed,ae.Spring return function(ah,ai,aj)return ag(af(ah),ai,aj)end end)()end,[39]=function()
-local aa,ab,ac=a(39)local ad return(function(...)local ae,af,ag={},{},ac(ab.Parent.Parent.Bundles.services)function af.
+end})end)()end,[37]=function()local aa,ab,ac=a(37)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).
+Fusion local af,ag=ae.Computed,ae.Spring return function(ah,ai,aj)return ag(af(ah),ai,aj)end end)()end,[38]=function()
+local aa,ab,ac=a(38)local ad return(function(...)local ae,af,ag={},{},ac(ab.Parent.Parent.Bundles.services)function af.
 add(ah)table.insert(ae,ah)end function af.deleteConnections()for ah,ai in ae do if typeof(ai)=='function'then ai()else
-ai:Disconnect()end ae[ah]=nil end end return af end)()end,[40]=function()local aa,ab,ac=a(40)local ad return(function(
+ai:Disconnect()end ae[ah]=nil end end return af end)()end,[39]=function()local aa,ab,ac=a(39)local ad return(function(
 ...)local ae={Inter='rbxassetid://12187365364',Montserrat='rbxassetid://11702779517'}return function(af:string,ag:Enum.
 FontWeight?,ah:Enum.FontStyle?)assert(af,'font required')ag=ag or Enum.FontWeight.Regular ah=ah or Enum.FontStyle.Normal
-if ae[af]then return Font.new(ae[af],ag,ah)else error('no font:',af)end end end)()end,[41]=function()local aa,ab,ac=a(41
+if ae[af]then return Font.new(ae[af],ag,ah)else error('no font:',af)end end end)()end,[40]=function()local aa,ab,ac=a(40
 )local ad return(function(...)local ae,af={},{}function ae.cloneref(ag)if cloneref then return cloneref(ag)else return
 ag end end function ae.printFileSystem()print(af)end function ae.gethui(...)return gethui(...)or nil end ae.getgenv=
 getgenv or nil function ae.isfile(ag:string)if isfile then return isfile(ag)else local ah,ai=af,false if ag:find'/'then
@@ -1043,7 +1043,7 @@ listfiles then return listfiles(ag)else local ah,ai=af,false if ag:find'/'then f
 end local aj={}for ak,al in ah do if typeof(al)=='string'then table.insert(aj,`{ag}/{ak}`)end end return aj end end
 function ae.getthreadidentity()if getthreadidentity then return getthreadidentity()else return 5 end end function ae.
 setthreadidentity(ag:number)if setthreadidentity then return setthreadidentity(ag)else return 5 end end return ae end)()
-end,[42]=function()local aa,ab,ac=a(42)local ad return(function(...)return function(ae,af)local ag,ah=ac(ab.Parent.
+end,[41]=function()local aa,ab,ac=a(41)local ad return(function(...)return function(ae,af)local ag,ah=ac(ab.Parent.
 Parent.Bundles.services),af or 10 local ai,aj,ak,al,am,an,ao=ag.UserInputService,ag.RunService,ae local function ap(aq,
 ar,as)return aq+(ar-aq)*as end local aq=Instance.new'BindableEvent'local function ar(as)if not(ao)then return end if not
 (al)and(an)then ak.Position=UDim2.new(ao.X.Scale,ap(ak.Position.X.Offset,an.X.Offset,as*ah),ao.Y.Scale,ap(ak.Position.Y.
@@ -1052,49 +1052,49 @@ Offset,an.Y.Offset,as*ah))return end local at=(am-ai:GetMouseLocation())local au
 ap(ak.Position.Y.Offset,av,as*ah))end ak.InputBegan:Connect(function(as)if as.UserInputType==Enum.UserInputType.
 MouseButton1 or as.UserInputType==Enum.UserInputType.Touch then al=true ao=ak.Position am=ai:GetMouseLocation()as.
 Changed:Connect(function()if as.UserInputState==Enum.UserInputState.End then aq:Fire()al=false end end)end end)local as=
-aj.Heartbeat:Connect(ar)return as,aq.Event end end)()end,[43]=function()local aa,ab,ac=a(43)local ad return(function(...
-)return function(ae,af)if typeof(ae)=='table'and ae.type=='State'then return ae:get(af)end return ae end end)()end,[44]=
-function()local aa,ab,ac=a(44)local ad return(function(...)return function(ae:string,af)ae=ae or''local ag=Instance.new
+aj.Heartbeat:Connect(ar)return as,aq.Event end end)()end,[42]=function()local aa,ab,ac=a(42)local ad return(function(...
+)return function(ae,af)if typeof(ae)=='table'and ae.type=='State'then return ae:get(af)end return ae end end)()end,[43]=
+function()local aa,ab,ac=a(43)local ad return(function(...)return function(ae:string,af)ae=ae or''local ag=Instance.new
 'GetTextBoundsParams'ag.Text=ae ag.Font=af.Font ag.Size=af.Size ag.Width=af.Width local ah=ac(ab.Parent.Parent.Bundles.
-services).TextService return ah:GetTextBoundsAsync(ag)end end)()end,[45]=function()local aa,ab,ac=a(45)local ad return(
+services).TextService return ah:GetTextBoundsAsync(ag)end end)()end,[44]=function()local aa,ab,ac=a(44)local ad return(
 function(...)local ae=string.split([[qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890]],'')local function
-af(ag)if ag>0 then return af(ag-1)..ae[math.random(1,#ae)]else return''end end return af end)()end,[46]=function()local
-aa,ab,ac=a(46)local ad return(function(...)local ae,af,ag,ah={},{},ac(ab.Parent.Parent.Bundles.Fusion).Observer,ac(ab.
+af(ag)if ag>0 then return af(ag-1)..ae[math.random(1,#ae)]else return''end end return af end)()end,[45]=function()local
+aa,ab,ac=a(45)local ad return(function(...)local ae,af,ag,ah={},{},ac(ab.Parent.Parent.Bundles).Fusion.Observer,ac(ab.
 Parent.get)function af.add(...)for ai,aj in{...}do if typeof(ah(aj))~='Instance'then ag(aj):onChange(function()if
 typeof(ah(aj))=='Instance'then if not ae[ah(aj).Name]then ae[ah(aj).Name]=ah(aj)else warn(ah(aj).Name,
 ' REF was already added')end end end)else if not ae[ah(aj).Name]then ae[ah(aj).Name]=ah(aj)else warn(ah(aj).Name,
 ' REF was already added')end end end end function af.get(ai)if ae[ai]then return ae[ai]end end function af.remove(ai)if
 ae[ai]then ae[ai]=nil else warn(ai,"isn't in the references list")end end function af.clear()for ai,aj in ae do ae[ai]=
-nil if typeof(aj)=='Instance'then aj:Destroy()end end end return af end)()end,[47]=function()local aa,ab,ac=a(47)local
+nil if typeof(aj)=='Instance'then aj:Destroy()end end end return af end)()end,[46]=function()local aa,ab,ac=a(46)local
 ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.Computed return function(ag,ah)return ae.
-Tween(af(ag),ah)end end)()end,[48]=function()local aa,ab,ac=a(48)local ad return(function(...)return function(ae:table,
+Tween(af(ag),ah)end end)()end,[47]=function()local aa,ab,ac=a(47)local ad return(function(...)return function(ae:table,
 af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))and
 not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah
-,ai end end)()end},{{1,2,{'Darius'},{{11,1,{'components'},{{19,2,{'label'}},{17,2,{'keybind'}},{15,2,{'divider'}},{26,2,
-{'textbox'}},{21,2,{'notification'}},{13,2,{'buttonGroup'}},{20,2,{'module'}},{16,2,{'dropdown'}},{22,2,{'paragraph'}},{
-14,2,{'colorpicker'}},{28,2,{'warn'}},{27,2,{'toggle'}},{18,2,{'keybindList'}},{24,2,{'tabButton'}},{23,2,{'slider'}},{
-25,2,{'tabFrame'}},{12,2,{'button'}}}},{37,2,{'utilities'},{{42,2,{'drag'}},{44,2,{'getStringBounds'}},{45,2,{
-'randomString'}},{39,2,{'connections'}},{40,2,{'customFont'}},{46,2,{'references'}},{48,2,{'typecheck'}},{47,2,{'tween'}
-},{43,2,{'get'}},{38,2,{'animate'}},{41,2,{'customFunctions'}}}},{29,1,{'layouts'},{{30,2,{'main'}}}},{2,2,{'Bundles'},{
-{4,2,{'data'}},{6,2,{'icons'}},{9,2,{'themeSystem'},{{10,2,{'default'}}}},{8,2,{'services'}},{7,2,{'lucide'}},{3,2,{
-'Fusion'}},{5,2,{'flags'}}}},{31,2,{'simpleElements'},{{35,2,{'UIPadding'}},{33,2,{'UICorner'}},{36,2,{
-'UITextSizeConstraint'}},{34,2,{'UIListLayout'}},{32,2,{'UIAspectRatioConstraint'}}}}}}},'0.4.1','WaxRuntime',string,
-task,setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,
-ax,ay,az,aA=aj.insert,aj.remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as
-,1,4)=='Lune'then local aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE
-,aF,aG,aH,aI,aJ,aK=aB or function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',
-[5]='StringValue'},{},{},{},{},{},{},{}local aL,aM={GetFullName={{},function(aL)local aM,b=aL.Name,aL.Parent while b do
-aM=b.Name..'.'..aM b=b.Parent end return aM end},GetChildren={{},function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)end
-return aM end},GetDescendants={{},function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)for c,d in ai,b:GetDescendants()do
-au(aM,d)end end return aM end},FindFirstChild={{'string','boolean?'},function(aL,aM,b)local c=aK[aL]for d in ai,c do if
-d.Name==aM then return d end end if b then for e in ai,c do return e:FindFirstChild(aM,true)end end end},
-FindFirstAncestor={{'string'},function(aL,aM)local b=aL.Parent while b do if b.Name==aM then return b end b=b.Parent end
-end},WaitForChild={{'string','number?'},function(aL,aM)return aL:FindFirstChild(aM)end}},{}for b,c in ai,aL do local d,e
-,f=c[1],c[2],{}for g,h in ai,d do local i,j=az(h,'^([^%?]+)(%??)')f[g]={i,j}end aM[b]=function(i,...)if not aK[i]then
-ah("Expected ':' not '.' calling member function "..b,2)end local j={...}for k,o in ai,f do local p=j[k]local q,r,s=an(p
-),o[1],o[2]if p==nil and not s then ah('Argument '..p..' missing or nil',3)end if r~='any'and q~=r and not(q=='nil'and s
-)then ah('Argument '..k..' expects type "'..r..'", got "'..q..'"',2)end end return e(i,...)end end local function d(e,f,
-g)local h,i=(ag({},{__mode='k'}))local function j(k)ah(k..' is not a valid (virtual) member of '..e..' "'..f..'"',3)end
+,ai end end)()end},{{1,2,{'Darius'},{{30,2,{'simpleElements'},{{34,2,{'UIPadding'}},{31,2,{'UIAspectRatioConstraint'}},{
+32,2,{'UICorner'}},{33,2,{'UIListLayout'}},{35,2,{'UITextSizeConstraint'}}}},{28,1,{'layouts'},{{29,2,{'main'}}}},{36,2,
+{'utilities'},{{40,2,{'customFunctions'}},{37,2,{'animate'}},{43,2,{'getStringBounds'}},{44,2,{'randomString'}},{38,2,{
+'connections'}},{47,2,{'typecheck'}},{42,2,{'get'}},{46,2,{'tween'}},{45,2,{'references'}},{41,2,{'drag'}},{39,2,{
+'customFont'}}}},{2,2,{'Bundles'},{{4,2,{'flags'}},{8,2,{'themeSystem'},{{9,2,{'default'}}}},{3,2,{'data'}},{7,2,{
+'services'}},{6,2,{'lucide'}},{5,2,{'icons'}}}},{10,1,{'components'},{{23,2,{'tabButton'}},{18,2,{'label'}},{12,2,{
+'buttonGroup'}},{21,2,{'paragraph'}},{27,2,{'warn'}},{16,2,{'keybind'}},{24,2,{'tabFrame'}},{25,2,{'textbox'}},{11,2,{
+'button'}},{17,2,{'keybindList'}},{14,2,{'divider'}},{13,2,{'colorpicker'}},{26,2,{'toggle'}},{22,2,{'slider'}},{20,2,{
+'notification'}},{19,2,{'module'}},{15,2,{'dropdown'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,
+table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay,az,aA=aj.insert,aj.
+remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)=='Lune'then local
+aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,aG,aH,aI,aJ,aK=aB or
+function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},
+{},{},{},{},{}local aL,aM={GetFullName={{},function(aL)local aM,b=aL.Name,aL.Parent while b do aM=b.Name..'.'..aM b=b.
+Parent end return aM end},GetChildren={{},function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)end return aM end},
+GetDescendants={{},function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)for c,d in ai,b:GetDescendants()do au(aM,d)end
+end return aM end},FindFirstChild={{'string','boolean?'},function(aL,aM,b)local c=aK[aL]for d in ai,c do if d.Name==aM
+then return d end end if b then for e in ai,c do return e:FindFirstChild(aM,true)end end end},FindFirstAncestor={{
+'string'},function(aL,aM)local b=aL.Parent while b do if b.Name==aM then return b end b=b.Parent end end},WaitForChild={
+{'string','number?'},function(aL,aM)return aL:FindFirstChild(aM)end}},{}for b,c in ai,aL do local d,e,f=c[1],c[2],{}for
+g,h in ai,d do local i,j=az(h,'^([^%?]+)(%??)')f[g]={i,j}end aM[b]=function(i,...)if not aK[i]then ah(
+"Expected ':' not '.' calling member function "..b,2)end local j={...}for k,o in ai,f do local p=j[k]local q,r,s=an(p),o
+[1],o[2]if p==nil and not s then ah('Argument '..p..' missing or nil',3)end if r~='any'and q~=r and not(q=='nil'and s)
+then ah('Argument '..k..' expects type "'..r..'", got "'..q..'"',2)end end return e(i,...)end end local function d(e,f,g
+)local h,i=(ag({},{__mode='k'}))local function j(k)ah(k..' is not a valid (virtual) member of '..e..' "'..f..'"',3)end
 local function k(o)ah('Unable to assign (virtual) property '..o..'. Property is read only',3)end local o,p={},{}p.
 __metatable=false p.__index=function(q,r)if r=='ClassName'then return e elseif r=='Name'then return f elseif r=='Parent'
 then return g elseif e=='StringValue'and r=='Value'then return i else local s=aM[r]if s then return s end end for s in

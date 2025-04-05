@@ -1,6 +1,6 @@
 local references = {}
 local returnFunctions = {}
-local observe = require(script.Parent.Parent.Bundles.Fusion).Observer
+local observe = require(script.Parent.Parent.Bundles).Fusion.Observer
 
 local get = require(script.Parent.get)
 

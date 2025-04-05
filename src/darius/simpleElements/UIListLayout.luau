@@ -1,4 +1,4 @@
-local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(SortOrder, FillDirection,HorizontalAlignment,VerticalAlignment,Padding)
     return Fusion.New "UIListLayout" {

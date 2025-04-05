@@ -809,17 +809,7 @@ function darius:Window(windowProperty)
 end
 return darius
 end)() end,
-    function()local wax,script,require=ImportGlobals(2)local ImportGlobals return (function(...)return setmetatable({},{
-    __index = function(self, key)
-        if script:FindFirstChild(key) then
-            return require(script[key])
-        else
-            error("no bundle: "..key)
-        end
-    end
-})
-end)() end,
-    function()local wax,script,require=ImportGlobals(3)local ImportGlobals return (function(...)local utilities = require(script.Parent.Parent.utilities)
+    function()local wax,script,require=ImportGlobals(2)local ImportGlobals return (function(...)local utilities = require(script.Parent.utilities)
 local customFunctions = utilities.customFunctions
 
 local fusion
@@ -830,10 +820,23 @@ if customFunctions.getthreadidentity() < 5 then
 end
 fusion = require(game:GetObjects("rbxassetid://110500042647914")[1])
 customFunctions.setthreadidentity(oldidentity)
-return fusion
+
+return setmetatable({},{
+    __index = function(self, key)
+        if key == "Fusion" then
+            return fusion
+        end
+        if script:FindFirstChild(key) then
+            return require(script[key])
+        else
+            error("no bundle: "..key)
+        end
+    end
+})
 end)() end,
-    function()local wax,script,require=ImportGlobals(4)local ImportGlobals return (function(...)local randomString = require(script.Parent.Parent.utilities.randomString)
-local fusion = require(script.Parent.Fusion)
+    function()local wax,script,require=ImportGlobals(3)local ImportGlobals return (function(...)local randomString = require(script.Parent.Parent.utilities.randomString)
+local bundles = require(script.Parent)
+local fusion = bundles.Fusion
 local value = fusion.Value
 
 local data = {}
@@ -906,7 +909,7 @@ end
 
 return dataFunctions
 end)() end,
-    function()local wax,script,require=ImportGlobals(5)local ImportGlobals return (function(...)local data = require(script.Parent).data
+    function()local wax,script,require=ImportGlobals(4)local ImportGlobals return (function(...)local data = require(script.Parent).data
 local get = require(script.Parent.Parent.utilities).get
 local services = require(script.Parent).services
 local HttpService = services.HttpService
@@ -1214,7 +1217,7 @@ end
 
 return funcs
 end)() end,
-    function()local wax,script,require=ImportGlobals(6)local ImportGlobals return (function(...)return {
+    function()local wax,script,require=ImportGlobals(5)local ImportGlobals return (function(...)return {
     ['lock'] = "rbxassetid://10723434711",
     ['maximize'] = "rbxassetid://15556636376",
     ['minimize'] = "rbxassetid://15556637715",
@@ -1233,7 +1236,7 @@ end)() end,
     ['cog'] = "rbxassetid://10709810948"
 }
 end)() end,
-    function()local wax,script,require=ImportGlobals(7)local ImportGlobals return (function(...)local utilities = require(script.Parent.Parent.utilities)
+    function()local wax,script,require=ImportGlobals(6)local ImportGlobals return (function(...)local utilities = require(script.Parent.Parent.utilities)
 local customFunctions = utilities.customFunctions
 
 local lucide
@@ -1246,7 +1249,7 @@ lucide = loadstring(game:GetObjects("rbxassetid://85554466048193")[1].Source)()
 customFunctions.setthreadidentity(oldidentity)
 return lucide
 end)() end,
-    function()local wax,script,require=ImportGlobals(8)local ImportGlobals return (function(...)local cF = require(script.Parent.Parent.utilities.customFunctions)
+    function()local wax,script,require=ImportGlobals(7)local ImportGlobals return (function(...)local cF = require(script.Parent.Parent.utilities.customFunctions)
 local cloneref = cF.cloneref
 
 local services = {}
@@ -1258,11 +1261,11 @@ services = setmetatable(services, {
 
 return services
 end)() end,
-    function()local wax,script,require=ImportGlobals(9)local ImportGlobals return (function(...)local themeSystem = {}
+    function()local wax,script,require=ImportGlobals(8)local ImportGlobals return (function(...)local themeSystem = {}
 local services = require(script.Parent.services)
 local HttpService = services.HttpService
-local data = require(script.Parent.data)
-local fusion = require(script.Parent.Fusion)
+local Bundles = require(script.Parent)
+local fusion = Bundles.Fusion
 local default = require(script.default)
 local value = fusion.Value
 local observe = fusion.Observer
@@ -1497,7 +1500,7 @@ end
 
 return themeSystem
 end)() end,
-    function()local wax,script,require=ImportGlobals(10)local ImportGlobals return (function(...)return {
+    function()local wax,script,require=ImportGlobals(9)local ImportGlobals return (function(...)return {
     background = Color3.fromHex("#2C2F33"),
     background2 = Color3.fromHex("#222427"),
 
@@ -1525,7 +1528,7 @@ end)() end,
     orange = Color3.fromHex("#ff9b61"),
 }
 end)() end,
-    [12] = function()local wax,script,require=ImportGlobals(12)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [11] = function()local wax,script,require=ImportGlobals(11)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -1725,7 +1728,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [13] = function()local wax,script,require=ImportGlobals(13)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [12] = function()local wax,script,require=ImportGlobals(12)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -1978,7 +1981,7 @@ return function(property)
 	return returnTable
 end
 end)() end,
-    [14] = function()local wax,script,require=ImportGlobals(14)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [13] = function()local wax,script,require=ImportGlobals(13)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -2832,7 +2835,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [15] = function()local wax,script,require=ImportGlobals(15)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [14] = function()local wax,script,require=ImportGlobals(14)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -2883,7 +2886,7 @@ return function(property)
     }
 end
 end)() end,
-    [16] = function()local wax,script,require=ImportGlobals(16)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [15] = function()local wax,script,require=ImportGlobals(15)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
 	local Bundles = require(darius.Bundles)
@@ -3582,7 +3585,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [17] = function()local wax,script,require=ImportGlobals(17)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [16] = function()local wax,script,require=ImportGlobals(16)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -4040,7 +4043,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [18] = function()local wax,script,require=ImportGlobals(18)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [17] = function()local wax,script,require=ImportGlobals(17)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
     local bundles = require(darius.Bundles)
@@ -4251,7 +4254,7 @@ return function(property)
     end)
 end
 end)() end,
-    [19] = function()local wax,script,require=ImportGlobals(19)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [18] = function()local wax,script,require=ImportGlobals(18)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local bundles = require(darius.Bundles)
 	local data = bundles.data
@@ -4364,7 +4367,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [20] = function()local wax,script,require=ImportGlobals(20)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [19] = function()local wax,script,require=ImportGlobals(19)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -4534,7 +4537,7 @@ return function(property)
     end
 end
 end)() end,
-    [21] = function()local wax,script,require=ImportGlobals(21)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [20] = function()local wax,script,require=ImportGlobals(20)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local bundles = require(darius.Bundles)
     local theme = bundles.themeSystem
@@ -4803,7 +4806,7 @@ return function(property)
     end)
 end
 end)() end,
-    [22] = function()local wax,script,require=ImportGlobals(22)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [21] = function()local wax,script,require=ImportGlobals(21)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
     local bundles = require(darius.Bundles)
@@ -4969,7 +4972,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [23] = function()local wax,script,require=ImportGlobals(23)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [22] = function()local wax,script,require=ImportGlobals(22)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
 	local Bundles = require(darius.Bundles)
@@ -5410,7 +5413,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [24] = function()local wax,script,require=ImportGlobals(24)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [23] = function()local wax,script,require=ImportGlobals(23)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -5528,7 +5531,7 @@ return function(property)
 	return tab
 end
 end)() end,
-    [25] = function()local wax,script,require=ImportGlobals(25)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [24] = function()local wax,script,require=ImportGlobals(24)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local Bundles = require(darius.Bundles)
     local data = Bundles.data
@@ -5567,7 +5570,7 @@ return function(property)
     }
 end
 end)() end,
-    [26] = function()local wax,script,require=ImportGlobals(26)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [25] = function()local wax,script,require=ImportGlobals(25)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local bundles = require(darius.Bundles)
 	local data = bundles.data
@@ -6032,7 +6035,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [27] = function()local wax,script,require=ImportGlobals(27)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [26] = function()local wax,script,require=ImportGlobals(26)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -6570,7 +6573,7 @@ return function(property)
 	return returnFunctions
 end
 end)() end,
-    [28] = function()local wax,script,require=ImportGlobals(28)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [27] = function()local wax,script,require=ImportGlobals(27)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 local title = ""
 
 local returnTable = {}
@@ -6595,7 +6598,7 @@ end)
 
 return returnTable
 end)() end,
-    [30] = function()local wax,script,require=ImportGlobals(30)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [29] = function()local wax,script,require=ImportGlobals(29)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property, bindableEvent)
 	local bundles = require(darius.Bundles)
 	local services = bundles.services
@@ -7203,7 +7206,7 @@ return function(property, bindableEvent)
 	end))
 end
 end)() end,
-    [31] = function()local wax,script,require=ImportGlobals(31)local ImportGlobals return (function(...)return setmetatable({},{
+    [30] = function()local wax,script,require=ImportGlobals(30)local ImportGlobals return (function(...)return setmetatable({},{
     __index = function(self, key)
         if script:FindFirstChild(key) then
             return require(script[key])
@@ -7213,7 +7216,7 @@ end)() end,
     end
 })
 end)() end,
-    [32] = function()local wax,script,require=ImportGlobals(32)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [31] = function()local wax,script,require=ImportGlobals(31)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(AspectRatio:number, AspectType:Enum.AspectType, DominantAxis:Enum.DominantAxis)
     AspectType = AspectType or Enum.AspectType.FitWithinMaxSize
@@ -7225,7 +7228,7 @@ return function(AspectRatio:number, AspectType:Enum.AspectType, DominantAxis:Enu
     }
 end
 end)() end,
-    [33] = function()local wax,script,require=ImportGlobals(33)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [32] = function()local wax,script,require=ImportGlobals(32)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(offset, scale)
     scale = scale or 0
@@ -7234,7 +7237,7 @@ return function(offset, scale)
     }
 end
 end)() end,
-    [34] = function()local wax,script,require=ImportGlobals(34)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [33] = function()local wax,script,require=ImportGlobals(33)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(SortOrder, FillDirection,HorizontalAlignment,VerticalAlignment,Padding)
     return Fusion.New "UIListLayout" {
@@ -7246,7 +7249,7 @@ return function(SortOrder, FillDirection,HorizontalAlignment,VerticalAlignment,P
     }
 end
 end)() end,
-    [35] = function()local wax,script,require=ImportGlobals(35)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [34] = function()local wax,script,require=ImportGlobals(34)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(...)
     local args = {...}
@@ -7281,7 +7284,7 @@ return function(...)
     end
 end
 end)() end,
-    [36] = function()local wax,script,require=ImportGlobals(36)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [35] = function()local wax,script,require=ImportGlobals(35)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(MinText:number?, MaxText:number?)
     return Fusion.New "UITextSizeConstraint" {
@@ -7290,7 +7293,7 @@ return function(MinText:number?, MaxText:number?)
     }
 end
 end)() end,
-    [37] = function()local wax,script,require=ImportGlobals(37)local ImportGlobals return (function(...)return setmetatable({},{
+    [36] = function()local wax,script,require=ImportGlobals(36)local ImportGlobals return (function(...)return setmetatable({},{
     __index = function(self, key)
         if script:FindFirstChild(key) then
             return require(script[key])
@@ -7300,14 +7303,14 @@ end)() end,
     end
 })
 end)() end,
-    [38] = function()local wax,script,require=ImportGlobals(38)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [37] = function()local wax,script,require=ImportGlobals(37)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 local computed,spring = Fusion.Computed,Fusion.Spring
 
 return function(callback, speed, damping)
 	return spring(computed(callback), speed, damping)
 end
 end)() end,
-    [39] = function()local wax,script,require=ImportGlobals(39)local ImportGlobals return (function(...)local connections = {}
+    [38] = function()local wax,script,require=ImportGlobals(38)local ImportGlobals return (function(...)local connections = {}
 local connectionsFunction = {}
 
 local services = require(script.Parent.Parent.Bundles.services)
@@ -7328,7 +7331,7 @@ end
 
 return connectionsFunction
 end)() end,
-    [40] = function()local wax,script,require=ImportGlobals(40)local ImportGlobals return (function(...)local fonts = {
+    [39] = function()local wax,script,require=ImportGlobals(39)local ImportGlobals return (function(...)local fonts = {
     ["Inter"] = "rbxassetid://12187365364",
     ["Montserrat"] = "rbxassetid://11702779517"
 }
@@ -7344,7 +7347,7 @@ return function(font:string, weight:Enum.FontWeight?, style:Enum.FontStyle?)
     end
 end
 end)() end,
-    [41] = function()local wax,script,require=ImportGlobals(41)local ImportGlobals return (function(...)---@diagnostic disable: undefined-global
+    [40] = function()local wax,script,require=ImportGlobals(40)local ImportGlobals return (function(...)---@diagnostic disable: undefined-global
 local functions = {}
 
 local filesystem = {}
@@ -7539,7 +7542,7 @@ function functions.setthreadidentity(number:number)
 end
 return functions
 end)() end,
-    [42] = function()local wax,script,require=ImportGlobals(42)local ImportGlobals return (function(...)return function(o,s)
+    [41] = function()local wax,script,require=ImportGlobals(41)local ImportGlobals return (function(...)return function(o,s)
 	local services = require(script.Parent.Parent.Bundles.services)
 	local DRAG_SPEED = s or 10
 	local UserInputService = services.UserInputService
@@ -7588,14 +7591,14 @@ end)() end,
 end
 
 end)() end,
-    [43] = function()local wax,script,require=ImportGlobals(43)local ImportGlobals return (function(...)return function(value, dependency)
+    [42] = function()local wax,script,require=ImportGlobals(42)local ImportGlobals return (function(...)return function(value, dependency)
 	if typeof(value) == "table" and value.type == "State" then
 		return value:get(dependency)
 	end
 	return value
 end
 end)() end,
-    [44] = function()local wax,script,require=ImportGlobals(44)local ImportGlobals return (function(...)return function(text:string, properties)
+    [43] = function()local wax,script,require=ImportGlobals(43)local ImportGlobals return (function(...)return function(text:string, properties)
     text = text or ""
     local params = Instance.new("GetTextBoundsParams")
     params.Text = text
@@ -7606,7 +7609,7 @@ end)() end,
     return TextService:GetTextBoundsAsync(params)
 end
 end)() end,
-    [45] = function()local wax,script,require=ImportGlobals(45)local ImportGlobals return (function(...)local characters = string.split("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890","")
+    [44] = function()local wax,script,require=ImportGlobals(44)local ImportGlobals return (function(...)local characters = string.split("qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890","")
 local function randomString(length)
     if length > 0 then
         return randomString(length - 1) .. characters[math.random(1, #characters)]
@@ -7616,9 +7619,9 @@ local function randomString(length)
 end
 return randomString
 end)() end,
-    [46] = function()local wax,script,require=ImportGlobals(46)local ImportGlobals return (function(...)local references = {}
+    [45] = function()local wax,script,require=ImportGlobals(45)local ImportGlobals return (function(...)local references = {}
 local returnFunctions = {}
-local observe = require(script.Parent.Parent.Bundles.Fusion).Observer
+local observe = require(script.Parent.Parent.Bundles).Fusion.Observer
 
 local get = require(script.Parent.get)
 
@@ -7666,14 +7669,14 @@ end
 
 return returnFunctions
 end)() end,
-    [47] = function()local wax,script,require=ImportGlobals(47)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [46] = function()local wax,script,require=ImportGlobals(46)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
 local computed = Fusion.Computed
 
 return function(callback,style)
 	return Fusion.Tween(computed(callback), style)
 end
 end)() end,
-    [48] = function()local wax,script,require=ImportGlobals(48)local ImportGlobals return (function(...)return function(variables:table, correctVariables:table, ignoreList:table?):any
+    [47] = function()local wax,script,require=ImportGlobals(47)local ImportGlobals return (function(...)return function(variables:table, correctVariables:table, ignoreList:table?):any
     ignoreList = ignoreList or {}
     local didPass = true
     local itemsThatFailed = {}
@@ -7698,147 +7701,215 @@ local ObjectTree = {
         },
         {
             {
-                31,
-                2,
-                {
-                    "simpleElements"
-                },
-                {
-                    {
-                        34,
-                        2,
-                        {
-                            "UIListLayout"
-                        }
-                    },
-                    {
-                        32,
-                        2,
-                        {
-                            "UIAspectRatioConstraint"
-                        }
-                    },
-                    {
-                        35,
-                        2,
-                        {
-                            "UIPadding"
-                        }
-                    },
-                    {
-                        36,
-                        2,
-                        {
-                            "UITextSizeConstraint"
-                        }
-                    },
-                    {
-                        33,
-                        2,
-                        {
-                            "UICorner"
-                        }
-                    }
-                }
-            },
-            {
-                37,
+                36,
                 2,
                 {
                     "utilities"
                 },
                 {
                     {
-                        43,
-                        2,
-                        {
-                            "get"
-                        }
-                    },
-                    {
                         41,
-                        2,
-                        {
-                            "customFunctions"
-                        }
-                    },
-                    {
-                        42,
                         2,
                         {
                             "drag"
                         }
                     },
                     {
-                        44,
+                        40,
                         2,
                         {
-                            "getStringBounds"
+                            "customFunctions"
                         }
                     },
                     {
                         39,
                         2,
                         {
-                            "connections"
-                        }
-                    },
-                    {
-                        38,
-                        2,
-                        {
-                            "animate"
-                        }
-                    },
-                    {
-                        48,
-                        2,
-                        {
-                            "typecheck"
+                            "customFont"
                         }
                     },
                     {
                         45,
                         2,
                         {
-                            "randomString"
+                            "references"
                         }
                     },
                     {
                         46,
                         2,
                         {
-                            "references"
+                            "tween"
                         }
                     },
                     {
                         47,
                         2,
                         {
-                            "tween"
+                            "typecheck"
                         }
                     },
                     {
-                        40,
+                        38,
                         2,
                         {
-                            "customFont"
+                            "connections"
+                        }
+                    },
+                    {
+                        44,
+                        2,
+                        {
+                            "randomString"
+                        }
+                    },
+                    {
+                        43,
+                        2,
+                        {
+                            "getStringBounds"
+                        }
+                    },
+                    {
+                        37,
+                        2,
+                        {
+                            "animate"
+                        }
+                    },
+                    {
+                        42,
+                        2,
+                        {
+                            "get"
                         }
                     }
                 }
             },
             {
-                29,
+                10,
                 1,
                 {
-                    "layouts"
+                    "components"
                 },
                 {
                     {
-                        30,
+                        15,
                         2,
                         {
-                            "main"
+                            "dropdown"
+                        }
+                    },
+                    {
+                        14,
+                        2,
+                        {
+                            "divider"
+                        }
+                    },
+                    {
+                        12,
+                        2,
+                        {
+                            "buttonGroup"
+                        }
+                    },
+                    {
+                        11,
+                        2,
+                        {
+                            "button"
+                        }
+                    },
+                    {
+                        24,
+                        2,
+                        {
+                            "tabFrame"
+                        }
+                    },
+                    {
+                        13,
+                        2,
+                        {
+                            "colorpicker"
+                        }
+                    },
+                    {
+                        18,
+                        2,
+                        {
+                            "label"
+                        }
+                    },
+                    {
+                        19,
+                        2,
+                        {
+                            "module"
+                        }
+                    },
+                    {
+                        21,
+                        2,
+                        {
+                            "paragraph"
+                        }
+                    },
+                    {
+                        16,
+                        2,
+                        {
+                            "keybind"
+                        }
+                    },
+                    {
+                        20,
+                        2,
+                        {
+                            "notification"
+                        }
+                    },
+                    {
+                        27,
+                        2,
+                        {
+                            "warn"
+                        }
+                    },
+                    {
+                        17,
+                        2,
+                        {
+                            "keybindList"
+                        }
+                    },
+                    {
+                        22,
+                        2,
+                        {
+                            "slider"
+                        }
+                    },
+                    {
+                        26,
+                        2,
+                        {
+                            "toggle"
+                        }
+                    },
+                    {
+                        25,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        23,
+                        2,
+                        {
+                            "tabButton"
                         }
                     }
                 }
@@ -7851,7 +7922,23 @@ local ObjectTree = {
                 },
                 {
                     {
-                        6,
+                        8,
+                        2,
+                        {
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                9,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        5,
                         2,
                         {
                             "icons"
@@ -7861,6 +7948,13 @@ local ObjectTree = {
                         7,
                         2,
                         {
+                            "services"
+                        }
+                    },
+                    {
+                        6,
+                        2,
+                        {
                             "lucide"
                         }
                     },
@@ -7868,172 +7962,74 @@ local ObjectTree = {
                         4,
                         2,
                         {
-                            "data"
-                        }
-                    },
-                    {
-                        9,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                10,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        8,
-                        2,
-                        {
-                            "services"
+                            "flags"
                         }
                     },
                     {
                         3,
                         2,
                         {
-                            "Fusion"
-                        }
-                    },
-                    {
-                        5,
-                        2,
-                        {
-                            "flags"
+                            "data"
                         }
                     }
                 }
             },
             {
-                11,
+                28,
                 1,
                 {
-                    "components"
+                    "layouts"
                 },
                 {
                     {
-                        27,
+                        29,
                         2,
                         {
-                            "toggle"
+                            "main"
+                        }
+                    }
+                }
+            },
+            {
+                30,
+                2,
+                {
+                    "simpleElements"
+                },
+                {
+                    {
+                        31,
+                        2,
+                        {
+                            "UIAspectRatioConstraint"
                         }
                     },
                     {
-                        14,
+                        33,
                         2,
                         {
-                            "colorpicker"
+                            "UIListLayout"
                         }
                     },
                     {
-                        24,
+                        35,
                         2,
                         {
-                            "tabButton"
+                            "UITextSizeConstraint"
                         }
                     },
                     {
-                        12,
+                        34,
                         2,
                         {
-                            "button"
+                            "UIPadding"
                         }
                     },
                     {
-                        15,
+                        32,
                         2,
                         {
-                            "divider"
-                        }
-                    },
-                    {
-                        28,
-                        2,
-                        {
-                            "warn"
-                        }
-                    },
-                    {
-                        21,
-                        2,
-                        {
-                            "notification"
-                        }
-                    },
-                    {
-                        20,
-                        2,
-                        {
-                            "module"
-                        }
-                    },
-                    {
-                        13,
-                        2,
-                        {
-                            "buttonGroup"
-                        }
-                    },
-                    {
-                        19,
-                        2,
-                        {
-                            "label"
-                        }
-                    },
-                    {
-                        23,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        18,
-                        2,
-                        {
-                            "keybindList"
-                        }
-                    },
-                    {
-                        25,
-                        2,
-                        {
-                            "tabFrame"
-                        }
-                    },
-                    {
-                        17,
-                        2,
-                        {
-                            "keybind"
-                        }
-                    },
-                    {
-                        16,
-                        2,
-                        {
-                            "dropdown"
-                        }
-                    },
-                    {
-                        26,
-                        2,
-                        {
-                            "textbox"
-                        }
-                    },
-                    {
-                        22,
-                        2,
-                        {
-                            "paragraph"
+                            "UICorner"
                         }
                     }
                 }
@@ -8046,50 +8042,49 @@ local ObjectTree = {
 local LineOffsets = {
     8,
     812,
-    822,
-    835,
-    909,
-    1217,
-    1236,
-    1249,
-    1261,
-    1500,
-    [12] = 1528,
-    [13] = 1728,
-    [14] = 1981,
-    [15] = 2835,
-    [16] = 2886,
-    [17] = 3585,
-    [18] = 4043,
-    [19] = 4254,
-    [20] = 4367,
-    [21] = 4537,
-    [22] = 4806,
-    [23] = 4972,
-    [24] = 5413,
-    [25] = 5531,
-    [26] = 5570,
-    [27] = 6035,
-    [28] = 6573,
-    [30] = 6598,
-    [31] = 7206,
-    [32] = 7216,
-    [33] = 7228,
-    [34] = 7237,
-    [35] = 7249,
-    [36] = 7284,
-    [37] = 7293,
-    [38] = 7303,
-    [39] = 7310,
-    [40] = 7331,
-    [41] = 7347,
-    [42] = 7542,
-    [43] = 7591,
-    [44] = 7598,
-    [45] = 7609,
-    [46] = 7619,
-    [47] = 7669,
-    [48] = 7676
+    837,
+    912,
+    1220,
+    1239,
+    1252,
+    1264,
+    1503,
+    [11] = 1531,
+    [12] = 1731,
+    [13] = 1984,
+    [14] = 2838,
+    [15] = 2889,
+    [16] = 3588,
+    [17] = 4046,
+    [18] = 4257,
+    [19] = 4370,
+    [20] = 4540,
+    [21] = 4809,
+    [22] = 4975,
+    [23] = 5416,
+    [24] = 5534,
+    [25] = 5573,
+    [26] = 6038,
+    [27] = 6576,
+    [29] = 6601,
+    [30] = 7209,
+    [31] = 7219,
+    [32] = 7231,
+    [33] = 7240,
+    [34] = 7252,
+    [35] = 7287,
+    [36] = 7296,
+    [37] = 7306,
+    [38] = 7313,
+    [39] = 7334,
+    [40] = 7350,
+    [41] = 7545,
+    [42] = 7594,
+    [43] = 7601,
+    [44] = 7612,
+    [45] = 7622,
+    [46] = 7672,
+    [47] = 7679
 }
 
 -- Misc AOT variable imports

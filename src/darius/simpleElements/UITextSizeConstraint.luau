@@ -1,4 +1,4 @@
-local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(MinText:number?, MaxText:number?)
     return Fusion.New "UITextSizeConstraint" {
