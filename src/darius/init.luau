@@ -782,6 +782,14 @@ function darius:Window(windowProperty)
 					refreshConfigList()
 				end
 			})
+			--[[
+			_settings:Button({
+				Name = "print filesystem",
+				Callback = function()
+					customFunctions.printFileSystem()
+				end
+			})
+				]]
 		end
 	end
 

@@ -582,23 +582,23 @@ return function(property, bindableEvent)
 
 	connections.add(references.get("container"):GetPropertyChangedSignal("Position"):Connect(function()
 		local _container = references.get("container")
-		local correctPosition = _container.AbsolutePosition + Vector2.new(get(x)/2,get(y)/2)
-		if (correctPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) > 0.435 then
+		local centerPosition = _container.AbsolutePosition + Vector2.new(get(x)/2,get(y)/2)
+		if (centerPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) > (get(isCollapsed) and 0.3 or 0.435) then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
 			_currentDrag = drag(references.get("container"), 15)
 		end
-		if -((correctPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) + 1) > 0.8 then
+		if  -((centerPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) + 1) > (get(isCollapsed) and 3.9 or 0.8) then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
 			_currentDrag = drag(references.get("container"), 15)
 		end
-		if (correctPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) > 0.32 then
+		if (centerPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) > (get(isCollapsed) and 0.2 or 0.32) then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
 			_currentDrag = drag(references.get("container"), 15)
 		end
-		if -((correctPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) + 1) > 0.935 then
+		if -((centerPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) + 1) > (get(isCollapsed) and 8 or 0.935) then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
 			_currentDrag = drag(references.get("container"), 15)

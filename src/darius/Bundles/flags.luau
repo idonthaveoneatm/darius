@@ -17,6 +17,9 @@ local names = {}
 local preregistered = {}
 local functionsOnCreate = {}
 local functionsOnSelect = {}
+local configs = {}
+funcs.currentConfig = {}
+funcs.path = ""
 
 local types = {
     ['toggle'] = function(flag)
@@ -87,7 +90,7 @@ local cleaner = {
         return clean
     end,
     ['dropdown'] = function(status)
-        return status.multiselect and get(status.items) or get(status.item)
+        return status.multiselect and {unpack(get(status.items))} or get(status.item)
     end,
     ['keybind'] = function(status)
         local clean = {}
@@ -109,10 +112,6 @@ local cleaner = {
         return {color = get(status.color):ToHex(), transparency = get(status.transparency)}
     end
 }
-
-local configs = {}
-funcs.currentConfig = {}
-funcs.path = ""
 
 function funcs.preregister(name)
     local flagEvent = fusion.New "BindableEvent" {}
@@ -241,8 +240,8 @@ function funcs.init()
     end
 end
 
-function funcs.load(fileTable)
-    for i,v in fileTable do
+function load(config)
+    for i,v in config.flagValues do
         local flag = get(flags.list)[i]
         if not flag then
             continue
@@ -257,7 +256,7 @@ function funcs.set(uid)
         return
     end
     funcs.currentConfig = config
-    funcs.load(config.flagValues)
+    load(config)
     task.spawn(function()
         for _,v in functionsOnCreate do
             task.spawn(v, uid)
