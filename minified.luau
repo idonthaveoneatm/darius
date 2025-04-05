@@ -611,13 +611,13 @@ ae.path=''function ae.find(q)for r,s in n do if s.uid==q then return true,s end 
 q,r,s,t,u)t=t or false if s=='original'and t then return end for v,w in p do if r[w]==nil then r[w]=aj[w]end if typeof(r
 [w])~='Color3'then ao(w.." isn't type Color3")end end for x,y in r do if not table.find(p,x)then ao(
 'Incorrect value removed "'..tostring(x)..'"')r[x]=nil end end if u and t then table.insert(o,s)end if u and not t then
-for z,A in o do local B={ae.find(A)}if B[1]and B[2].name==q then return A.uid end end end s=s or ap(5)table.insert(n,{
-name=q,uid=s,fromSet=u or false,palette=r})local z={}z.name=q z.uid=s z.fromSet=u z.palette={}for A,B in r do z.palette[
-A]=B:ToHex()end as.writefile(`{ae.path}/{s}.json`,ag:JSONEncode(z))task.spawn(function()for C,D in b do task.spawn(D)end
-end)return s end function ae.delete(q)local r={ae.find(q)}if not r[1]then return false,'no theme found'end local s=table
-.find(n,r[2])ae.set(m)table.remove(n,s)as.delfile(`{ae.path}/{r[2].uid}.json`)end function ae.edit(q,r)local s=am(k)s[q]
-=r k:set(s)end function ae.editTheme(q:string,r:string,s:any)local t={ae.find(q)}if not t[1]then return false end local
-u=t[2]u[r]=s local y={}y.name=u.name y.uid=q y.fromSet=u.fromSet y.palette={}for z,A in u.palette do y.palette[z]=A:
+for z,A in o do local B={ae.find(A)}if B[1]and B[2].name==q then return A end end end s=s or ap(5)table.insert(n,{name=q
+,uid=s,fromSet=u or false,palette=r})local z={}z.name=q z.uid=s z.fromSet=u z.palette={}for A,B in r do z.palette[A]=B:
+ToHex()end as.writefile(`{ae.path}/{s}.json`,ag:JSONEncode(z))task.spawn(function()for C,D in b do task.spawn(D)end end)
+return s end function ae.delete(q)local r={ae.find(q)}if not r[1]then return false,'no theme found'end local s=table.
+find(n,r[2])ae.set(m)table.remove(n,s)as.delfile(`{ae.path}/{r[2].uid}.json`)end function ae.edit(q,r)local s=am(k)s[q]=
+r k:set(s)end function ae.editTheme(q:string,r:string,s:any)local t={ae.find(q)}if not t[1]then return false end local u
+=t[2]u[r]=s local y={}y.name=u.name y.uid=q y.fromSet=u.fromSet y.palette={}for z,A in u.palette do y.palette[z]=A:
 ToHex()end as.writefile(`{ae.path}/{q}.json`,ag:JSONEncode(y))return true end function ae.set(q)local r,s,t={ae.find(q)}
 if r[1]then s,t=r[2],r[2].palette else return false,'no theme found'end local u={}table.foreach(t,function(y,z)u[y]=z
 end)k:set(u)l:set(s)return true,'successfully set new theme'end function ae.export()local q,r=am(l),{}r.name=q.name r.
@@ -1519,31 +1519,31 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[101]=function()local aa,ab,ac=a(101)local ad return(function(...)return function(ae:table
 ,af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))
 and not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end
-return ah,ai end end)()end},{{1,2,{'Darius'},{{2,2,{'Bundles'},{{61,2,{'services'}},{62,2,{'themeSystem'},{{63,2,{
-'default'}}}},{3,2,{'Fusion'},{{33,1,{'Logging'},{{38,2,{'parseError'}},{37,2,{'messages'}},{35,2,{'logErrorNonFatal'}},
-{36,2,{'logWarn'}},{34,2,{'logError'}}}},{48,2,{'Types'}},{16,1,{'Dependencies'},{{20,2,{'updateAll'}},{18,2,{
-'initDependency'}},{19,2,{'sharedState'}},{21,2,{'useDependency'}},{17,2,{'captureDependencies'}}}},{40,1,{'State'},{{44
-,2,{'ForValues'}},{42,2,{'ForKeys'}},{43,2,{'ForPairs'}},{46,2,{'Value'}},{47,2,{'unwrap'}},{41,2,{'Computed'}},{45,2,{
-'Observer'}}}},{49,1,{'Utility'},{{50,2,{'None'}},{55,2,{'restrictRead'}},{53,2,{'isSimilar'}},{56,2,{'xtypeof'}},{52,2,
-{'doNothing'}},{54,2,{'needsDestruction'}},{51,2,{'cleanup'}}}},{22,1,{'Instances'},{{27,2,{'OnChange'}},{24,2,{
-'Cleanup'}},{31,2,{'applyInstanceProps'}},{32,2,{'defaultProps'}},{30,2,{'Ref'}},{29,2,{'Out'}},{28,2,{'OnEvent'}},{23,2
-,{'Children'}},{26,2,{'New'}},{25,2,{'Hydrate'}}}},{4,1,{'Animation'},{{8,2,{'TweenScheduler'}},{9,2,{'getTweenRatio'}},
-{7,2,{'Tween'}},{6,2,{'SpringScheduler'}},{5,2,{'Spring'}},{11,2,{'packType'}},{10,2,{'lerpType'}},{13,2,{'unpackType'}}
-,{12,2,{'springCoefficients'}}}},{39,2,{'PubTypes'}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}}}},{60,2,{'lucide'}},{59,2,{
-'icons'}},{58,2,{'flags'}},{57,2,{'data'}}}},{90,2,{'utilities'},{{99,2,{'references'}},{100,2,{'tween'}},{93,2,{
-'customFont'}},{97,2,{'getStringBounds'}},{91,2,{'animate'}},{101,2,{'typecheck'}},{96,2,{'get'}},{95,2,{'drag'}},{98,2,
-{'randomString'}},{94,2,{'customFunctions'}},{92,2,{'connections'}}}},{84,2,{'simpleElements'},{{89,2,{
-'UITextSizeConstraint'}},{87,2,{'UIListLayout'}},{85,2,{'UIAspectRatioConstraint'}},{86,2,{'UICorner'}},{88,2,{
-'UIPadding'}}}},{64,1,{'components'},{{81,2,{'warn'}},{66,2,{'buttonGroup'}},{68,2,{'divider'}},{72,2,{'label'}},{74,2,{
-'notification'}},{71,2,{'keybindList'}},{75,2,{'paragraph'}},{69,2,{'dropdown'}},{76,2,{'slider'}},{65,2,{'button'}},{77
-,2,{'tabButton'}},{80,2,{'toggle'}},{67,2,{'colorpicker'}},{70,2,{'keybind'}},{79,2,{'textbox'}},{78,2,{'tabFrame'}},{73
-,2,{'module'}}}},{82,1,{'layouts'},{{83,2,{'main'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,
-unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.remove,aj.
-freeze or function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local aD,aE=ap(ao
-,'@lune/task')if aD and aE then af=aE end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or function(
-aE,...)az(aE)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},
-{},{}local aN,aO={GetFullName={{},function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO=aP.Name..'.'..aO aP=aP.Parent
-end return aO end},GetChildren={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)end return aO end},
+return ah,ai end end)()end},{{1,2,{'Darius'},{{64,1,{'components'},{{77,2,{'tabButton'}},{65,2,{'button'}},{72,2,{
+'label'}},{71,2,{'keybindList'}},{74,2,{'notification'}},{75,2,{'paragraph'}},{80,2,{'toggle'}},{73,2,{'module'}},{68,2,
+{'divider'}},{69,2,{'dropdown'}},{79,2,{'textbox'}},{81,2,{'warn'}},{67,2,{'colorpicker'}},{70,2,{'keybind'}},{78,2,{
+'tabFrame'}},{66,2,{'buttonGroup'}},{76,2,{'slider'}}}},{84,2,{'simpleElements'},{{85,2,{'UIAspectRatioConstraint'}},{89
+,2,{'UITextSizeConstraint'}},{87,2,{'UIListLayout'}},{86,2,{'UICorner'}},{88,2,{'UIPadding'}}}},{90,2,{'utilities'},{{
+100,2,{'tween'}},{95,2,{'drag'}},{93,2,{'customFont'}},{97,2,{'getStringBounds'}},{96,2,{'get'}},{99,2,{'references'}},{
+91,2,{'animate'}},{92,2,{'connections'}},{101,2,{'typecheck'}},{98,2,{'randomString'}},{94,2,{'customFunctions'}}}},{82,
+1,{'layouts'},{{83,2,{'main'}}}},{2,2,{'Bundles'},{{60,2,{'lucide'}},{59,2,{'icons'}},{57,2,{'data'}},{61,2,{'services'}
+},{58,2,{'flags'}},{3,2,{'Fusion'},{{16,1,{'Dependencies'},{{17,2,{'captureDependencies'}},{20,2,{'updateAll'}},{18,2,{
+'initDependency'}},{19,2,{'sharedState'}},{21,2,{'useDependency'}}}},{39,2,{'PubTypes'}},{48,2,{'Types'}},{49,1,{
+'Utility'},{{56,2,{'xtypeof'}},{52,2,{'doNothing'}},{53,2,{'isSimilar'}},{54,2,{'needsDestruction'}},{55,2,{
+'restrictRead'}},{51,2,{'cleanup'}},{50,2,{'None'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{33,1,{'Logging'},{{38,2,{
+'parseError'}},{36,2,{'logWarn'}},{34,2,{'logError'}},{37,2,{'messages'}},{35,2,{'logErrorNonFatal'}}}},{4,1,{
+'Animation'},{{8,2,{'TweenScheduler'}},{13,2,{'unpackType'}},{10,2,{'lerpType'}},{5,2,{'Spring'}},{12,2,{
+'springCoefficients'}},{9,2,{'getTweenRatio'}},{11,2,{'packType'}},{6,2,{'SpringScheduler'}},{7,2,{'Tween'}}}},{40,1,{
+'State'},{{46,2,{'Value'}},{42,2,{'ForKeys'}},{44,2,{'ForValues'}},{41,2,{'Computed'}},{45,2,{'Observer'}},{47,2,{
+'unwrap'}},{43,2,{'ForPairs'}}}},{22,1,{'Instances'},{{23,2,{'Children'}},{30,2,{'Ref'}},{27,2,{'OnChange'}},{32,2,{
+'defaultProps'}},{25,2,{'Hydrate'}},{31,2,{'applyInstanceProps'}},{29,2,{'Out'}},{24,2,{'Cleanup'}},{26,2,{'New'}},{28,2
+,{'OnEvent'}}}}}},{62,2,{'themeSystem'},{{63,2,{'default'}}}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,
+next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj
+.remove,aj.freeze or function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local
+aD,aE=ap(ao,'@lune/task')if aD and aE then af=aE end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or
+function(aE,...)az(aE)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},
+{},{},{},{},{}local aN,aO={GetFullName={{},function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO=aP.Name..'.'..aO aP=
+aP.Parent end return aO end},GetChildren={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)end return aO end},
 GetDescendants={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)for aQ,aR in ai,aP:GetDescendants()do aw(aO,aR)
 end end return aO end},FindFirstChild={{'string','boolean?'},function(aN,aO,aP)local aQ=aM[aN]for aR in ai,aQ do if aR.
 Name==aO then return aR end end if aP then for aS in ai,aQ do return aS:FindFirstChild(aO,true)end end end},
