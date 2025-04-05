@@ -715,8 +715,8 @@ o(R)then task.spawn(o(T),o(_),o(au))end end)local av=at(o(I.string)==o(N.tab).ui
 o(I.string)==o(N.tab).uid)end)local aw,ax,ay,az,aA,aB,aC,aD,aE,aF,aG,aH,aI,aJ,aK,aL,aM,aN=p(function()return o(av)and 0
 or 1 end,40,1),at(),at(0),at(),at(0),at(),at(0),at(),at(false),at(),at(false),at(),at(false),at(0),at(0),(at(0))
 local function aO()return{Name=P,Children={y(C.LayoutOrder,D.Vertical,E.Center,F.Top,UDim.new(0,5)),ap'TextButton'{Size=
-UDim2.fromOffset(224,224),[m]=aD,[k'InputBegan']=function(aP)if aP.UserInputType~=Enum.UserInputType.MouseButton1 or aP.
-UserInputType~=Enum.UserInputType.Touch then return end aE:set(true)local aQ aQ=aP.Changed:Connect(function()if aP.
+UDim2.fromOffset(224,224),[m]=aD,[k'InputBegan']=function(aP)if aP.UserInputType~=Enum.UserInputType.MouseButton1 and aP
+.UserInputType~=Enum.UserInputType.Touch then return end aE:set(true)local aQ aQ=aP.Changed:Connect(function()if aP.
 UserInputState==Enum.UserInputState.End or aP.UserInputState.Cancel then aE:set(false)aQ:Disconnect()end end)end,[as]={
 ap'UIGradient'{Color=l(function()return ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromRGB(255,255,255)),
 ColorSequenceKeypoint.new(1,Color3.fromHSV(o(aJ),1,1))}end)},ap'Frame'{Size=UDim2.fromScale(1,1),[as]={ap'UIGradient'{
@@ -1518,41 +1518,41 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[101]=function()local aa,ab,ac=a(101)local ad return(function(...)return function(ae:table
 ,af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))
 and not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end
-return ah,ai end end)()end},{{1,2,{'Darius'},{{90,2,{'utilities'},{{96,2,{'get'}},{97,2,{'getStringBounds'}},{94,2,{
-'customFunctions'}},{95,2,{'drag'}},{99,2,{'references'}},{92,2,{'connections'}},{98,2,{'randomString'}},{91,2,{
-'animate'}},{93,2,{'customFont'}},{101,2,{'typecheck'}},{100,2,{'tween'}}}},{84,2,{'simpleElements'},{{89,2,{
-'UITextSizeConstraint'}},{86,2,{'UICorner'}},{85,2,{'UIAspectRatioConstraint'}},{88,2,{'UIPadding'}},{87,2,{
-'UIListLayout'}}}},{64,1,{'components'},{{77,2,{'tabButton'}},{78,2,{'tabFrame'}},{74,2,{'notification'}},{66,2,{
-'buttonGroup'}},{71,2,{'keybindList'}},{73,2,{'module'}},{75,2,{'paragraph'}},{65,2,{'button'}},{70,2,{'keybind'}},{80,2
-,{'toggle'}},{81,2,{'warn'}},{69,2,{'dropdown'}},{67,2,{'colorpicker'}},{79,2,{'textbox'}},{76,2,{'slider'}},{72,2,{
-'label'}},{68,2,{'divider'}}}},{82,1,{'layouts'},{{83,2,{'main'}}}},{2,2,{'Bundles'},{{62,2,{'themeSystem'},{{63,2,{
-'default'}}}},{57,2,{'data'}},{3,2,{'Fusion'},{{16,1,{'Dependencies'},{{21,2,{'useDependency'}},{17,2,{
-'captureDependencies'}},{18,2,{'initDependency'}},{19,2,{'sharedState'}},{20,2,{'updateAll'}}}},{49,1,{'Utility'},{{54,2
-,{'needsDestruction'}},{56,2,{'xtypeof'}},{52,2,{'doNothing'}},{51,2,{'cleanup'}},{53,2,{'isSimilar'}},{50,2,{'None'}},{
-55,2,{'restrictRead'}}}},{48,2,{'Types'}},{4,1,{'Animation'},{{8,2,{'TweenScheduler'}},{12,2,{'springCoefficients'}},{5,
-2,{'Spring'}},{10,2,{'lerpType'}},{9,2,{'getTweenRatio'}},{13,2,{'unpackType'}},{11,2,{'packType'}},{7,2,{'Tween'}},{6,2
-,{'SpringScheduler'}}}},{22,1,{'Instances'},{{25,2,{'Hydrate'}},{23,2,{'Children'}},{32,2,{'defaultProps'}},{26,2,{'New'
-}},{24,2,{'Cleanup'}},{30,2,{'Ref'}},{28,2,{'OnEvent'}},{27,2,{'OnChange'}},{29,2,{'Out'}},{31,2,{'applyInstanceProps'}}
-}},{39,2,{'PubTypes'}},{33,1,{'Logging'},{{38,2,{'parseError'}},{34,2,{'logError'}},{37,2,{'messages'}},{35,2,{
-'logErrorNonFatal'}},{36,2,{'logWarn'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{40,1,{'State'},{{44,2,{'ForValues'}},{46
-,2,{'Value'}},{47,2,{'unwrap'}},{43,2,{'ForPairs'}},{42,2,{'ForKeys'}},{45,2,{'Observer'}},{41,2,{'Computed'}}}}}},{61,2
-,{'services'}},{59,2,{'icons'}},{60,2,{'lucide'}},{58,2,{'flags'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,
-error,next,table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.
-insert,aj.remove,aj.freeze or function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'
-then local aD,aE=ap(ao,'@lune/task')if aD and aE then af=aE end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,
-aL,aM=aD or function(aE,...)az(aE)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]=
-'StringValue'},{},{},{},{},{},{},{}local aN,aO={GetFullName={{},function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO
-=aP.Name..'.'..aO aP=aP.Parent end return aO end},GetChildren={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)
-end return aO end},GetDescendants={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)for aQ,aR in ai,aP:
-GetDescendants()do aw(aO,aR)end end return aO end},FindFirstChild={{'string','boolean?'},function(aN,aO,aP)local aQ=aM[
-aN]for aR in ai,aQ do if aR.Name==aO then return aR end end if aP then for aS in ai,aQ do return aS:FindFirstChild(aO,
-true)end end end},FindFirstAncestor={{'string'},function(aN,aO)local aP=aN.Parent while aP do if aP.Name==aO then return
-aP end aP=aP.Parent end end},WaitForChild={{'string','number?'},function(aN,aO)return aN:FindFirstChild(aO)end}},{}for
-aP,aQ in ai,aN do local aR,aS,aT=aQ[1],aQ[2],{}for aU,aV in ai,aR do local aW,b=aB(aV,'^([^%?]+)(%??)')aT[aU]={aW,b}end
-aO[aP]=function(aW,...)if not aM[aW]then ah("Expected ':' not '.' calling member function "..aP,2)end local b={...}for k
-,l in ai,aT do local m=b[k]local n,o,p=an(m),l[1],l[2]if m==nil and not p then ah('Argument '..m..' missing or nil',3)
-end if o~='any'and n~=o and not(n=='nil'and p)then ah('Argument '..k..' expects type "'..o..'", got "'..n..'"',2)end end
-return aS(aW,...)end end local function aR(aS,aT,aU)local aV,aW=(ag({},{__mode='k'}))local function b(k)ah(k..
+return ah,ai end end)()end},{{1,2,{'Darius'},{{90,2,{'utilities'},{{96,2,{'get'}},{92,2,{'connections'}},{95,2,{'drag'}}
+,{101,2,{'typecheck'}},{94,2,{'customFunctions'}},{97,2,{'getStringBounds'}},{98,2,{'randomString'}},{100,2,{'tween'}},{
+93,2,{'customFont'}},{91,2,{'animate'}},{99,2,{'references'}}}},{84,2,{'simpleElements'},{{86,2,{'UICorner'}},{89,2,{
+'UITextSizeConstraint'}},{85,2,{'UIAspectRatioConstraint'}},{87,2,{'UIListLayout'}},{88,2,{'UIPadding'}}}},{82,1,{
+'layouts'},{{83,2,{'main'}}}},{2,2,{'Bundles'},{{3,2,{'Fusion'},{{39,2,{'PubTypes'}},{49,1,{'Utility'},{{50,2,{'None'}},
+{54,2,{'needsDestruction'}},{52,2,{'doNothing'}},{51,2,{'cleanup'}},{56,2,{'xtypeof'}},{55,2,{'restrictRead'}},{53,2,{
+'isSimilar'}}}},{33,1,{'Logging'},{{35,2,{'logErrorNonFatal'}},{37,2,{'messages'}},{38,2,{'parseError'}},{36,2,{
+'logWarn'}},{34,2,{'logError'}}}},{22,1,{'Instances'},{{24,2,{'Cleanup'}},{26,2,{'New'}},{29,2,{'Out'}},{28,2,{'OnEvent'
+}},{27,2,{'OnChange'}},{32,2,{'defaultProps'}},{25,2,{'Hydrate'}},{23,2,{'Children'}},{30,2,{'Ref'}},{31,2,{
+'applyInstanceProps'}}}},{16,1,{'Dependencies'},{{17,2,{'captureDependencies'}},{20,2,{'updateAll'}},{19,2,{
+'sharedState'}},{21,2,{'useDependency'}},{18,2,{'initDependency'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{40,1,{'State'
+},{{44,2,{'ForValues'}},{47,2,{'unwrap'}},{41,2,{'Computed'}},{42,2,{'ForKeys'}},{43,2,{'ForPairs'}},{46,2,{'Value'}},{
+45,2,{'Observer'}}}},{4,1,{'Animation'},{{13,2,{'unpackType'}},{7,2,{'Tween'}},{8,2,{'TweenScheduler'}},{6,2,{
+'SpringScheduler'}},{12,2,{'springCoefficients'}},{11,2,{'packType'}},{10,2,{'lerpType'}},{9,2,{'getTweenRatio'}},{5,2,{
+'Spring'}}}},{48,2,{'Types'}}}},{62,2,{'themeSystem'},{{63,2,{'default'}}}},{61,2,{'services'}},{58,2,{'flags'}},{60,2,{
+'lucide'}},{57,2,{'data'}},{59,2,{'icons'}}}},{64,1,{'components'},{{66,2,{'buttonGroup'}},{75,2,{'paragraph'}},{74,2,{
+'notification'}},{72,2,{'label'}},{69,2,{'dropdown'}},{73,2,{'module'}},{78,2,{'tabFrame'}},{81,2,{'warn'}},{70,2,{
+'keybind'}},{76,2,{'slider'}},{68,2,{'divider'}},{67,2,{'colorpicker'}},{65,2,{'button'}},{79,2,{'textbox'}},{71,2,{
+'keybindList'}},{77,2,{'tabButton'}},{80,2,{'toggle'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,
+table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.
+remove,aj.freeze or function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local
+aD,aE=ap(ao,'@lune/task')if aD and aE then af=aE end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or
+function(aE,...)az(aE)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},
+{},{},{},{},{}local aN,aO={GetFullName={{},function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO=aP.Name..'.'..aO aP=
+aP.Parent end return aO end},GetChildren={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)end return aO end},
+GetDescendants={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)for aQ,aR in ai,aP:GetDescendants()do aw(aO,aR)
+end end return aO end},FindFirstChild={{'string','boolean?'},function(aN,aO,aP)local aQ=aM[aN]for aR in ai,aQ do if aR.
+Name==aO then return aR end end if aP then for aS in ai,aQ do return aS:FindFirstChild(aO,true)end end end},
+FindFirstAncestor={{'string'},function(aN,aO)local aP=aN.Parent while aP do if aP.Name==aO then return aP end aP=aP.
+Parent end end},WaitForChild={{'string','number?'},function(aN,aO)return aN:FindFirstChild(aO)end}},{}for aP,aQ in ai,aN
+do local aR,aS,aT=aQ[1],aQ[2],{}for aU,aV in ai,aR do local aW,b=aB(aV,'^([^%?]+)(%??)')aT[aU]={aW,b}end aO[aP]=function
+(aW,...)if not aM[aW]then ah("Expected ':' not '.' calling member function "..aP,2)end local b={...}for k,l in ai,aT do
+local m=b[k]local n,o,p=an(m),l[1],l[2]if m==nil and not p then ah('Argument '..m..' missing or nil',3)end if o~='any'
+and n~=o and not(n=='nil'and p)then ah('Argument '..k..' expects type "'..o..'", got "'..n..'"',2)end end return aS(aW,
+...)end end local function aR(aS,aT,aU)local aV,aW=(ag({},{__mode='k'}))local function b(k)ah(k..
 ' is not a valid (virtual) member of '..aS..' "'..aT..'"',3)end local function k(l)ah(
 'Unable to assign (virtual) property '..l..'. Property is read only',3)end local l,m={},{}m.__metatable=false m.__index=
 function(n,o)if o=='ClassName'then return aS elseif o=='Name'then return aT elseif o=='Parent'then return aU elseif aS==

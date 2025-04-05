@@ -26,7 +26,7 @@ local function randomIcon():string
     return randomIcons[math.floor(math.random(1,#randomIcons))]
 end
 
-local format = "minified"
+local format = "bundled"
 local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/beta/{format}.luau?t={tostring(tick())}`))()
 
 local window = darius:Window({
