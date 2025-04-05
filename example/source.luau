@@ -35,6 +35,12 @@ local window = darius:Window({
     HideBind = Enum.KeyCode.T,
     UseConfig = true,
     Workspace = "example",
+    Theme = {
+        Name = "Theme",
+        Colors = {
+            background = Color3.fromHex("#a49ae6")
+        }
+    },
     IsMobile = false
 })
 

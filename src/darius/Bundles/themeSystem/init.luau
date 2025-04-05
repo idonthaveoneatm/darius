@@ -69,8 +69,8 @@ function themeSystem.create(name, palette, uid, fromFile, fromSet)
     end
     if fromSet and not fromFile then
         for _,v in potentialFromFiles do
-            local theme = themeSystem.find(v)
-            if theme.name == name then
+            local result = {themeSystem.find(v)}
+            if result[1] and result[2].name == name then
                 return v.uid
             end
         end
