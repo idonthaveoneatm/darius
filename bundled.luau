@@ -5763,7 +5763,7 @@ return function(property)
 					[ref] = saturationValue,
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 or input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						saturationValueDown:set(true)
@@ -11326,6 +11326,92 @@ local ObjectTree = {
         },
         {
             {
+                90,
+                2,
+                {
+                    "utilities"
+                },
+                {
+                    {
+                        92,
+                        2,
+                        {
+                            "connections"
+                        }
+                    },
+                    {
+                        94,
+                        2,
+                        {
+                            "customFunctions"
+                        }
+                    },
+                    {
+                        96,
+                        2,
+                        {
+                            "get"
+                        }
+                    },
+                    {
+                        93,
+                        2,
+                        {
+                            "customFont"
+                        }
+                    },
+                    {
+                        95,
+                        2,
+                        {
+                            "drag"
+                        }
+                    },
+                    {
+                        91,
+                        2,
+                        {
+                            "animate"
+                        }
+                    },
+                    {
+                        101,
+                        2,
+                        {
+                            "typecheck"
+                        }
+                    },
+                    {
+                        100,
+                        2,
+                        {
+                            "tween"
+                        }
+                    },
+                    {
+                        97,
+                        2,
+                        {
+                            "getStringBounds"
+                        }
+                    },
+                    {
+                        98,
+                        2,
+                        {
+                            "randomString"
+                        }
+                    },
+                    {
+                        99,
+                        2,
+                        {
+                            "references"
+                        }
+                    }
+                }
+            },
+            {
                 2,
                 2,
                 {
@@ -11333,10 +11419,10 @@ local ObjectTree = {
                 },
                 {
                     {
-                        58,
+                        57,
                         2,
                         {
-                            "flags"
+                            "data"
                         }
                     },
                     {
@@ -11347,43 +11433,6 @@ local ObjectTree = {
                         }
                     },
                     {
-                        62,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                63,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        59,
-                        2,
-                        {
-                            "icons"
-                        }
-                    },
-                    {
-                        57,
-                        2,
-                        {
-                            "data"
-                        }
-                    },
-                    {
-                        60,
-                        2,
-                        {
-                            "lucide"
-                        }
-                    },
-                    {
                         3,
                         2,
                         {
@@ -11391,80 +11440,117 @@ local ObjectTree = {
                         },
                         {
                             {
-                                22,
+                                4,
                                 1,
                                 {
-                                    "Instances"
+                                    "Animation"
                                 },
                                 {
                                     {
-                                        30,
+                                        10,
                                         2,
                                         {
-                                            "Ref"
+                                            "lerpType"
                                         }
                                     },
                                     {
-                                        27,
+                                        12,
                                         2,
                                         {
-                                            "OnChange"
+                                            "springCoefficients"
                                         }
                                     },
                                     {
-                                        25,
+                                        11,
                                         2,
                                         {
-                                            "Hydrate"
+                                            "packType"
                                         }
                                     },
                                     {
-                                        28,
+                                        7,
                                         2,
                                         {
-                                            "OnEvent"
+                                            "Tween"
                                         }
                                     },
                                     {
-                                        29,
+                                        9,
                                         2,
                                         {
-                                            "Out"
+                                            "getTweenRatio"
                                         }
                                     },
                                     {
-                                        31,
+                                        6,
                                         2,
                                         {
-                                            "applyInstanceProps"
+                                            "SpringScheduler"
                                         }
                                     },
                                     {
-                                        26,
+                                        8,
                                         2,
                                         {
-                                            "New"
+                                            "TweenScheduler"
                                         }
                                     },
                                     {
-                                        24,
+                                        5,
                                         2,
                                         {
-                                            "Cleanup"
+                                            "Spring"
                                         }
                                     },
                                     {
-                                        32,
+                                        13,
                                         2,
                                         {
-                                            "defaultProps"
+                                            "unpackType"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                33,
+                                1,
+                                {
+                                    "Logging"
+                                },
+                                {
+                                    {
+                                        35,
+                                        2,
+                                        {
+                                            "logErrorNonFatal"
                                         }
                                     },
                                     {
-                                        23,
+                                        34,
                                         2,
                                         {
-                                            "Children"
+                                            "logError"
+                                        }
+                                    },
+                                    {
+                                        37,
+                                        2,
+                                        {
+                                            "messages"
+                                        }
+                                    },
+                                    {
+                                        38,
+                                        2,
+                                        {
+                                            "parseError"
+                                        }
+                                    },
+                                    {
+                                        36,
+                                        2,
+                                        {
+                                            "logWarn"
                                         }
                                     }
                                 }
@@ -11476,6 +11562,20 @@ local ObjectTree = {
                                     "Dependencies"
                                 },
                                 {
+                                    {
+                                        19,
+                                        2,
+                                        {
+                                            "sharedState"
+                                        }
+                                    },
+                                    {
+                                        21,
+                                        2,
+                                        {
+                                            "useDependency"
+                                        }
+                                    },
                                     {
                                         17,
                                         2,
@@ -11491,33 +11591,172 @@ local ObjectTree = {
                                         }
                                     },
                                     {
-                                        21,
-                                        2,
-                                        {
-                                            "useDependency"
-                                        }
-                                    },
-                                    {
                                         20,
                                         2,
                                         {
                                             "updateAll"
                                         }
-                                    },
+                                    }
+                                }
+                            },
+                            {
+                                49,
+                                1,
+                                {
+                                    "Utility"
+                                },
+                                {
                                     {
-                                        19,
+                                        50,
                                         2,
                                         {
-                                            "sharedState"
+                                            "None"
+                                        }
+                                    },
+                                    {
+                                        55,
+                                        2,
+                                        {
+                                            "restrictRead"
+                                        }
+                                    },
+                                    {
+                                        56,
+                                        2,
+                                        {
+                                            "xtypeof"
+                                        }
+                                    },
+                                    {
+                                        54,
+                                        2,
+                                        {
+                                            "needsDestruction"
+                                        }
+                                    },
+                                    {
+                                        52,
+                                        2,
+                                        {
+                                            "doNothing"
+                                        }
+                                    },
+                                    {
+                                        53,
+                                        2,
+                                        {
+                                            "isSimilar"
+                                        }
+                                    },
+                                    {
+                                        51,
+                                        2,
+                                        {
+                                            "cleanup"
                                         }
                                     }
                                 }
                             },
                             {
-                                48,
+                                39,
                                 2,
                                 {
-                                    "Types"
+                                    "PubTypes"
+                                }
+                            },
+                            {
+                                22,
+                                1,
+                                {
+                                    "Instances"
+                                },
+                                {
+                                    {
+                                        29,
+                                        2,
+                                        {
+                                            "Out"
+                                        }
+                                    },
+                                    {
+                                        24,
+                                        2,
+                                        {
+                                            "Cleanup"
+                                        }
+                                    },
+                                    {
+                                        26,
+                                        2,
+                                        {
+                                            "New"
+                                        }
+                                    },
+                                    {
+                                        30,
+                                        2,
+                                        {
+                                            "Ref"
+                                        }
+                                    },
+                                    {
+                                        25,
+                                        2,
+                                        {
+                                            "Hydrate"
+                                        }
+                                    },
+                                    {
+                                        32,
+                                        2,
+                                        {
+                                            "defaultProps"
+                                        }
+                                    },
+                                    {
+                                        23,
+                                        2,
+                                        {
+                                            "Children"
+                                        }
+                                    },
+                                    {
+                                        31,
+                                        2,
+                                        {
+                                            "applyInstanceProps"
+                                        }
+                                    },
+                                    {
+                                        27,
+                                        2,
+                                        {
+                                            "OnChange"
+                                        }
+                                    },
+                                    {
+                                        28,
+                                        2,
+                                        {
+                                            "OnEvent"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                14,
+                                1,
+                                {
+                                    "Colour"
+                                },
+                                {
+                                    {
+                                        15,
+                                        2,
+                                        {
+                                            "Oklab"
+                                        }
+                                    }
                                 }
                             },
                             {
@@ -11527,13 +11766,6 @@ local ObjectTree = {
                                     "State"
                                 },
                                 {
-                                    {
-                                        44,
-                                        2,
-                                        {
-                                            "ForValues"
-                                        }
-                                    },
                                     {
                                         47,
                                         2,
@@ -11570,6 +11802,13 @@ local ObjectTree = {
                                         }
                                     },
                                     {
+                                        44,
+                                        2,
+                                        {
+                                            "ForValues"
+                                        }
+                                    },
+                                    {
                                         41,
                                         2,
                                         {
@@ -11579,202 +11818,49 @@ local ObjectTree = {
                                 }
                             },
                             {
-                                33,
-                                1,
-                                {
-                                    "Logging"
-                                },
-                                {
-                                    {
-                                        38,
-                                        2,
-                                        {
-                                            "parseError"
-                                        }
-                                    },
-                                    {
-                                        35,
-                                        2,
-                                        {
-                                            "logErrorNonFatal"
-                                        }
-                                    },
-                                    {
-                                        34,
-                                        2,
-                                        {
-                                            "logError"
-                                        }
-                                    },
-                                    {
-                                        36,
-                                        2,
-                                        {
-                                            "logWarn"
-                                        }
-                                    },
-                                    {
-                                        37,
-                                        2,
-                                        {
-                                            "messages"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                49,
-                                1,
-                                {
-                                    "Utility"
-                                },
-                                {
-                                    {
-                                        53,
-                                        2,
-                                        {
-                                            "isSimilar"
-                                        }
-                                    },
-                                    {
-                                        55,
-                                        2,
-                                        {
-                                            "restrictRead"
-                                        }
-                                    },
-                                    {
-                                        50,
-                                        2,
-                                        {
-                                            "None"
-                                        }
-                                    },
-                                    {
-                                        56,
-                                        2,
-                                        {
-                                            "xtypeof"
-                                        }
-                                    },
-                                    {
-                                        54,
-                                        2,
-                                        {
-                                            "needsDestruction"
-                                        }
-                                    },
-                                    {
-                                        52,
-                                        2,
-                                        {
-                                            "doNothing"
-                                        }
-                                    },
-                                    {
-                                        51,
-                                        2,
-                                        {
-                                            "cleanup"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                14,
-                                1,
-                                {
-                                    "Colour"
-                                },
-                                {
-                                    {
-                                        15,
-                                        2,
-                                        {
-                                            "Oklab"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                4,
-                                1,
-                                {
-                                    "Animation"
-                                },
-                                {
-                                    {
-                                        6,
-                                        2,
-                                        {
-                                            "SpringScheduler"
-                                        }
-                                    },
-                                    {
-                                        9,
-                                        2,
-                                        {
-                                            "getTweenRatio"
-                                        }
-                                    },
-                                    {
-                                        11,
-                                        2,
-                                        {
-                                            "packType"
-                                        }
-                                    },
-                                    {
-                                        5,
-                                        2,
-                                        {
-                                            "Spring"
-                                        }
-                                    },
-                                    {
-                                        8,
-                                        2,
-                                        {
-                                            "TweenScheduler"
-                                        }
-                                    },
-                                    {
-                                        13,
-                                        2,
-                                        {
-                                            "unpackType"
-                                        }
-                                    },
-                                    {
-                                        10,
-                                        2,
-                                        {
-                                            "lerpType"
-                                        }
-                                    },
-                                    {
-                                        12,
-                                        2,
-                                        {
-                                            "springCoefficients"
-                                        }
-                                    },
-                                    {
-                                        7,
-                                        2,
-                                        {
-                                            "Tween"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                39,
+                                48,
                                 2,
                                 {
-                                    "PubTypes"
+                                    "Types"
                                 }
                             }
+                        }
+                    },
+                    {
+                        62,
+                        2,
+                        {
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                63,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        59,
+                        2,
+                        {
+                            "icons"
+                        }
+                    },
+                    {
+                        58,
+                        2,
+                        {
+                            "flags"
+                        }
+                    },
+                    {
+                        60,
+                        2,
+                        {
+                            "lucide"
                         }
                     }
                 }
@@ -11796,87 +11882,45 @@ local ObjectTree = {
                 }
             },
             {
-                90,
+                84,
                 2,
                 {
-                    "utilities"
+                    "simpleElements"
                 },
                 {
                     {
-                        91,
+                        87,
                         2,
                         {
-                            "animate"
+                            "UIListLayout"
                         }
                     },
                     {
-                        95,
+                        89,
                         2,
                         {
-                            "drag"
+                            "UITextSizeConstraint"
                         }
                     },
                     {
-                        99,
+                        88,
                         2,
                         {
-                            "references"
+                            "UIPadding"
                         }
                     },
                     {
-                        94,
+                        86,
                         2,
                         {
-                            "customFunctions"
+                            "UICorner"
                         }
                     },
                     {
-                        101,
+                        85,
                         2,
                         {
-                            "typecheck"
-                        }
-                    },
-                    {
-                        100,
-                        2,
-                        {
-                            "tween"
-                        }
-                    },
-                    {
-                        97,
-                        2,
-                        {
-                            "getStringBounds"
-                        }
-                    },
-                    {
-                        93,
-                        2,
-                        {
-                            "customFont"
-                        }
-                    },
-                    {
-                        98,
-                        2,
-                        {
-                            "randomString"
-                        }
-                    },
-                    {
-                        96,
-                        2,
-                        {
-                            "get"
-                        }
-                    },
-                    {
-                        92,
-                        2,
-                        {
-                            "connections"
+                            "UIAspectRatioConstraint"
                         }
                     }
                 }
@@ -11889,10 +11933,59 @@ local ObjectTree = {
                 },
                 {
                     {
+                        77,
+                        2,
+                        {
+                            "tabButton"
+                        }
+                    },
+                    {
+                        76,
+                        2,
+                        {
+                            "slider"
+                        }
+                    },
+                    {
+                        79,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        68,
+                        2,
+                        {
+                            "divider"
+                        }
+                    },
+                    {
+                        71,
+                        2,
+                        {
+                            "keybindList"
+                        }
+                    },
+                    {
+                        65,
+                        2,
+                        {
+                            "button"
+                        }
+                    },
+                    {
                         66,
                         2,
                         {
                             "buttonGroup"
+                        }
+                    },
+                    {
+                        80,
+                        2,
+                        {
+                            "toggle"
                         }
                     },
                     {
@@ -11903,10 +11996,10 @@ local ObjectTree = {
                         }
                     },
                     {
-                        70,
+                        78,
                         2,
                         {
-                            "keybind"
+                            "tabFrame"
                         }
                     },
                     {
@@ -11917,10 +12010,17 @@ local ObjectTree = {
                         }
                     },
                     {
-                        78,
+                        70,
                         2,
                         {
-                            "tabFrame"
+                            "keybind"
+                        }
+                    },
+                    {
+                        72,
+                        2,
+                        {
+                            "label"
                         }
                     },
                     {
@@ -11938,20 +12038,6 @@ local ObjectTree = {
                         }
                     },
                     {
-                        76,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        68,
-                        2,
-                        {
-                            "divider"
-                        }
-                    },
-                    {
                         73,
                         2,
                         {
@@ -11959,96 +12045,10 @@ local ObjectTree = {
                         }
                     },
                     {
-                        80,
-                        2,
-                        {
-                            "toggle"
-                        }
-                    },
-                    {
-                        71,
-                        2,
-                        {
-                            "keybindList"
-                        }
-                    },
-                    {
-                        79,
-                        2,
-                        {
-                            "textbox"
-                        }
-                    },
-                    {
-                        65,
-                        2,
-                        {
-                            "button"
-                        }
-                    },
-                    {
-                        72,
-                        2,
-                        {
-                            "label"
-                        }
-                    },
-                    {
-                        77,
-                        2,
-                        {
-                            "tabButton"
-                        }
-                    },
-                    {
                         74,
                         2,
                         {
                             "notification"
-                        }
-                    }
-                }
-            },
-            {
-                84,
-                2,
-                {
-                    "simpleElements"
-                },
-                {
-                    {
-                        88,
-                        2,
-                        {
-                            "UIPadding"
-                        }
-                    },
-                    {
-                        86,
-                        2,
-                        {
-                            "UICorner"
-                        }
-                    },
-                    {
-                        87,
-                        2,
-                        {
-                            "UIListLayout"
-                        }
-                    },
-                    {
-                        85,
-                        2,
-                        {
-                            "UIAspectRatioConstraint"
-                        }
-                    },
-                    {
-                        89,
-                        2,
-                        {
-                            "UITextSizeConstraint"
                         }
                     }
                 }

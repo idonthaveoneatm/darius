@@ -155,7 +155,7 @@ return function(property)
 					[ref] = saturationValue,
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 or input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						saturationValueDown:set(true)
