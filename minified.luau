@@ -727,20 +727,21 @@ NumberSequenceKeypoint.new(1,1)}end)}}},ap'ImageLabel'{ZIndex=2,AnchorPoint=Vect
 l(function()return UDim2.fromScale(o(aK),1-o(aL))end),[as]={ap'ImageLabel'{ZIndex=2,AnchorPoint=Vector2.new(0.5,0.5),
 BackgroundTransparency=1,Image=aj.circle,Size=UDim2.fromScale(0.9,0.9),ImageColor3=l(function()return Color3.fromHSV(o(
 aJ),1,1)end),Position=UDim2.fromScale(0.5,0.5)}}}}},ap'TextButton'{Size=UDim2.new(1,0,0,24),[k'InputBegan']=function(aP)
-if aP.UserInputType~=Enum.UserInputType.MouseButton1 then return end aG:set(true)local aQ aQ=aP.Changed:Connect(function
-()if aP.UserInputState==Enum.UserInputState.End or aP.UserInputState.Cancel then aG:set(false)aQ:Disconnect()end end)end
-,[m]=aF,[as]={ap'UIGradient'{Color=ColorSequence.new{ColorSequenceKeypoint.new(0,Color3.fromHSV(1,1,1)),
-ColorSequenceKeypoint.new(0.1,Color3.fromHSV(0.9,1,1)),ColorSequenceKeypoint.new(0.2,Color3.fromHSV(0.8,1,1)),
-ColorSequenceKeypoint.new(0.3,Color3.fromHSV(0.7,1,1)),ColorSequenceKeypoint.new(0.4,Color3.fromHSV(0.6,1,1)),
-ColorSequenceKeypoint.new(0.5,Color3.fromHSV(0.5,1,1)),ColorSequenceKeypoint.new(0.6,Color3.fromHSV(0.4,1,1)),
-ColorSequenceKeypoint.new(0.7,Color3.fromHSV(0.3,1,1)),ColorSequenceKeypoint.new(0.8,Color3.fromHSV(0.2,1,1)),
-ColorSequenceKeypoint.new(0.9,Color3.fromHSV(0.1,1,1)),ColorSequenceKeypoint.new(1,Color3.fromHSV(0,1,1))}},ap'Frame'{
-AnchorPoint=Vector2.new(0,0.5),BackgroundColor3=ai.colorpickerBar,Size=UDim2.new(0,2,1,0),Position=l(function()return
-UDim2.fromScale(1-o(aJ),0.5)end)}}},ap'ImageButton'{Visible=not o(X),ZIndex=2,Size=UDim2.new(1,0,0,24),
-BackgroundTransparency=1,Image='rbxassetid://15612242981',ScaleType=Enum.ScaleType.Crop,[k'InputBegan']=function(aP)if
-aP.UserInputType~=Enum.UserInputType.MouseButton1 then return end aI:set(true)local aQ aQ=aP.Changed:Connect(function()
-if aP.UserInputState==Enum.UserInputState.End or aP.UserInputState.Cancel then aI:set(false)aQ:Disconnect()end end)end,[
-m]=aH,[as]={ap'Frame'{Size=UDim2.fromScale(1,1),[as]={ap'UIGradient'{Color=l(function()return ColorSequence.new{
+if aP.UserInputType~=Enum.UserInputType.MouseButton1 and aP.UserInputType~=Enum.UserInputType.Touch then return end aG:
+set(true)local aQ aQ=aP.Changed:Connect(function()if aP.UserInputState==Enum.UserInputState.End or aP.UserInputState.
+Cancel then aG:set(false)aQ:Disconnect()end end)end,[m]=aF,[as]={ap'UIGradient'{Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0,Color3.fromHSV(1,1,1)),ColorSequenceKeypoint.new(0.1,Color3.fromHSV(0.9,1,1)),
+ColorSequenceKeypoint.new(0.2,Color3.fromHSV(0.8,1,1)),ColorSequenceKeypoint.new(0.3,Color3.fromHSV(0.7,1,1)),
+ColorSequenceKeypoint.new(0.4,Color3.fromHSV(0.6,1,1)),ColorSequenceKeypoint.new(0.5,Color3.fromHSV(0.5,1,1)),
+ColorSequenceKeypoint.new(0.6,Color3.fromHSV(0.4,1,1)),ColorSequenceKeypoint.new(0.7,Color3.fromHSV(0.3,1,1)),
+ColorSequenceKeypoint.new(0.8,Color3.fromHSV(0.2,1,1)),ColorSequenceKeypoint.new(0.9,Color3.fromHSV(0.1,1,1)),
+ColorSequenceKeypoint.new(1,Color3.fromHSV(0,1,1))}},ap'Frame'{AnchorPoint=Vector2.new(0,0.5),BackgroundColor3=ai.
+colorpickerBar,Size=UDim2.new(0,2,1,0),Position=l(function()return UDim2.fromScale(1-o(aJ),0.5)end)}}},ap'ImageButton'{
+Visible=not o(X),ZIndex=2,Size=UDim2.new(1,0,0,24),BackgroundTransparency=1,Image='rbxassetid://15612242981',ScaleType=
+Enum.ScaleType.Crop,[k'InputBegan']=function(aP)if aP.UserInputType~=Enum.UserInputType.MouseButton1 and aP.
+UserInputType~=Enum.UserInputType.Touch then return end aI:set(true)local aQ aQ=aP.Changed:Connect(function()if aP.
+UserInputState==Enum.UserInputState.End or aP.UserInputState.Cancel then aI:set(false)aQ:Disconnect()end end)end,[m]=aH,
+[as]={ap'Frame'{Size=UDim2.fromScale(1,1),[as]={ap'UIGradient'{Color=l(function()return ColorSequence.new{
 ColorSequenceKeypoint.new(0,o(_)),ColorSequenceKeypoint.new(1,o(_))}end),Transparency=l(function()return NumberSequence.
 new{NumberSequenceKeypoint.new(0,0),NumberSequenceKeypoint.new(1,1)}end)}}},ap'Frame'{AnchorPoint=Vector2.new(0,0.5),
 BackgroundColor3=ai.colorpickerBar,Size=UDim2.new(0,2,1,0),Position=l(function()return UDim2.fromScale(o(au),0.5)end)}}}
@@ -1518,31 +1519,31 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[101]=function()local aa,ab,ac=a(101)local ad return(function(...)return function(ae:table
 ,af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))
 and not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end
-return ah,ai end end)()end},{{1,2,{'Darius'},{{90,2,{'utilities'},{{96,2,{'get'}},{92,2,{'connections'}},{95,2,{'drag'}}
-,{101,2,{'typecheck'}},{94,2,{'customFunctions'}},{97,2,{'getStringBounds'}},{98,2,{'randomString'}},{100,2,{'tween'}},{
-93,2,{'customFont'}},{91,2,{'animate'}},{99,2,{'references'}}}},{84,2,{'simpleElements'},{{86,2,{'UICorner'}},{89,2,{
-'UITextSizeConstraint'}},{85,2,{'UIAspectRatioConstraint'}},{87,2,{'UIListLayout'}},{88,2,{'UIPadding'}}}},{82,1,{
-'layouts'},{{83,2,{'main'}}}},{2,2,{'Bundles'},{{3,2,{'Fusion'},{{39,2,{'PubTypes'}},{49,1,{'Utility'},{{50,2,{'None'}},
-{54,2,{'needsDestruction'}},{52,2,{'doNothing'}},{51,2,{'cleanup'}},{56,2,{'xtypeof'}},{55,2,{'restrictRead'}},{53,2,{
-'isSimilar'}}}},{33,1,{'Logging'},{{35,2,{'logErrorNonFatal'}},{37,2,{'messages'}},{38,2,{'parseError'}},{36,2,{
-'logWarn'}},{34,2,{'logError'}}}},{22,1,{'Instances'},{{24,2,{'Cleanup'}},{26,2,{'New'}},{29,2,{'Out'}},{28,2,{'OnEvent'
-}},{27,2,{'OnChange'}},{32,2,{'defaultProps'}},{25,2,{'Hydrate'}},{23,2,{'Children'}},{30,2,{'Ref'}},{31,2,{
-'applyInstanceProps'}}}},{16,1,{'Dependencies'},{{17,2,{'captureDependencies'}},{20,2,{'updateAll'}},{19,2,{
-'sharedState'}},{21,2,{'useDependency'}},{18,2,{'initDependency'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{40,1,{'State'
-},{{44,2,{'ForValues'}},{47,2,{'unwrap'}},{41,2,{'Computed'}},{42,2,{'ForKeys'}},{43,2,{'ForPairs'}},{46,2,{'Value'}},{
-45,2,{'Observer'}}}},{4,1,{'Animation'},{{13,2,{'unpackType'}},{7,2,{'Tween'}},{8,2,{'TweenScheduler'}},{6,2,{
-'SpringScheduler'}},{12,2,{'springCoefficients'}},{11,2,{'packType'}},{10,2,{'lerpType'}},{9,2,{'getTweenRatio'}},{5,2,{
-'Spring'}}}},{48,2,{'Types'}}}},{62,2,{'themeSystem'},{{63,2,{'default'}}}},{61,2,{'services'}},{58,2,{'flags'}},{60,2,{
-'lucide'}},{57,2,{'data'}},{59,2,{'icons'}}}},{64,1,{'components'},{{66,2,{'buttonGroup'}},{75,2,{'paragraph'}},{74,2,{
-'notification'}},{72,2,{'label'}},{69,2,{'dropdown'}},{73,2,{'module'}},{78,2,{'tabFrame'}},{81,2,{'warn'}},{70,2,{
-'keybind'}},{76,2,{'slider'}},{68,2,{'divider'}},{67,2,{'colorpicker'}},{65,2,{'button'}},{79,2,{'textbox'}},{71,2,{
-'keybindList'}},{77,2,{'tabButton'}},{80,2,{'toggle'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,
-table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.
-remove,aj.freeze or function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local
-aD,aE=ap(ao,'@lune/task')if aD and aE then af=aE end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or
-function(aE,...)az(aE)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},
-{},{},{},{},{}local aN,aO={GetFullName={{},function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO=aP.Name..'.'..aO aP=
-aP.Parent end return aO end},GetChildren={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)end return aO end},
+return ah,ai end end)()end},{{1,2,{'Darius'},{{84,2,{'simpleElements'},{{85,2,{'UIAspectRatioConstraint'}},{88,2,{
+'UIPadding'}},{87,2,{'UIListLayout'}},{89,2,{'UITextSizeConstraint'}},{86,2,{'UICorner'}}}},{2,2,{'Bundles'},{{61,2,{
+'services'}},{3,2,{'Fusion'},{{16,1,{'Dependencies'},{{19,2,{'sharedState'}},{17,2,{'captureDependencies'}},{18,2,{
+'initDependency'}},{21,2,{'useDependency'}},{20,2,{'updateAll'}}}},{40,1,{'State'},{{47,2,{'unwrap'}},{46,2,{'Value'}},{
+45,2,{'Observer'}},{42,2,{'ForKeys'}},{44,2,{'ForValues'}},{43,2,{'ForPairs'}},{41,2,{'Computed'}}}},{39,2,{'PubTypes'}}
+,{48,2,{'Types'}},{49,1,{'Utility'},{{56,2,{'xtypeof'}},{51,2,{'cleanup'}},{50,2,{'None'}},{53,2,{'isSimilar'}},{54,2,{
+'needsDestruction'}},{52,2,{'doNothing'}},{55,2,{'restrictRead'}}}},{33,1,{'Logging'},{{38,2,{'parseError'}},{37,2,{
+'messages'}},{34,2,{'logError'}},{36,2,{'logWarn'}},{35,2,{'logErrorNonFatal'}}}},{4,1,{'Animation'},{{5,2,{'Spring'}},{
+7,2,{'Tween'}},{12,2,{'springCoefficients'}},{9,2,{'getTweenRatio'}},{10,2,{'lerpType'}},{11,2,{'packType'}},{6,2,{
+'SpringScheduler'}},{13,2,{'unpackType'}},{8,2,{'TweenScheduler'}}}},{22,1,{'Instances'},{{32,2,{'defaultProps'}},{30,2,
+{'Ref'}},{28,2,{'OnEvent'}},{25,2,{'Hydrate'}},{24,2,{'Cleanup'}},{29,2,{'Out'}},{23,2,{'Children'}},{31,2,{
+'applyInstanceProps'}},{27,2,{'OnChange'}},{26,2,{'New'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}}}},{62,2,{'themeSystem'}
+,{{63,2,{'default'}}}},{60,2,{'lucide'}},{58,2,{'flags'}},{59,2,{'icons'}},{57,2,{'data'}}}},{64,1,{'components'},{{78,2
+,{'tabFrame'}},{79,2,{'textbox'}},{67,2,{'colorpicker'}},{81,2,{'warn'}},{68,2,{'divider'}},{75,2,{'paragraph'}},{76,2,{
+'slider'}},{70,2,{'keybind'}},{65,2,{'button'}},{74,2,{'notification'}},{72,2,{'label'}},{71,2,{'keybindList'}},{80,2,{
+'toggle'}},{77,2,{'tabButton'}},{73,2,{'module'}},{69,2,{'dropdown'}},{66,2,{'buttonGroup'}}}},{90,2,{'utilities'},{{97,
+2,{'getStringBounds'}},{100,2,{'tween'}},{99,2,{'references'}},{93,2,{'customFont'}},{101,2,{'typecheck'}},{94,2,{
+'customFunctions'}},{98,2,{'randomString'}},{91,2,{'animate'}},{96,2,{'get'}},{95,2,{'drag'}},{92,2,{'connections'}}}},{
+82,1,{'layouts'},{{83,2,{'main'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,unpack,coroutine,
+script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.remove,aj.freeze or
+function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local aD,aE=ap(ao,
+'@lune/task')if aD and aE then af=aE end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or function(aE
+,...)az(aE)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{}
+,{}local aN,aO={GetFullName={{},function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO=aP.Name..'.'..aO aP=aP.Parent
+end return aO end},GetChildren={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)end return aO end},
 GetDescendants={{},function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)for aQ,aR in ai,aP:GetDescendants()do aw(aO,aR)
 end end return aO end},FindFirstChild={{'string','boolean?'},function(aN,aO,aP)local aQ=aM[aN]for aR in ai,aQ do if aR.
 Name==aO then return aR end end if aP then for aS in ai,aQ do return aS:FindFirstChild(aO,true)end end end},

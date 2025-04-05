@@ -230,7 +230,7 @@ return function(property)
 					Size = UDim2.new(1,0,0,24),
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						hueDown:set(true)
@@ -280,7 +280,7 @@ return function(property)
 					ScaleType = Enum.ScaleType.Crop,
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						transparencyDown:set(true)
