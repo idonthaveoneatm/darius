@@ -1,9 +1,8 @@
-local script = game:GetService("ReplicatedStorage").darius['darius.story']
-local darius = require(script.Parent)
-local randomString = require(script.Parent.utilities).randomString
-local lucide = require(script.Parent.Bundles.lucide)
-local HttpService = require(script.Parent.Bundles).services.HttpService
-local customFunctions = require(script.Parent.utilities).customFunctions
+local script = game.ReplicatedStorage.darius
+local darius = require(script)
+local randomString = require(script.utilities).randomString
+local HttpService = require(script.Bundles).services.HttpService
+local customFunctions = require(script.utilities).customFunctions
 
 local fakeData = {
     --['dropdown'] = "apple",
@@ -13,39 +12,39 @@ customFunctions.makefolder("darius")
 customFunctions.makefolder("darius/test")
 customFunctions.writefile("darius/test/config.json", HttpService:JSONEncode(fakeData))
 
-local randomIcons = {}
-for _,v in lucide do
-    table.insert(randomIcons, v)
-end
+
 local function randomIcon():string
-    return randomIcons[math.floor(math.random(1,#randomIcons))]
+    return ""
 end
 local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
     HideBind = Enum.KeyCode.T,
     UseConfig = true,
-    Config = "test",
+	Workspace = "example",
     IsMobile = true,
     Theme = {
-        background = Color3.fromHex("#D6DCE0"),
-        text = Color3.fromHex("#2A2C31"),
-        text2 = Color3.fromHex("#7D8694"),
-        background2 = Color3.fromHex("#E7E9EF"),
-        selectedTab = Color3.fromHex("#FAFFFF"),
+		Name = "Theme",
+		Colors = {
+			background = Color3.fromHex("#D6DCE0"),
+			text = Color3.fromHex("#2A2C31"),
+			text2 = Color3.fromHex("#7D8694"),
+			background2 = Color3.fromHex("#E7E9EF"),
+			selectedTab = Color3.fromHex("#FAFFFF"),
 
-        colorpickerBar = Color3.fromHex("#2C2F33"),
+			colorpickerBar = Color3.fromHex("#2C2F33"),
 
-        notificationButton = Color3.fromHex("#E7E9EF"),
+			notificationButton = Color3.fromHex("#E7E9EF"),
 
-        mobileButtonBackground = Color3.fromHex("#2A2C31"),
-        mobileButtonText = Color3.fromHex("#E7E9EF"),
-        mobileButtonImage = Color3.fromHex("#7D8694"),
+			mobileButtonBackground = Color3.fromHex("#2A2C31"),
+			mobileButtonText = Color3.fromHex("#E7E9EF"),
+			mobileButtonImage = Color3.fromHex("#7D8694"),
 
-        disabledBackground = Color3.fromHex("#2A2C31"),
-        disabledText = Color3.fromHex("#D6DCE0"),
+			disabledBackground = Color3.fromHex("#2A2C31"),
+			disabledText = Color3.fromHex("#D6DCE0"),
 
-        toggled = Color3.fromHex("#2A2C31")
+			toggled = Color3.fromHex("#2A2C31")
+		}
     },
 
     Parent = game.Players.LocalPlayer.PlayerGui
@@ -80,4 +79,3 @@ tab:Keybind({
     Callback = function()
     end
 })
-darius:LoadConfig()

@@ -1460,40 +1460,40 @@ C(I.KeyCode,'From input box')end z:set(false)task.wait()n:update('boolean',false
 and not J and not aH(n.boolean)then l:update('boolean',not aH(l.boolean))end end end)aM.add(I)local J=aJ(aI.get
 'container',15)aM.add(aI.get'container':GetPropertyChangedSignal'Position':Connect(function()local K=aI.get'container'
 local L,M=K.AbsolutePosition+Vector2.new(aH(q)/2,aH(r)/2),H.screenSize.AbsoluteSize local N,O,P,Q=M.X+(aH(s)and aH(q)/4
-or(aH(q)/6)*2.5),M.Y+(aH(s)and aH(r)/8 or(aH(r)/6)*2.3),false,''if L.X>N or M.X-L.X>N then P=true Q='x'end if L.Y>O or M
-.Y-L.Y>O then P=true Q='y'end if P and Q=='x'then J:Disconnect()K.Position=UDim2.new(0.5,0,K.Position.Y.Scale,K.Position
-.Y.Offset)J=aJ(aI.get'container',15)elseif P and Q=='y'then J:Disconnect()K.Position=UDim2.new(K.Position.X.Scale,K.
-Position.X.Offset,0.5,aH(aU.number))J=aJ(aI.get'container',15)end end))end end)()end,[84]=function()local aa,ab,ac=a(84)
-local ad return(function(...)return setmetatable({},{__index=function(ae,af)if ab:FindFirstChild(af)then return ac(ab[af
-])else error('no utility: '..af)end end})end)()end,[85]=function()local aa,ab,ac=a(85)local ad return(function(...)local
-ae=ac(ab.Parent.Parent.Bundles).Fusion return function(af:number,ag:Enum.AspectType,ah:Enum.DominantAxis)ag=ag or Enum.
-AspectType.FitWithinMaxSize ah=ah or Enum.DominantAxis.Height return ae.New'UIAspectRatioConstraint'{AspectRatio=af,
-AspectType=ag,DominantAxis=ah}end end)()end,[86]=function()local aa,ab,ac=a(86)local ad return(function(...)local ae=ac(
-ab.Parent.Parent.Bundles).Fusion return function(af,ag)ag=ag or 0 return ae.New'UICorner'{CornerRadius=UDim.new(ag,af)}
-end end)()end,[87]=function()local aa,ab,ac=a(87)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).
-Fusion return function(af,ag,ah,ai,aj)return ae.New'UIListLayout'{SortOrder=af or Enum.SortOrder.LayoutOrder,
-FillDirection=ag or Enum.FillDirection.Vertical,HorizontalAlignment=ah or Enum.HorizontalAlignment.Center,
-VerticalAlignment=ai or Enum.VerticalAlignment.Center,Padding=aj or UDim.new(0,0)}end end)()end,[88]=function()local aa,
-ab,ac=a(88)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(...)local af={...}
-if#af==1 then return ae.New'UIPadding'{PaddingTop=typeof(...)=='number'and UDim.new(0,...)or...,PaddingRight=typeof(...)
-=='number'and UDim.new(0,...)or...,PaddingBottom=typeof(...)=='number'and UDim.new(0,...)or...,PaddingLeft=typeof(...)==
-'number'and UDim.new(0,...)or...}elseif#af==2 then return ae.New'UIPadding'{PaddingTop=typeof(af[1])=='number'and UDim.
-new(0,af[1])or af[1],PaddingRight=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2],PaddingBottom=typeof(af[1])==
-'number'and UDim.new(0,af[1])or af[1],PaddingLeft=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2]}elseif#af==3 then
-return ae.New'UIPadding'{PaddingTop=typeof(af[1])=='number'and UDim.new(0,af[1])or af[1],PaddingRight=typeof(af[2])==
-'number'and UDim.new(0,af[2])or af[2],PaddingBottom=typeof(af[3])=='number'and UDim.new(0,af[3])or af[3],PaddingLeft=
-typeof(af[2])=='number'and UDim.new(0,af[2])or af[2]}else return ae.New'UIPadding'{PaddingTop=typeof(af[1])=='number'and
-UDim.new(0,af[1])or af[1],PaddingRight=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2],PaddingBottom=typeof(af[3])
-=='number'and UDim.new(0,af[3])or af[3],PaddingLeft=typeof(af[4])=='number'and UDim.new(0,af[4])or af[4]}end end end)()
-end,[89]=function()local aa,ab,ac=a(89)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return
-function(af:number?,ag:number?)return ae.New'UITextSizeConstraint'{MinTextSize=af,MaxTextSize=ag}end end)()end,[90]=
-function()local aa,ab,ac=a(90)local ad return(function(...)return setmetatable({},{__index=function(ae,af)if ab:
-FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end end})end)()end,[91]=function()local aa,ab,ac=
-a(91)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion local af,ag=ae.Computed,ae.Spring return
-function(ah,ai,aj)return ag(af(ah),ai,aj)end end)()end,[92]=function()local aa,ab,ac=a(92)local ad return(function(...)
-local ae,af,ag={},{},ac(ab.Parent.Parent.Bundles.services)function af.add(ah)table.insert(ae,ah)end function af.
-deleteConnections()for ah,ai in ae do if typeof(ai)=='function'then ai()else ai:Disconnect()end ae[ah]=nil end end
-return af end)()end,[93]=function()local aa,ab,ac=a(93)local ad return(function(...)local ae={Inter=
+or(aH(q)/6)*2.5),M.Y+(aH(s)and aH(r)/8 or(aH(r)/6)*2.3),false,''if L.X>N or M.X-L.X>N then P=true Q='x'end if L.Y+aH(aU.
+number)>O or M.Y-L.Y-aH(aU.number)>O then P=true Q='y'end if P and Q=='x'then J:Disconnect()K.Position=UDim2.new(0.5,0,K
+.Position.Y.Scale,K.Position.Y.Offset)J=aJ(aI.get'container',15)elseif P and Q=='y'then J:Disconnect()K.Position=UDim2.
+new(K.Position.X.Scale,K.Position.X.Offset,0.5,aH(aU.number))J=aJ(aI.get'container',15)end end))end end)()end,[84]=
+function()local aa,ab,ac=a(84)local ad return(function(...)return setmetatable({},{__index=function(ae,af)if ab:
+FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end end})end)()end,[85]=function()local aa,ab,ac=
+a(85)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(af:number,ag:Enum.
+AspectType,ah:Enum.DominantAxis)ag=ag or Enum.AspectType.FitWithinMaxSize ah=ah or Enum.DominantAxis.Height return ae.
+New'UIAspectRatioConstraint'{AspectRatio=af,AspectType=ag,DominantAxis=ah}end end)()end,[86]=function()local aa,ab,ac=a(
+86)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(af,ag)ag=ag or 0 return ae.
+New'UICorner'{CornerRadius=UDim.new(ag,af)}end end)()end,[87]=function()local aa,ab,ac=a(87)local ad return(function(...
+)local ae=ac(ab.Parent.Parent.Bundles).Fusion return function(af,ag,ah,ai,aj)return ae.New'UIListLayout'{SortOrder=af or
+Enum.SortOrder.LayoutOrder,FillDirection=ag or Enum.FillDirection.Vertical,HorizontalAlignment=ah or Enum.
+HorizontalAlignment.Center,VerticalAlignment=ai or Enum.VerticalAlignment.Center,Padding=aj or UDim.new(0,0)}end end)()
+end,[88]=function()local aa,ab,ac=a(88)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion return
+function(...)local af={...}if#af==1 then return ae.New'UIPadding'{PaddingTop=typeof(...)=='number'and UDim.new(0,...)or
+...,PaddingRight=typeof(...)=='number'and UDim.new(0,...)or...,PaddingBottom=typeof(...)=='number'and UDim.new(0,...)or
+...,PaddingLeft=typeof(...)=='number'and UDim.new(0,...)or...}elseif#af==2 then return ae.New'UIPadding'{PaddingTop=
+typeof(af[1])=='number'and UDim.new(0,af[1])or af[1],PaddingRight=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2],
+PaddingBottom=typeof(af[1])=='number'and UDim.new(0,af[1])or af[1],PaddingLeft=typeof(af[2])=='number'and UDim.new(0,af[
+2])or af[2]}elseif#af==3 then return ae.New'UIPadding'{PaddingTop=typeof(af[1])=='number'and UDim.new(0,af[1])or af[1],
+PaddingRight=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2],PaddingBottom=typeof(af[3])=='number'and UDim.new(0,af
+[3])or af[3],PaddingLeft=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2]}else return ae.New'UIPadding'{PaddingTop=
+typeof(af[1])=='number'and UDim.new(0,af[1])or af[1],PaddingRight=typeof(af[2])=='number'and UDim.new(0,af[2])or af[2],
+PaddingBottom=typeof(af[3])=='number'and UDim.new(0,af[3])or af[3],PaddingLeft=typeof(af[4])=='number'and UDim.new(0,af[
+4])or af[4]}end end end)()end,[89]=function()local aa,ab,ac=a(89)local ad return(function(...)local ae=ac(ab.Parent.
+Parent.Bundles).Fusion return function(af:number?,ag:number?)return ae.New'UITextSizeConstraint'{MinTextSize=af,
+MaxTextSize=ag}end end)()end,[90]=function()local aa,ab,ac=a(90)local ad return(function(...)return setmetatable({},{
+__index=function(ae,af)if ab:FindFirstChild(af)then return ac(ab[af])else error('no utility: '..af)end end})end)()end,[
+91]=function()local aa,ab,ac=a(91)local ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles).Fusion local af,ag=
+ae.Computed,ae.Spring return function(ah,ai,aj)return ag(af(ah),ai,aj)end end)()end,[92]=function()local aa,ab,ac=a(92)
+local ad return(function(...)local ae,af,ag={},{},ac(ab.Parent.Parent.Bundles.services)function af.add(ah)table.insert(
+ae,ah)end function af.deleteConnections()for ah,ai in ae do if typeof(ai)=='function'then ai()else ai:Disconnect()end ae
+[ah]=nil end end return af end)()end,[93]=function()local aa,ab,ac=a(93)local ad return(function(...)local ae={Inter=
 'rbxassetid://12187365364',Montserrat='rbxassetid://11702779517'}return function(af:string,ag:Enum.FontWeight?,ah:Enum.
 FontStyle?)assert(af,'font required')ag=ag or Enum.FontWeight.Regular ah=ah or Enum.FontStyle.Normal if ae[af]then
 return Font.new(ae[af],ag,ah)else error('no font:',af)end end end)()end,[94]=function()local aa,ab,ac=a(94)local ad
@@ -1544,27 +1544,27 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[101]=function()local aa,ab,ac=a(101)local ad return(function(...)return function(ae:table
 ,af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))
 and not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end
-return ah,ai end end)()end},{{1,2,{'Darius'},{{82,1,{'layouts'},{{83,2,{'main'}}}},{84,2,{'simpleElements'},{{86,2,{
-'UICorner'}},{85,2,{'UIAspectRatioConstraint'}},{89,2,{'UITextSizeConstraint'}},{88,2,{'UIPadding'}},{87,2,{
-'UIListLayout'}}}},{64,1,{'components'},{{77,2,{'tabButton'}},{81,2,{'warn'}},{68,2,{'divider'}},{72,2,{'label'}},{67,2,
-{'colorpicker'}},{76,2,{'slider'}},{69,2,{'dropdown'}},{66,2,{'buttonGroup'}},{74,2,{'notification'}},{70,2,{'keybind'}}
-,{75,2,{'paragraph'}},{80,2,{'toggle'}},{73,2,{'module'}},{71,2,{'keybindList'}},{78,2,{'tabFrame'}},{65,2,{'button'}},{
-79,2,{'textbox'}}}},{2,2,{'Bundles'},{{3,2,{'Fusion'},{{4,1,{'Animation'},{{10,2,{'lerpType'}},{9,2,{'getTweenRatio'}},{
-7,2,{'Tween'}},{8,2,{'TweenScheduler'}},{13,2,{'unpackType'}},{12,2,{'springCoefficients'}},{5,2,{'Spring'}},{11,2,{
-'packType'}},{6,2,{'SpringScheduler'}}}},{22,1,{'Instances'},{{32,2,{'defaultProps'}},{29,2,{'Out'}},{26,2,{'New'}},{23,
-2,{'Children'}},{31,2,{'applyInstanceProps'}},{28,2,{'OnEvent'}},{30,2,{'Ref'}},{25,2,{'Hydrate'}},{27,2,{'OnChange'}},{
-24,2,{'Cleanup'}}}},{16,1,{'Dependencies'},{{17,2,{'captureDependencies'}},{20,2,{'updateAll'}},{21,2,{'useDependency'}}
-,{19,2,{'sharedState'}},{18,2,{'initDependency'}}}},{39,2,{'PubTypes'}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{49,1,{
-'Utility'},{{50,2,{'None'}},{52,2,{'doNothing'}},{55,2,{'restrictRead'}},{53,2,{'isSimilar'}},{56,2,{'xtypeof'}},{51,2,{
-'cleanup'}},{54,2,{'needsDestruction'}}}},{40,1,{'State'},{{44,2,{'ForValues'}},{42,2,{'ForKeys'}},{46,2,{'Value'}},{41,
-2,{'Computed'}},{45,2,{'Observer'}},{43,2,{'ForPairs'}},{47,2,{'unwrap'}}}},{33,1,{'Logging'},{{37,2,{'messages'}},{34,2
-,{'logError'}},{36,2,{'logWarn'}},{35,2,{'logErrorNonFatal'}},{38,2,{'parseError'}}}},{48,2,{'Types'}}}},{57,2,{'data'}}
-,{61,2,{'services'}},{60,2,{'lucide'}},{59,2,{'icons'}},{58,2,{'flags'}},{62,2,{'themeSystem'},{{63,2,{'default'}}}}}},{
-90,2,{'utilities'},{{94,2,{'customFunctions'}},{92,2,{'connections'}},{93,2,{'customFont'}},{95,2,{'drag'}},{101,2,{
-'typecheck'}},{98,2,{'randomString'}},{97,2,{'getStringBounds'}},{91,2,{'animate'}},{100,2,{'tween'}},{99,2,{
-'references'}},{96,2,{'get'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,unpack,coroutine,
-script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.remove,aj.freeze or
-function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local aD,aE=ap(ao,
+return ah,ai end end)()end},{{1,2,{'Darius'},{{82,1,{'layouts'},{{83,2,{'main'}}}},{84,2,{'simpleElements'},{{88,2,{
+'UIPadding'}},{86,2,{'UICorner'}},{87,2,{'UIListLayout'}},{85,2,{'UIAspectRatioConstraint'}},{89,2,{
+'UITextSizeConstraint'}}}},{90,2,{'utilities'},{{98,2,{'randomString'}},{91,2,{'animate'}},{93,2,{'customFont'}},{97,2,{
+'getStringBounds'}},{101,2,{'typecheck'}},{100,2,{'tween'}},{94,2,{'customFunctions'}},{95,2,{'drag'}},{96,2,{'get'}},{
+92,2,{'connections'}},{99,2,{'references'}}}},{2,2,{'Bundles'},{{62,2,{'themeSystem'},{{63,2,{'default'}}}},{59,2,{
+'icons'}},{61,2,{'services'}},{3,2,{'Fusion'},{{40,1,{'State'},{{45,2,{'Observer'}},{44,2,{'ForValues'}},{47,2,{'unwrap'
+}},{42,2,{'ForKeys'}},{46,2,{'Value'}},{43,2,{'ForPairs'}},{41,2,{'Computed'}}}},{16,1,{'Dependencies'},{{19,2,{
+'sharedState'}},{17,2,{'captureDependencies'}},{20,2,{'updateAll'}},{21,2,{'useDependency'}},{18,2,{'initDependency'}}}}
+,{39,2,{'PubTypes'}},{22,1,{'Instances'},{{25,2,{'Hydrate'}},{28,2,{'OnEvent'}},{24,2,{'Cleanup'}},{29,2,{'Out'}},{31,2,
+{'applyInstanceProps'}},{30,2,{'Ref'}},{26,2,{'New'}},{27,2,{'OnChange'}},{32,2,{'defaultProps'}},{23,2,{'Children'}}}},
+{33,1,{'Logging'},{{36,2,{'logWarn'}},{38,2,{'parseError'}},{34,2,{'logError'}},{35,2,{'logErrorNonFatal'}},{37,2,{
+'messages'}}}},{48,2,{'Types'}},{49,1,{'Utility'},{{50,2,{'None'}},{54,2,{'needsDestruction'}},{51,2,{'cleanup'}},{55,2,
+{'restrictRead'}},{56,2,{'xtypeof'}},{52,2,{'doNothing'}},{53,2,{'isSimilar'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{4
+,1,{'Animation'},{{13,2,{'unpackType'}},{11,2,{'packType'}},{9,2,{'getTweenRatio'}},{6,2,{'SpringScheduler'}},{12,2,{
+'springCoefficients'}},{8,2,{'TweenScheduler'}},{7,2,{'Tween'}},{5,2,{'Spring'}},{10,2,{'lerpType'}}}}}},{58,2,{'flags'}
+},{57,2,{'data'}},{60,2,{'lucide'}}}},{64,1,{'components'},{{68,2,{'divider'}},{65,2,{'button'}},{70,2,{'keybind'}},{67,
+2,{'colorpicker'}},{72,2,{'label'}},{81,2,{'warn'}},{80,2,{'toggle'}},{66,2,{'buttonGroup'}},{77,2,{'tabButton'}},{78,2,
+{'tabFrame'}},{69,2,{'dropdown'}},{74,2,{'notification'}},{79,2,{'textbox'}},{71,2,{'keybindList'}},{75,2,{'paragraph'}}
+,{73,2,{'module'}},{76,2,{'slider'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,unpack,
+coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.remove,aj.freeze
+or function(aw)return aw end,al.wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local aD,aE=ap(ao,
 '@lune/task')if aD and aE then af=aE end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or function(aE
 ,...)az(aE)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{}
 ,{}local aN,aO={GetFullName={{},function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO=aP.Name..'.'..aO aP=aP.Parent

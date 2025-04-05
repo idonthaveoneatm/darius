@@ -592,7 +592,7 @@ return function(property, bindableEvent)
 			hasProblem = true
 			_type = "x"
 		end
-		if centerPosition.Y > yCap or screenSize.Y - centerPosition.Y > yCap then
+		if centerPosition.Y + get(absoluteOffset.number) > yCap or screenSize.Y - centerPosition.Y - get(absoluteOffset.number) > yCap then
 			hasProblem = true
 			_type = "y"
 		end
