@@ -45,6 +45,8 @@ local tab2 = window:Tab({
     Name = "test"
 })
 
+darius:CreateSettings()
+
 tab:TextBox({
     Name = "TextBox Numbers",
     Placeholder = "Only Numbers",
