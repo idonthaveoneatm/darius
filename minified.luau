@@ -90,61 +90,60 @@ function()if ab==''then y:Notify{Title='Configuration Error',Body='No configurat
 ImageColor=i.get'red'}return end v.delete(ab)ae()end}end end if q.getgenv then q.getgenv().dariusInstance=y else _G.
 dariusInstance=y end return y[J.uid]end return y end)()end,function()local aa,ab,ac=a(2)local ad return(function(...)
 local ae=ac(ab.Parent.utilities)local af,ag,ah=(ae.customFunctions)if af.getthreadidentity()<5 then ah=af.
-getthreadidentity()af.setthreadidentity(5)end ag=ac(game:GetObjects'rbxassetid://110500042647914'[1])af.
-setthreadidentity(ah)return setmetatable({},{__index=function(ai,aj)if aj=='Fusion'then return ag end if ab:
-FindFirstChild(aj)then return ac(ab[aj])else error('no bundle: '..aj)end end})end)()end,function()local aa,ab,ac=a(3)
-local ad return(function(...)local ae,af=ac(ab.Parent.Parent.utilities.randomString),ac(ab.Parent)local ag=af.Fusion
-local ah,ai,aj=ag.Value,{},{}type uid=string type tag=string function aj.update(ak:string,al:string,am:string)if al~=
-'uid'and aj.find(ak)and aj.find(ak)[al]then local an=aj.find(ak)an[al]:set(am)elseif not aj.find(ak)then error(
-"couldn't find uid: "..ak)elseif al=='uid'or al=='__tag'then error('cannot edit property '..al)elseif not aj.find(ak)[al
-]then else error'how?'end end function aj.find(ak:uid|tag):table local al for am=1,#ai do if ai[am].uid==ak or ai[am].
-__tag==ak then al=ai[am]end end if not al then warn('no data found by identifier: '..tostring(ak))return al end return
-al end function aj.delete(ak:string)local al=aj.find(ak)local am,an=table.find(ai,al),{}for ao=1,#ai do if ao~=am then
-table.insert(an,ai[ao])end end ai=an an=nil end function aj.add(ak:table,al:string,am:boolean):table am=am or false if
-not am then for an,ao in ak do ak[an]=ah(ao)end end ak.__tag=al or nil ak.uid=ae(16)setmetatable(ak,{__index={update=
-function(an,ao,ap)aj.update(an.uid,ao,ap)end,delete=function()aj.delete(ak.uid)end}})table.insert(ai,ak)return aj.find(
-ak.uid)end return aj end)()end,function()local aa,ab,ac=a(4)local ad return(function(...)local ae,af,ag=ac(ab.Parent).
-data,ac(ab.Parent.Parent.utilities).get,ac(ab.Parent).services local ah,ai=ag.HttpService,ac(ab.Parent).Fusion local aj,
-ak,al=ai.Observer,ai.Value,ac(ab.Parent.Parent.utilities)local am,an,ao,ap,aq,ar,as,at,b,c=al.connections,al.
-customFunctions,al.randomString,{},ae.add({list={}},'flags'),{},{},{},{},{}ap.currentConfig={}ap.path=''local d,e={
-toggle=function(d)local e=d.status.boolean am.add(aj(e):onChange(function()local f=af(e)d.user.Value=f d.bindableEvent:
-Fire(f)end))end,dropdown=function(d)local e=d.status.multiselect and d.status.items or d.status.item am.add(aj(e):
-onChange(function()local f=af(e)d.user.Value=f d.bindableEvent:Fire(f)end))end,keybind=function(d)local e=d.status.
-mobile and d.status.coordinate or d.status.keycode am.add(aj(e):onChange(function()local f=af(e)d.user.Value=f d.
-bindableEvent:Fire(f)end))end,slider=function(d)local e=d.status.percentageOf am.add(aj(e):onChange(function()local f=
-af(e)d.user.Value=f d.bindableEvent:Fire(f)end))end,textbox=function(d)local e=d.status.correctText am.add(aj(e):
-onChange(function()local f=af(e)d.user.Value=f d.bindableEvent:Fire(f)end))end,colorpicker=function(d)local e,f=d.status
-.color,d.status.transparency am.add(aj(e):onChange(function()d.user.Value={af(e),af(f)}d.bindableEvent:Fire(unpack(d.
-user.Value))end))am.add(aj(f):onChange(function()d.user.Value={af(e),af(f)}d.bindableEvent:Fire(unpack(d.user.Value))end
-))end},{toggle=function(d)local e={}if d.boolean then e.boolean=af(d.boolean)end if d.keycode then e.keycode=af(d.
-keycode)end if af(d.coordinate)then e.coordinate={X=af(d.coordinate).X,Y=af(d.coordinate).Y}end return e end,dropdown=
-function(d)return d.multiselect and{unpack(af(d.items))}or af(d.item)end,keybind=function(d)local e={}if d.keycode then
-e.keycode=af(d.keycode)end if af(d.coordinate)then e.coordinate={X=af(d.coordinate).X,Y=af(d.coordinate).Y}end return e
-end,slider=function(d)return af(d.percentageOf)end,textbox=function(d)return af(d.correctText)end,colorpicker=function(d
-)return{color=af(d.color):ToHex(),transparency=af(d.transparency)}end}function ap.preregister(f)local g,h=ai.New
-'BindableEvent'{},{}function h.Connect(i,j)assert(typeof(j)=='function','Connect only takes functions')am.add(g.Event:
-Connect(j))end local i i={name=f,status={},type='unknown',preregistered=true,bindableEvent=g,file=ak{},user={Value=nil,
-OnChange=setmetatable(h,{__newindex=function(j,k,l)return nil end})}}as[f]=i local j=af(aq.list)j[i.name]=i aq:update(
-'list',j)return i end function ap.register(f,g,h,i)assert(not table.find(ar,f),'Flags must all be unique!')table.insert(
-ar,f)local j,k=ai.New'BindableEvent'{},{}function k.Connect(l,m)assert(typeof(m)=='function','Connect')am.add(j.Event:
-Connect(m))end local l if not as[f]then local m=(ai.New'BindableEvent'{})l={name=f,status=g,type=h,private=i,
-preregistered=false,bindableEvent=j,file=m.Event,fileEvent=m,user={Value=nil,OnChange=setmetatable(k,{__newindex=
-function()return nil end})}}d[l.type](l)local n=af(aq.list)n[l.name]=l aq:update('list',n)else l=as[f]l.type=h l.
-preregistered=false l.status=g l.private=i d[l.type](l)as[l.name]=nil end return l end function ap.find(f)for g,h in c
-do if h.uid==f then return h,g end end return false end function ap.create(f,g,h,i)h=h or false if g=='original'and h
-then return end local j={}j.name=f j.uid=g or ao(5)j.flagValues={}if h then j.flagValues=i else for k,l in af(aq.list)do
-if l.private then continue end if l.type=='unknown'then continue end j.flagValues[l.name]=e[l.type](l.status)end end
-table.insert(c,j)an.writefile(`{ap.path}/{j.uid}.json`,ah:JSONEncode(j))task.spawn(function()for k,l in at do task.
-spawn(l)end end)return g end function ap.init()for f,g in an.listfiles(ap.path)do local h=ah:JSONDecode(an.readfile(g))
-ap.create(h.name,h.uid,true,h.flagValues)end end function load(f)for g,h in f.flagValues do local i=af(aq.list)[g]if not
-i then continue end i.fileEvent:Fire(h)end end function ap.set(f)local g=ap.find(f)if not g then return end ap.
-currentConfig=g load(g)task.spawn(function()for h,i in at do task.spawn(i,f)end end)end function ap.save(f)local g=ap.
-find(f)for h,i in af(aq.list)do if i.private then continue end if i.type=='unknown'then continue end g.flagValues[i.name
-]=e[i.type](i.status)end an.writefile(`{ap.path}/{g.uid}.json`,ah:JSONEncode(g))end function ap.delete(f)local g,h=ap.
-find(f)if g then if an.isfile(`{ap.path}/{g.uid}.json`)then an.delfile(`{ap.path}/{g.uid}.json`)table.remove(c,h)end end
-end function ap.export()return ah:JSONEncode(ap.currentConfig)end function ap.getConfigs()return c end function ap.
-getConfig()return ap.currentConfig end function ap.onCreate(f)table.insert(at,f)end function ap.onSelect(f)table.insert(
-b,f)end return ap end)()end,function()local aa,ab,ac=a(5)local ad return(function(...)return{lock=
+getthreadidentity()af.setthreadidentity(5)end ag=game:GetObjects'rbxassetid://110500042647914'[1]ag.Parent=ab af.
+setthreadidentity(ah)return setmetatable({},{__index=function(ai,aj)if ab:FindFirstChild(aj)then return ac(ab[aj])else
+error('no bundle: '..aj)end end})end)()end,function()local aa,ab,ac=a(3)local ad return(function(...)local ae,af=ac(ab.
+Parent.Parent.utilities.randomString),ac(ab.Parent)local ag=af.Fusion local ah,ai,aj=ag.Value,{},{}type uid=string type
+tag=string function aj.update(ak:string,al:string,am:string)if al~='uid'and aj.find(ak)and aj.find(ak)[al]then local an=
+aj.find(ak)an[al]:set(am)elseif not aj.find(ak)then error("couldn't find uid: "..ak)elseif al=='uid'or al=='__tag'then
+error('cannot edit property '..al)elseif not aj.find(ak)[al]then else error'how?'end end function aj.find(ak:uid|tag):
+table local al for am=1,#ai do if ai[am].uid==ak or ai[am].__tag==ak then al=ai[am]end end if not al then warn(
+'no data found by identifier: '..tostring(ak))return al end return al end function aj.delete(ak:string)local al=aj.find(
+ak)local am,an=table.find(ai,al),{}for ao=1,#ai do if ao~=am then table.insert(an,ai[ao])end end ai=an an=nil end
+function aj.add(ak:table,al:string,am:boolean):table am=am or false if not am then for an,ao in ak do ak[an]=ah(ao)end
+end ak.__tag=al or nil ak.uid=ae(16)setmetatable(ak,{__index={update=function(an,ao,ap)aj.update(an.uid,ao,ap)end,delete
+=function()aj.delete(ak.uid)end}})table.insert(ai,ak)return aj.find(ak.uid)end return aj end)()end,function()local aa,ab
+,ac=a(4)local ad return(function(...)local ae,af,ag=ac(ab.Parent).data,ac(ab.Parent.Parent.utilities).get,ac(ab.Parent).
+services local ah,ai=ag.HttpService,ac(ab.Parent).Fusion local aj,ak,al=ai.Observer,ai.Value,ac(ab.Parent.Parent.
+utilities)local am,an,ao,ap,aq,ar,as,at,b,c=al.connections,al.customFunctions,al.randomString,{},ae.add({list={}},
+'flags'),{},{},{},{},{}ap.currentConfig={}ap.path=''local d,e={toggle=function(d)local e=d.status.boolean am.add(aj(e):
+onChange(function()local f=af(e)d.user.Value=f d.bindableEvent:Fire(f)end))end,dropdown=function(d)local e=d.status.
+multiselect and d.status.items or d.status.item am.add(aj(e):onChange(function()local f=af(e)d.user.Value=f d.
+bindableEvent:Fire(f)end))end,keybind=function(d)local e=d.status.mobile and d.status.coordinate or d.status.keycode am.
+add(aj(e):onChange(function()local f=af(e)d.user.Value=f d.bindableEvent:Fire(f)end))end,slider=function(d)local e=d.
+status.percentageOf am.add(aj(e):onChange(function()local f=af(e)d.user.Value=f d.bindableEvent:Fire(f)end))end,textbox=
+function(d)local e=d.status.correctText am.add(aj(e):onChange(function()local f=af(e)d.user.Value=f d.bindableEvent:
+Fire(f)end))end,colorpicker=function(d)local e,f=d.status.color,d.status.transparency am.add(aj(e):onChange(function()d.
+user.Value={af(e),af(f)}d.bindableEvent:Fire(unpack(d.user.Value))end))am.add(aj(f):onChange(function()d.user.Value={af(
+e),af(f)}d.bindableEvent:Fire(unpack(d.user.Value))end))end},{toggle=function(d)local e={}if d.boolean then e.boolean=
+af(d.boolean)end if d.keycode then e.keycode=af(d.keycode)end if af(d.coordinate)then e.coordinate={X=af(d.coordinate).X
+,Y=af(d.coordinate).Y}end return e end,dropdown=function(d)return d.multiselect and{unpack(af(d.items))}or af(d.item)end
+,keybind=function(d)local e={}if d.keycode then e.keycode=af(d.keycode)end if af(d.coordinate)then e.coordinate={X=af(d.
+coordinate).X,Y=af(d.coordinate).Y}end return e end,slider=function(d)return af(d.percentageOf)end,textbox=function(d)
+return af(d.correctText)end,colorpicker=function(d)return{color=af(d.color):ToHex(),transparency=af(d.transparency)}end}
+function ap.preregister(f)local g,h=ai.New'BindableEvent'{},{}function h.Connect(i,j)assert(typeof(j)=='function',
+'Connect only takes functions')am.add(g.Event:Connect(j))end local i i={name=f,status={},type='unknown',preregistered=
+true,bindableEvent=g,file=ak{},user={Value=nil,OnChange=setmetatable(h,{__newindex=function(j,k,l)return nil end})}}as[f
+]=i local j=af(aq.list)j[i.name]=i aq:update('list',j)return i end function ap.register(f,g,h,i)assert(not table.find(ar
+,f),'Flags must all be unique!')table.insert(ar,f)local j,k=ai.New'BindableEvent'{},{}function k.Connect(l,m)assert(
+typeof(m)=='function','Connect')am.add(j.Event:Connect(m))end local l if not as[f]then local m=(ai.New'BindableEvent'{})
+l={name=f,status=g,type=h,private=i,preregistered=false,bindableEvent=j,file=m.Event,fileEvent=m,user={Value=nil,
+OnChange=setmetatable(k,{__newindex=function()return nil end})}}d[l.type](l)local n=af(aq.list)n[l.name]=l aq:update(
+'list',n)else l=as[f]l.type=h l.preregistered=false l.status=g l.private=i d[l.type](l)as[l.name]=nil end return l end
+function ap.find(f)for g,h in c do if h.uid==f then return h,g end end return false end function ap.create(f,g,h,i)h=h
+or false if g=='original'and h then return end local j={}j.name=f j.uid=g or ao(5)j.flagValues={}if h then j.flagValues=
+i else for k,l in af(aq.list)do if l.private then continue end if l.type=='unknown'then continue end j.flagValues[l.name
+]=e[l.type](l.status)end end table.insert(c,j)an.writefile(`{ap.path}/{j.uid}.json`,ah:JSONEncode(j))task.spawn(function
+()for k,l in at do task.spawn(l)end end)return g end function ap.init()for f,g in an.listfiles(ap.path)do local h=ah:
+JSONDecode(an.readfile(g))ap.create(h.name,h.uid,true,h.flagValues)end end function load(f)for g,h in f.flagValues do
+local i=af(aq.list)[g]if not i then continue end i.fileEvent:Fire(h)end end function ap.set(f)local g=ap.find(f)if not g
+then return end ap.currentConfig=g load(g)task.spawn(function()for h,i in at do task.spawn(i,f)end end)end function ap.
+save(f)local g=ap.find(f)for h,i in af(aq.list)do if i.private then continue end if i.type=='unknown'then continue end g
+.flagValues[i.name]=e[i.type](i.status)end an.writefile(`{ap.path}/{g.uid}.json`,ah:JSONEncode(g))end function ap.delete
+(f)local g,h=ap.find(f)if g then if an.isfile(`{ap.path}/{g.uid}.json`)then an.delfile(`{ap.path}/{g.uid}.json`)table.
+remove(c,h)end end end function ap.export()return ah:JSONEncode(ap.currentConfig)end function ap.getConfigs()return c
+end function ap.getConfig()return ap.currentConfig end function ap.onCreate(f)table.insert(at,f)end function ap.onSelect
+(f)table.insert(b,f)end return ap end)()end,function()local aa,ab,ac=a(5)local ad return(function(...)return{lock=
 'rbxassetid://10723434711',maximize='rbxassetid://15556636376',minimize='rbxassetid://15556637715',close=
 'rbxassetid://10747384394',circle='rbxassetid://18804307590',normalDropdown='rbxassetid://10723433811',multiDropdown=
 'rbxassetid://10734884548',fingerprint='rbxassetid://10723375250',check='rbxassetid://10709790644',command=
@@ -1070,27 +1069,27 @@ ad return(function(...)local ae=ac(ab.Parent.Parent.Bundles.Fusion)local af=ae.C
 Tween(af(ag),ah)end end)()end,[47]=function()local aa,ab,ac=a(47)local ad return(function(...)return function(ae:table,
 af:table,ag:table?):any ag=ag or{}local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))and
 not table.find(ag,aj)then ah=false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah
-,ai end end)()end},{{1,2,{'Darius'},{{30,2,{'simpleElements'},{{34,2,{'UIPadding'}},{31,2,{'UIAspectRatioConstraint'}},{
-32,2,{'UICorner'}},{33,2,{'UIListLayout'}},{35,2,{'UITextSizeConstraint'}}}},{28,1,{'layouts'},{{29,2,{'main'}}}},{36,2,
-{'utilities'},{{40,2,{'customFunctions'}},{37,2,{'animate'}},{43,2,{'getStringBounds'}},{44,2,{'randomString'}},{38,2,{
-'connections'}},{47,2,{'typecheck'}},{42,2,{'get'}},{46,2,{'tween'}},{45,2,{'references'}},{41,2,{'drag'}},{39,2,{
-'customFont'}}}},{2,2,{'Bundles'},{{4,2,{'flags'}},{8,2,{'themeSystem'},{{9,2,{'default'}}}},{3,2,{'data'}},{7,2,{
-'services'}},{6,2,{'lucide'}},{5,2,{'icons'}}}},{10,1,{'components'},{{23,2,{'tabButton'}},{18,2,{'label'}},{12,2,{
-'buttonGroup'}},{21,2,{'paragraph'}},{27,2,{'warn'}},{16,2,{'keybind'}},{24,2,{'tabFrame'}},{25,2,{'textbox'}},{11,2,{
-'button'}},{17,2,{'keybindList'}},{14,2,{'divider'}},{13,2,{'colorpicker'}},{26,2,{'toggle'}},{22,2,{'slider'}},{20,2,{
-'notification'}},{19,2,{'module'}},{15,2,{'dropdown'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,
-table,unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay,az,aA=aj.insert,aj.
-remove,aj.freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)=='Lune'then local
-aB,aC=ap(ao,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,aG,aH,aI,aJ,aK=aB or
-function(aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},
-{},{},{},{},{}local aL,aM={GetFullName={{},function(aL)local aM,b=aL.Name,aL.Parent while b do aM=b.Name..'.'..aM b=b.
-Parent end return aM end},GetChildren={{},function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)end return aM end},
-GetDescendants={{},function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)for c,d in ai,b:GetDescendants()do au(aM,d)end
-end return aM end},FindFirstChild={{'string','boolean?'},function(aL,aM,b)local c=aK[aL]for d in ai,c do if d.Name==aM
-then return d end end if b then for e in ai,c do return e:FindFirstChild(aM,true)end end end},FindFirstAncestor={{
-'string'},function(aL,aM)local b=aL.Parent while b do if b.Name==aM then return b end b=b.Parent end end},WaitForChild={
-{'string','number?'},function(aL,aM)return aL:FindFirstChild(aM)end}},{}for b,c in ai,aL do local d,e,f=c[1],c[2],{}for
-g,h in ai,d do local i,j=az(h,'^([^%?]+)(%??)')f[g]={i,j}end aM[b]=function(i,...)if not aK[i]then ah(
+,ai end end)()end},{{1,2,{'Darius'},{{2,2,{'Bundles'},{{5,2,{'icons'}},{8,2,{'themeSystem'},{{9,2,{'default'}}}},{7,2,{
+'services'}},{3,2,{'data'}},{6,2,{'lucide'}},{4,2,{'flags'}}}},{36,2,{'utilities'},{{42,2,{'get'}},{38,2,{'connections'}
+},{47,2,{'typecheck'}},{37,2,{'animate'}},{44,2,{'randomString'}},{45,2,{'references'}},{41,2,{'drag'}},{39,2,{
+'customFont'}},{43,2,{'getStringBounds'}},{46,2,{'tween'}},{40,2,{'customFunctions'}}}},{30,2,{'simpleElements'},{{31,2,
+{'UIAspectRatioConstraint'}},{34,2,{'UIPadding'}},{35,2,{'UITextSizeConstraint'}},{33,2,{'UIListLayout'}},{32,2,{
+'UICorner'}}}},{10,1,{'components'},{{22,2,{'slider'}},{23,2,{'tabButton'}},{17,2,{'keybindList'}},{20,2,{'notification'
+}},{14,2,{'divider'}},{18,2,{'label'}},{27,2,{'warn'}},{26,2,{'toggle'}},{13,2,{'colorpicker'}},{11,2,{'button'}},{19,2,
+{'module'}},{24,2,{'tabFrame'}},{15,2,{'dropdown'}},{21,2,{'paragraph'}},{25,2,{'textbox'}},{12,2,{'buttonGroup'}},{16,2
+,{'keybind'}}}},{28,1,{'layouts'},{{29,2,{'main'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,
+unpack,coroutine,script,type,require,pcall,tostring,tonumber,_VERSION local au,av,aw,ax,ay,az,aA=aj.insert,aj.remove,aj.
+freeze or function(au)return au end,al.wrap,ae.sub,ae.match,ae.gmatch if as and ay(as,1,4)=='Lune'then local aB,aC=ap(ao
+,'@lune/task')if aB and aC then af=aC end end local aB=af and af.defer local aC,aD,aE,aF,aG,aH,aI,aJ,aK=aB or function(
+aC,...)ax(aC)(...)end,{[1]='Folder',[2]='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},
+{},{}local aL,aM={GetFullName={{},function(aL)local aM,b=aL.Name,aL.Parent while b do aM=b.Name..'.'..aM b=b.Parent end
+return aM end},GetChildren={{},function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)end return aM end},GetDescendants={{}
+,function(aL)local aM={}for b in ai,aK[aL]do au(aM,b)for c,d in ai,b:GetDescendants()do au(aM,d)end end return aM end},
+FindFirstChild={{'string','boolean?'},function(aL,aM,b)local c=aK[aL]for d in ai,c do if d.Name==aM then return d end
+end if b then for e in ai,c do return e:FindFirstChild(aM,true)end end end},FindFirstAncestor={{'string'},function(aL,aM
+)local b=aL.Parent while b do if b.Name==aM then return b end b=b.Parent end end},WaitForChild={{'string','number?'},
+function(aL,aM)return aL:FindFirstChild(aM)end}},{}for b,c in ai,aL do local d,e,f=c[1],c[2],{}for g,h in ai,d do local
+i,j=az(h,'^([^%?]+)(%??)')f[g]={i,j}end aM[b]=function(i,...)if not aK[i]then ah(
 "Expected ':' not '.' calling member function "..b,2)end local j={...}for k,o in ai,f do local p=j[k]local q,r,s=an(p),o
 [1],o[2]if p==nil and not s then ah('Argument '..p..' missing or nil',3)end if r~='any'and q~=r and not(q=='nil'and s)
 then ah('Argument '..k..' expects type "'..r..'", got "'..q..'"',2)end end return e(i,...)end end local function d(e,f,g

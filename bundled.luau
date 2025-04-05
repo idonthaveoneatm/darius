@@ -818,14 +818,12 @@ if customFunctions.getthreadidentity() < 5 then
     oldidentity = customFunctions.getthreadidentity()
     customFunctions.setthreadidentity(5)
 end
-fusion = require(game:GetObjects("rbxassetid://110500042647914")[1])
+fusion = game:GetObjects("rbxassetid://110500042647914")[1]
+fusion.Parent = script
 customFunctions.setthreadidentity(oldidentity)
 
 return setmetatable({},{
     __index = function(self, key)
-        if key == "Fusion" then
-            return fusion
-        end
         if script:FindFirstChild(key) then
             return require(script[key])
         else
@@ -7708,27 +7706,6 @@ local ObjectTree = {
                 },
                 {
                     {
-                        41,
-                        2,
-                        {
-                            "drag"
-                        }
-                    },
-                    {
-                        40,
-                        2,
-                        {
-                            "customFunctions"
-                        }
-                    },
-                    {
-                        39,
-                        2,
-                        {
-                            "customFont"
-                        }
-                    },
-                    {
                         45,
                         2,
                         {
@@ -7743,20 +7720,6 @@ local ObjectTree = {
                         }
                     },
                     {
-                        47,
-                        2,
-                        {
-                            "typecheck"
-                        }
-                    },
-                    {
-                        38,
-                        2,
-                        {
-                            "connections"
-                        }
-                    },
-                    {
                         44,
                         2,
                         {
@@ -7764,10 +7727,10 @@ local ObjectTree = {
                         }
                     },
                     {
-                        43,
+                        41,
                         2,
                         {
-                            "getStringBounds"
+                            "drag"
                         }
                     },
                     {
@@ -7778,198 +7741,45 @@ local ObjectTree = {
                         }
                     },
                     {
+                        43,
+                        2,
+                        {
+                            "getStringBounds"
+                        }
+                    },
+                    {
+                        40,
+                        2,
+                        {
+                            "customFunctions"
+                        }
+                    },
+                    {
                         42,
                         2,
                         {
                             "get"
                         }
-                    }
-                }
-            },
-            {
-                10,
-                1,
-                {
-                    "components"
-                },
-                {
+                    },
                     {
-                        15,
+                        38,
                         2,
                         {
-                            "dropdown"
+                            "connections"
                         }
                     },
                     {
-                        14,
+                        39,
                         2,
                         {
-                            "divider"
+                            "customFont"
                         }
                     },
                     {
-                        12,
+                        47,
                         2,
                         {
-                            "buttonGroup"
-                        }
-                    },
-                    {
-                        11,
-                        2,
-                        {
-                            "button"
-                        }
-                    },
-                    {
-                        24,
-                        2,
-                        {
-                            "tabFrame"
-                        }
-                    },
-                    {
-                        13,
-                        2,
-                        {
-                            "colorpicker"
-                        }
-                    },
-                    {
-                        18,
-                        2,
-                        {
-                            "label"
-                        }
-                    },
-                    {
-                        19,
-                        2,
-                        {
-                            "module"
-                        }
-                    },
-                    {
-                        21,
-                        2,
-                        {
-                            "paragraph"
-                        }
-                    },
-                    {
-                        16,
-                        2,
-                        {
-                            "keybind"
-                        }
-                    },
-                    {
-                        20,
-                        2,
-                        {
-                            "notification"
-                        }
-                    },
-                    {
-                        27,
-                        2,
-                        {
-                            "warn"
-                        }
-                    },
-                    {
-                        17,
-                        2,
-                        {
-                            "keybindList"
-                        }
-                    },
-                    {
-                        22,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        26,
-                        2,
-                        {
-                            "toggle"
-                        }
-                    },
-                    {
-                        25,
-                        2,
-                        {
-                            "textbox"
-                        }
-                    },
-                    {
-                        23,
-                        2,
-                        {
-                            "tabButton"
-                        }
-                    }
-                }
-            },
-            {
-                2,
-                2,
-                {
-                    "Bundles"
-                },
-                {
-                    {
-                        8,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                9,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        5,
-                        2,
-                        {
-                            "icons"
-                        }
-                    },
-                    {
-                        7,
-                        2,
-                        {
-                            "services"
-                        }
-                    },
-                    {
-                        6,
-                        2,
-                        {
-                            "lucide"
-                        }
-                    },
-                    {
-                        4,
-                        2,
-                        {
-                            "flags"
-                        }
-                    },
-                    {
-                        3,
-                        2,
-                        {
-                            "data"
+                            "typecheck"
                         }
                     }
                 }
@@ -7998,24 +7808,17 @@ local ObjectTree = {
                 },
                 {
                     {
-                        31,
-                        2,
-                        {
-                            "UIAspectRatioConstraint"
-                        }
-                    },
-                    {
-                        33,
-                        2,
-                        {
-                            "UIListLayout"
-                        }
-                    },
-                    {
                         35,
                         2,
                         {
                             "UITextSizeConstraint"
+                        }
+                    },
+                    {
+                        31,
+                        2,
+                        {
+                            "UIAspectRatioConstraint"
                         }
                     },
                     {
@@ -8031,6 +7834,201 @@ local ObjectTree = {
                         {
                             "UICorner"
                         }
+                    },
+                    {
+                        33,
+                        2,
+                        {
+                            "UIListLayout"
+                        }
+                    }
+                }
+            },
+            {
+                2,
+                2,
+                {
+                    "Bundles"
+                },
+                {
+                    {
+                        6,
+                        2,
+                        {
+                            "lucide"
+                        }
+                    },
+                    {
+                        5,
+                        2,
+                        {
+                            "icons"
+                        }
+                    },
+                    {
+                        8,
+                        2,
+                        {
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                9,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        3,
+                        2,
+                        {
+                            "data"
+                        }
+                    },
+                    {
+                        4,
+                        2,
+                        {
+                            "flags"
+                        }
+                    },
+                    {
+                        7,
+                        2,
+                        {
+                            "services"
+                        }
+                    }
+                }
+            },
+            {
+                10,
+                1,
+                {
+                    "components"
+                },
+                {
+                    {
+                        13,
+                        2,
+                        {
+                            "colorpicker"
+                        }
+                    },
+                    {
+                        25,
+                        2,
+                        {
+                            "textbox"
+                        }
+                    },
+                    {
+                        18,
+                        2,
+                        {
+                            "label"
+                        }
+                    },
+                    {
+                        15,
+                        2,
+                        {
+                            "dropdown"
+                        }
+                    },
+                    {
+                        27,
+                        2,
+                        {
+                            "warn"
+                        }
+                    },
+                    {
+                        11,
+                        2,
+                        {
+                            "button"
+                        }
+                    },
+                    {
+                        14,
+                        2,
+                        {
+                            "divider"
+                        }
+                    },
+                    {
+                        20,
+                        2,
+                        {
+                            "notification"
+                        }
+                    },
+                    {
+                        24,
+                        2,
+                        {
+                            "tabFrame"
+                        }
+                    },
+                    {
+                        21,
+                        2,
+                        {
+                            "paragraph"
+                        }
+                    },
+                    {
+                        23,
+                        2,
+                        {
+                            "tabButton"
+                        }
+                    },
+                    {
+                        22,
+                        2,
+                        {
+                            "slider"
+                        }
+                    },
+                    {
+                        19,
+                        2,
+                        {
+                            "module"
+                        }
+                    },
+                    {
+                        12,
+                        2,
+                        {
+                            "buttonGroup"
+                        }
+                    },
+                    {
+                        26,
+                        2,
+                        {
+                            "toggle"
+                        }
+                    },
+                    {
+                        16,
+                        2,
+                        {
+                            "keybind"
+                        }
+                    },
+                    {
+                        17,
+                        2,
+                        {
+                            "keybindList"
+                        }
                     }
                 }
             }
@@ -8042,49 +8040,49 @@ local ObjectTree = {
 local LineOffsets = {
     8,
     812,
-    837,
-    912,
-    1220,
-    1239,
-    1252,
-    1264,
-    1503,
-    [11] = 1531,
-    [12] = 1731,
-    [13] = 1984,
-    [14] = 2838,
-    [15] = 2889,
-    [16] = 3588,
-    [17] = 4046,
-    [18] = 4257,
-    [19] = 4370,
-    [20] = 4540,
-    [21] = 4809,
-    [22] = 4975,
-    [23] = 5416,
-    [24] = 5534,
-    [25] = 5573,
-    [26] = 6038,
-    [27] = 6576,
-    [29] = 6601,
-    [30] = 7209,
-    [31] = 7219,
-    [32] = 7231,
-    [33] = 7240,
-    [34] = 7252,
-    [35] = 7287,
-    [36] = 7296,
-    [37] = 7306,
-    [38] = 7313,
-    [39] = 7334,
-    [40] = 7350,
-    [41] = 7545,
-    [42] = 7594,
-    [43] = 7601,
-    [44] = 7612,
-    [45] = 7622,
-    [46] = 7672,
-    [47] = 7679
+    835,
+    910,
+    1218,
+    1237,
+    1250,
+    1262,
+    1501,
+    [11] = 1529,
+    [12] = 1729,
+    [13] = 1982,
+    [14] = 2836,
+    [15] = 2887,
+    [16] = 3586,
+    [17] = 4044,
+    [18] = 4255,
+    [19] = 4368,
+    [20] = 4538,
+    [21] = 4807,
+    [22] = 4973,
+    [23] = 5414,
+    [24] = 5532,
+    [25] = 5571,
+    [26] = 6036,
+    [27] = 6574,
+    [29] = 6599,
+    [30] = 7207,
+    [31] = 7217,
+    [32] = 7229,
+    [33] = 7238,
+    [34] = 7250,
+    [35] = 7285,
+    [36] = 7294,
+    [37] = 7304,
+    [38] = 7311,
+    [39] = 7332,
+    [40] = 7348,
+    [41] = 7543,
+    [42] = 7592,
+    [43] = 7599,
+    [44] = 7610,
+    [45] = 7620,
+    [46] = 7670,
+    [47] = 7677
 }
 
 -- Misc AOT variable imports
