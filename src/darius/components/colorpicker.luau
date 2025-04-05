@@ -801,6 +801,21 @@ return function(property)
 			saturationAmount:set(({get(color):ToHSV()})[2])
 			valueAmount:set(({get(color):ToHSV()})[3])
 		end)
+		if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
+			if _flag.preregisteredValue.color and typeof(_flag.preregisteredValue.color) == "string" then
+				local s,result = pcall(function()
+					return Color3.fromHex(_flag.preregisteredValue.color)
+				end)
+				if s then
+					color:set(result)
+				end
+			end
+			if not get(hideTransparency) then
+				if _flag.preregisteredValue.transparency and typeof(_flag.preregisteredValue.transparency) == "number" then
+					transparency:set(_flag.preregisteredValue.transparency)
+				end
+			end
+		end
 		if _flag.private then
 			color:set(get(_color))
 			transparency:set(get(_transparency))

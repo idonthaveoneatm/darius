@@ -41,9 +41,23 @@ return function(target)
             HideBind = Enum.KeyCode.T,
             UseConfig = true,
             Workspace = "testing",
-            IsMobile = true,
+            IsMobile = false,
             noOffset = true,
-            Parent = target
+            Parent = target,
+            Configuration = {
+                Name = "Configuration",
+                FlagValues = {
+                    textbox = "hey",
+                    textbox_n = "123",
+                    toggle = {boolean = true},
+                    toggle_lk = {boolean = true, keycode = "Q", coordinate = {X = 50, Y = 50}},
+                    dropdown = "D",
+                    dropdown_m = {"A","B","C","NOT HERE"},
+                    slider = 110,
+                    keybind = {keycode = "H"},
+                    colorpicker = {color = "#a49ae6", transparency = 0.5}
+                }
+            }
         })
 
         local tab = window:Tab({
@@ -161,6 +175,7 @@ return function(target)
         tab:ColorPicker({
             Name = "Color Picker",
             FLAG = "colorpicker",
+            HideTransparency = true,
             Callback = function(c, t)
                 print(`colorpicker: {c} : {t}`)
             end

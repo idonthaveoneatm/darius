@@ -35,10 +35,18 @@ local window = darius:Window({
     HideBind = Enum.KeyCode.T,
     UseConfig = true,
     Workspace = "example",
-    Theme = {
-        Name = "Theme",
-        Colors = {
-            background = Color3.fromHex("#a49ae6")
+    Configuration = {
+        Name = "custom configuration",
+        FlagValues = {
+            textbox = "hey",
+            textbox_n = "123",
+            toggle = {boolean = true},
+            toggle_lk = {boolean = true, keycode = "Q", coordinate = {X = 50, Y = 50}},
+            dropdown = "D",
+            dropdown_m = {"A","B","C","NOT HERE"},
+            slider = 110,
+            keybind = {keycode = "H"},
+            colorpicker = {color = "#a49ae6", transparency = 0.5}
         }
     },
     IsMobile = false

@@ -18,6 +18,7 @@ local preregistered = {}
 local functionsOnCreate = {}
 local functionsOnSelect = {}
 local configs = {}
+local potentialFromFiles = {}
 funcs.currentConfig = {}
 funcs.path = ""
 
@@ -113,13 +114,14 @@ local cleaner = {
     end
 }
 
-function funcs.preregister(name)
+function funcs.preregister(name, preregisteredValue)
     local flagEvent = fusion.New "BindableEvent" {}
     local onChange = {}
     function onChange:Connect(func)
         assert(typeof(func) == "function", "Connect only takes functions")
         connections.add(flagEvent.Event:Connect(func))
     end
+    local fileChange = (fusion.New "BindableEvent" {})
     local _flag
     _flag = {
         name = name,
@@ -127,7 +129,9 @@ function funcs.preregister(name)
         type = "unknown",
         preregistered = true,
         bindableEvent = flagEvent,
-        file = value({}),
+        file = fileChange.Event,
+        fileEvent = fileChange,
+        preregisteredValue = preregisteredValue,
         user = {
             Value = nil,
             OnChange = setmetatable(onChange,{
@@ -183,7 +187,6 @@ function funcs.register(name, default, type, private)
     else
         _flag = preregistered[name]
         _flag.type = type
-        _flag.preregistered = false
         _flag.status = default
         _flag.private = private
         types[_flag.type](_flag)
@@ -201,16 +204,31 @@ function funcs.find(uid)
     return false
 end
 
-function funcs.create(name, uid, fromFile, tbl)
+function funcs.create(name, uid, fromFile, tbl, fromSet)
     fromFile = fromFile or false
+    fromSet = fromSet or false
     if uid == "original" and fromFile then
         return
     end
+    if fromSet and fromFile then
+        table.insert(potentialFromFiles, uid)
+    end
+    if fromSet and not fromFile then
+        for _,v in potentialFromFiles do
+            local config = funcs.find(v)
+            if config and config.name == name then
+                return v
+            end
+        end
+    end
+
+    uid = uid or randomString(5)
     local config = {}
     config.name = name
-    config.uid = uid or randomString(5)
+    config.fromSet = fromSet
+    config.uid = uid
     config.flagValues = {}
-    if fromFile then
+    if tbl ~= nil then
         config.flagValues = tbl
     else
         for _,flag in get(flags.list) do
@@ -236,7 +254,7 @@ end
 function funcs.init()
     for _,file in customFunctions.listfiles(funcs.path) do
         local config = HttpService:JSONDecode(customFunctions.readfile(file))
-        funcs.create(config.name, config.uid, true, config.flagValues)
+        funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet)
     end
 end
 

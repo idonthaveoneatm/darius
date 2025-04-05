@@ -146,6 +146,15 @@ return function(property)
 	local selectedAnimation = animate(function()
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
+	local function checkIfExists(item)
+		for _,eItem in get(items) do
+			local _value = typeof(eItem) == "table" and eItem.Value or eItem
+			if _value == item then
+				return true
+			end
+		end
+		return false
+	end
 
 	-- Dropdown
 
@@ -564,6 +573,23 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.preregistered and _flag.preregisteredValue then
+			if get(multiselect) then
+				if typeof(_flag.preregisteredValue) == "table" then
+					local cleansed = {}
+					for _,v in _flag.preregisteredValue do
+						if checkIfExists(v) then
+							table.insert(cleansed, v)
+						end
+					end
+					_items:set(cleansed)
+				end
+			else
+				if typeof(_flag.preregisteredValue) == "string" and checkIfExists(_flag.preregisteredValue) then
+					_item:set(_flag.preregisteredValue)
+				end
+			end
+		end
 		if _flag.private then
 			if get(multiselect) then
 				if default and #get(default) > 0 then

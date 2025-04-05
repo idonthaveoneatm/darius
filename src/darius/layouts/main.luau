@@ -583,22 +583,24 @@ return function(property, bindableEvent)
 	connections.add(references.get("container"):GetPropertyChangedSignal("Position"):Connect(function()
 		local _container = references.get("container")
 		local centerPosition = _container.AbsolutePosition + Vector2.new(get(x)/2,get(y)/2)
-		if (centerPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) > (get(isCollapsed) and 0.3 or 0.435) then
+		local screenSize = inst.screenSize.AbsoluteSize
+		local xCap = screenSize.X + (get(isCollapsed) and get(x)/4 or (get(x)/6)*2.5)
+		local yCap = screenSize.Y + (get(isCollapsed) and get(y)/8 or (get(y)/6)*2.3)
+		local hasProblem = false
+		local _type = ""
+		if centerPosition.X > xCap or  screenSize.X - centerPosition.X > xCap then
+			hasProblem = true
+			_type = "x"
+		end
+		if centerPosition.Y > yCap or screenSize.Y - centerPosition.Y > yCap then
+			hasProblem = true
+			_type = "y"
+		end
+		if hasProblem and _type == "x" then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
 			_currentDrag = drag(references.get("container"), 15)
-		end
-		if  -((centerPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) + 1) > (get(isCollapsed) and 3.9 or 0.8) then
-			_currentDrag:Disconnect()
-			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
-			_currentDrag = drag(references.get("container"), 15)
-		end
-		if (centerPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) > (get(isCollapsed) and 0.2 or 0.32) then
-			_currentDrag:Disconnect()
-			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
-			_currentDrag = drag(references.get("container"), 15)
-		end
-		if -((centerPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) + 1) > (get(isCollapsed) and 8 or 0.935) then
+		elseif hasProblem and _type == "y" then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
 			_currentDrag = drag(references.get("container"), 15)

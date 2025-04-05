@@ -117,6 +117,11 @@ return function(property)
 	local percentage = value(0)
 
 	observe(_flag.status.percentageOf):onChange(function()
+		local _percentageOf = get(_flag.status.percentageOf)
+		if _percentageOf > get(max) or _percentageOf < get(min) then
+			_flag.status.percentageOf:set(math.clamp(_percentageOf, get(min), get(max)))
+			return
+		end
 		percentage:set(mapValue(get(_flag.status.percentageOf), get(min), get(max), 0, 1))
 		if not get(isEnabled) then
 			return
@@ -404,6 +409,9 @@ return function(property)
 				_flag.status.percentageOf:set(get(default))
 			end
 		end)
+		if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "number" then
+			_flag.status.percentageOf:set(_flag.preregisteredValue)
+		end
 		if _flag.private then
 			_flag.status.percentageOf:set(get(default))
 		end

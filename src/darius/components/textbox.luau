@@ -416,6 +416,18 @@ return function(property)
 				end
 			end
 		end)
+		if _flag.preregistered and _flag.preregisteredValue then
+			didPass, failedItems = typecheck({FlagValue = _flag.preregisteredValue},{FlagValue = ""})
+			if didPass then
+				if get(onLeave) then
+					focused:set(true)
+				end
+				correctText:set(_flag.preregisteredValue)
+				if get(onLeave) then
+					focused:set(false)
+				end
+			end
+		end
 		if _flag.private then
 			if get(onLeave) then
 				focused:set(true)

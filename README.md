@@ -71,6 +71,20 @@ local window = darius:Window({
 
             red = Color3.fromHex("#B7A6D4"),
             orange = Color3.fromHex("#B7A6D4")
+    },
+    Configuration = { -- Information about formatting in Configurations
+        Name = "custom configuration",
+        FlagValues = {
+            textbox = "hey",
+            textbox_n = "123",
+            toggle = {boolean = true},
+            toggle_lk = {boolean = true, keycode = "Q", coordinate = {X = 50, Y = 50}},
+            dropdown = "D",
+            dropdown_m = {"A","B","C","NOT HERE"},
+            slider = 110,
+            keybind = {keycode = "H"},
+            colorpicker = {color = "#a49ae6", transparency = 0.5}
+        }
     }
 })
 ```
@@ -147,6 +161,7 @@ darius:ImportConfiguration("New Configuration", {
 })--> "Bp5bD"
 ```
 #### List of flag value formats
+This is what you can use when creating the `Configuration` in the `:Window` function.
 - `:Toggle` = `{boolean = <boolean>, keycode = <string>, coordinate = {X = <number>, Y = <number>}}`
     - The `keycode` is the .Name of a Enum.KeyCode
 - `:TextBox` = `<string>`

@@ -53,6 +53,7 @@ function darius:Window(windowProperty)
         IsMobile = false,
 		Offset = 0,
         Theme = {},
+		Configuration = {},
 		Workspace = "",
         noOffset = false,
 		Parent = Instance.new("Part")
@@ -62,18 +63,11 @@ function darius:Window(windowProperty)
 		windowProperty.IsMobile and "" or "IsMobile",
 		windowProperty.UseConfig and "" or "UseConfig",
 		windowProperty.Theme and "" or "Theme",
+		windowProperty.Configuration and "" or "Configuration",
 		windowProperty.Parent and "" or "Parent",
 		windowProperty.Offset and "" or "Offset"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
-	--[[
-	didPass, failedItems = typecheck(windowProperty,{
-		Config = "",
-	},{
-		windowProperty.UseConfig and "" or "Config"
-	})
-	assert(didPass, table.concat(failedItems, "\n"))
-	]]
 
 	-- Warn
 
@@ -142,10 +136,21 @@ function darius:Window(windowProperty)
 	-- Configs
 
 	flagCreator.init()
+	if windowProperty.Configuration then
+		didPass, failedItems = typecheck(windowProperty.Configuration, {
+			Name = "",
+			FlagValues = {}
+		})
+		assert(didPass, table.concat(failedItems, "\n"))
+		local uid = flagCreator.create(windowProperty.Configuration.Name, nil, nil, windowProperty.Configuration.FlagValues, true)
+		flagCreator.set(uid)
+		for i,v in windowProperty.Configuration.FlagValues do
+			flagCreator.preregister(i, v)
+		end
+	end
 
 	-- Flags
 
-	local config
 	if windowProperty.UseConfig then
 		useConfig:update("boolean", windowProperty.UseConfig)
 	end
@@ -248,10 +253,12 @@ function darius:Window(windowProperty)
 	function darius:Destroy()
 		darius.Destroyed = true
 		bindableEvent:Fire()
-		for _,toggle in toggles.list do
-			toggle:set(false)
-		end
-		task.wait(0.1)
+		task.spawn(function()
+			for _,toggle in toggles.list do
+				toggle:set(false)
+			end	
+		end)
+		task.wait()
 		connections:deleteConnections()
 		references:clear()
 		bindableEvent:Destroy()
@@ -624,6 +631,7 @@ function darius:Window(windowProperty)
 			local configs = _settings:Dropdown({
 				Name = "Configs",
 				Items = configNames,
+				Default = flagCreator.getConfig().uid,
 				AlwaysOpen = true,
 				Callback = function(uid)
 					selectedConfig = uid
@@ -782,15 +790,14 @@ function darius:Window(windowProperty)
 					refreshConfigList()
 				end
 			})
-			--[[
-			_settings:Button({
-				Name = "print filesystem",
-				Callback = function()
-					customFunctions.printFileSystem()
-				end
-			})
-				]]
 		end
+
+		_settings:Button({
+			Name = "print filesystem",
+			Callback = function()
+				customFunctions.printFileSystem()
+			end
+		})
 	end
 
 	if customFunctions.getgenv then
