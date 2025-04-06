@@ -142,7 +142,7 @@ function darius:Window(windowProperty)
 			FlagValues = {}
 		})
 		assert(didPass, table.concat(failedItems, "\n"))
-		local uid = flagCreator.create(windowProperty.Configuration.Name, nil, nil, windowProperty.Configuration.FlagValues, true)
+		local uid = flagCreator.create(windowProperty.Configuration.Name, nil, nil, windowProperty.Configuration.FlagValues, true, windowProperty.Configuration.Lock)
 		flagCreator.set(uid)
 		for i,v in windowProperty.Configuration.FlagValues do
 			flagCreator.preregister(i, v)
@@ -627,6 +627,7 @@ function darius:Window(windowProperty)
 				})
 			end)
 			local selectedConfig = ""
+			local _save, _delete
 
 			local configs = _settings:Dropdown({
 				Name = "Configs",
@@ -635,6 +636,14 @@ function darius:Window(windowProperty)
 				AlwaysOpen = true,
 				Callback = function(uid)
 					selectedConfig = uid
+					local config = flagCreator.find(uid)
+					if config.lock and _delete then
+						_delete:Disable()
+						_save:Disable()
+					elseif not config.lock and _delete then
+						_delete:Enable()
+						_save:Enable()
+					end
 				end
 			})
 			local configButtons = _settings:ButtonGroup()
@@ -747,8 +756,9 @@ function darius:Window(windowProperty)
 
 			-- Save
 
-			configButtons:Button({
+			_save = configButtons:Button({
 				Name = "Save",
+				DisabledText = "Disabled",
 				Callback = function()
 					if selectedConfig ~= "" then
 						flagCreator.save(selectedConfig)
@@ -773,8 +783,9 @@ function darius:Window(windowProperty)
 
 			-- Delete
 
-			configButtons:Button({
+			_delete = configButtons:Button({
 				Name = "Delete",
+				DisabledText = "Disabled",
 				Callback = function()
 					if selectedConfig == "" then
 						darius:Notify({

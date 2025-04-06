@@ -74,6 +74,7 @@ local window = darius:Window({
     },
     Configuration = { -- Information about formatting in Configurations
         Name = "custom configuration",
+        Lock = true, -- Defaults to false will make it so a user cannot overwrite this configuration
         FlagValues = {
             textbox = "hey",
             textbox_n = "123",

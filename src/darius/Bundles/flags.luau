@@ -204,9 +204,10 @@ function funcs.find(uid)
     return false
 end
 
-function funcs.create(name, uid, fromFile, tbl, fromSet)
+function funcs.create(name, uid, fromFile, tbl, fromSet, lock)
     fromFile = fromFile or false
     fromSet = fromSet or false
+    lock = lock or false
     if uid == "original" and fromFile then
         return
     end
@@ -226,6 +227,7 @@ function funcs.create(name, uid, fromFile, tbl, fromSet)
     local config = {}
     config.name = name
     config.fromSet = fromSet
+    config.lock = lock
     config.uid = uid
     config.flagValues = {}
     if tbl ~= nil then
@@ -254,7 +256,7 @@ end
 function funcs.init()
     for _,file in customFunctions.listfiles(funcs.path) do
         local config = HttpService:JSONDecode(customFunctions.readfile(file))
-        funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet)
+        funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet, config.lock)
     end
 end
 

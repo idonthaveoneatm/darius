@@ -46,6 +46,7 @@ return function(target)
             Parent = target,
             Configuration = {
                 Name = "Configuration",
+                Lock = true,
                 FlagValues = {
                     textbox = "hey",
                     textbox_n = "123",
