@@ -16,10 +16,9 @@ local fakeData = {
     }
 }
 customFunctions.makefolder("darius")
-customFunctions.makefolder("darius/testing")
-customFunctions.makefolder("darius/testing")
+--customFunctions.makefolder("darius/testing")
 customFunctions.makefolder("darius/themes")
-customFunctions.writefile("darius/testing/FIVE5.json", HttpService:JSONEncode(fakeData))
+--customFunctions.writefile("darius/testing/FIVE5.json", HttpService:JSONEncode(fakeData))
 
 local randomIcons = {}
 for _,v in lucide do

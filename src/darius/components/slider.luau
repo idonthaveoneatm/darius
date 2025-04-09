@@ -409,14 +409,14 @@ return function(property)
 				_flag.status.percentageOf:set(get(default))
 			end
 		end)
-		if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "number" then
-			_flag.status.percentageOf:set(_flag.preregisteredValue)
-		end
 		if _flag.private then
 			_flag.status.percentageOf:set(get(default))
 		end
 	else
 		_flag.status.percentageOf:set(get(default))
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "number" then
+		_flag.status.percentageOf:set(_flag.preregisteredValue)
 	end
 
 	local returnFunctions = {}

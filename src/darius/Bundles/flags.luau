@@ -20,6 +20,7 @@ local functionsOnSelect = {}
 local configs = {}
 local potentialFromFiles = {}
 funcs.currentConfig = {}
+funcs.writeFiles = false
 funcs.path = ""
 
 local types = {
@@ -244,7 +245,9 @@ function funcs.create(name, uid, fromFile, tbl, fromSet, lock)
         end
     end
     table.insert(configs, config)
-    customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+    if funcs.writeFiles then
+        customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+    end
     task.spawn(function()
         for _,v in functionsOnCreate do
             task.spawn(v)
@@ -254,9 +257,11 @@ function funcs.create(name, uid, fromFile, tbl, fromSet, lock)
 end
 
 function funcs.init()
-    for _,file in customFunctions.listfiles(funcs.path) do
-        local config = HttpService:JSONDecode(customFunctions.readfile(file))
-        funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet, config.lock)
+    if funcs.writeFiles then
+        for _,file in customFunctions.listfiles(funcs.path) do
+            local config = HttpService:JSONDecode(customFunctions.readfile(file))
+            funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet, config.lock)
+        end
     end
 end
 
@@ -295,16 +300,21 @@ function funcs.save(uid)
         end
         config.flagValues[flag.name] = cleaner[flag.type](flag.status)
     end
-    customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+    if funcs.writeFiles then
+        customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+    end
 end
 
 function funcs.delete(uid)
     local config, index = funcs.find(uid)
     if config then
-        if customFunctions.isfile(`{funcs.path}/{config.uid}.json`) then
-            customFunctions.delfile(`{funcs.path}/{config.uid}.json`)
-            table.remove(configs, index)
+        if funcs.writeFiles then
+            if customFunctions.isfile(`{funcs.path}/{config.uid}.json`) then
+                customFunctions.delfile(`{funcs.path}/{config.uid}.json`)
+                table.remove(configs, index)
+            end
         end
+        table.remove(configs, index)
     end
 end
 function funcs.export()

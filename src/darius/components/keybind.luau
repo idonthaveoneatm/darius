@@ -407,9 +407,9 @@ return function(property)
 				end
 				noKeyCode = false
 			end
-			if noKeyCode then
+			if noKeyCode and get(_flag.status.keycode) == nil then
 				if bind then
-					_flag.status.keycode:set(get(bind).Name)
+					checkKeyCode(get(bind), "NoFileFound")
 				end
 			end
 			if get(isMobile.boolean) and file.coordinate then
@@ -417,33 +417,33 @@ return function(property)
 				hasPlaced:set(true)
 			end
 		end)
-		if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
-			if not get(isMobile.boolean) then
-				if _flag.preregisteredValue.keycode and typeof(_flag.preregisteredValue.keycode) == "string" then
-					local success, result = pcall(function()
-						return Enum.KeyCode[_flag.preregisteredValue.keycode]
-					end)
-					if success then
-						checkKeyCode(result, "Configuration1")
-					end
-				end
-			else
-				if _flag.preregisteredValue.coordinate and typeof(_flag.preregisteredValue.coordinate) == "table" and _flag.preregisteredValue.coordinate.X and _flag.preregisteredValue.coordinate.Y then
-					if typeof(_flag.preregisteredValue.coordinate.X) == "number" and typeof(_flag.preregisteredValue.coordinate.Y) == "number" then
-						mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30)
-						hasPlaced:set(true)
-					end
-				end
-			end
-		end
 		if _flag.private then
 			if bind then
-				_flag.status.keycode:set(get(bind).Name)
+				checkKeyCode(get(bind), "Private")
 			end
 		end
 	else
 		if bind then
-			_flag.status.keycode:set(get(bind).Name)
+			checkKeyCode(get(bind), "IgnoreConfig/UseConfig:false")
+		end
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
+		if not get(isMobile.boolean) then
+			if _flag.preregisteredValue.keycode and typeof(_flag.preregisteredValue.keycode) == "string" then
+				local success, result = pcall(function()
+					return Enum.KeyCode[_flag.preregisteredValue.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "Configuration1")
+				end
+			end
+		else
+			if _flag.preregisteredValue.coordinate and typeof(_flag.preregisteredValue.coordinate) == "table" and _flag.preregisteredValue.coordinate.X and _flag.preregisteredValue.coordinate.Y then
+				if typeof(_flag.preregisteredValue.coordinate.X) == "number" and typeof(_flag.preregisteredValue.coordinate.Y) == "number" then
+					mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30)
+					hasPlaced:set(true)
+				end
+			end
 		end
 	end
 

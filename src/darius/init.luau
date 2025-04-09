@@ -54,7 +54,6 @@ function darius:Window(windowProperty)
 		Offset = 0,
         Theme = {},
 		Configuration = {},
-		Workspace = "",
         noOffset = false,
 		Parent = Instance.new("Part")
 	},{
@@ -68,6 +67,13 @@ function darius:Window(windowProperty)
 		windowProperty.Offset and "" or "Offset"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
+
+	if windowProperty.UseConfig then
+		didPass, failedItems = typecheck(windowProperty,{
+			Workspace = ""
+		},{})
+		assert(didPass, table.concat(failedItems, "\n"))
+	end
 
 	-- Warn
 
@@ -91,13 +97,25 @@ function darius:Window(windowProperty)
 	data.add({boolean = false}, "isListening")
 	local destroyFunc = data.add({func = function()end}, "destroyFunc")
 	local flags = data.find("flags")
-	local configLoaded = data.add({boolean = false}, "configLoaded")
 	local useConfig = data.add({boolean = false}, "useConfig")
 	local windowData = data.add({data = windowProperty})
 
 	-- Files
 
-	local path = {"darius",`/{windowProperty.Workspace}`}
+	if windowProperty.UseConfig then
+		local path = {"darius",`/{windowProperty.Workspace}`}
+		local built = ""
+		for i=1,#path do
+			built = built..path[i]
+			if not customFunctions.isfolder(built) then
+				customFunctions.makefolder(built)
+			end
+		end
+		flagCreator.writeFiles = true
+		flagCreator.path = `darius/{windowProperty.Workspace}`
+		darius.Folder = `darius/{windowProperty.Workspace}`
+	end
+	local path = {"darius",`/themes`}
 	local built = ""
 	for i=1,#path do
 		built = built..path[i]
@@ -105,18 +123,7 @@ function darius:Window(windowProperty)
 			customFunctions.makefolder(built)
 		end
 	end
-	flagCreator.path = `darius/{windowProperty.Workspace}`
-	path = {"darius",`/themes`}
-	built = ""
-	for i=1,#path do
-		built = built..path[i]
-		if not customFunctions.isfolder(built) then
-			customFunctions.makefolder(built)
-		end
-	end
 	theme.path = `darius/themes`
-
-	darius.Folder = `darius/{windowProperty.Workspace}`
 
 	-- Themes
 
@@ -614,11 +621,10 @@ function darius:Window(windowProperty)
 			})
 		end
 
-		_settings:Divider()
-
 		-- Configuration Manager
 
-		do
+		if windowProperty.UseConfig then
+			_settings:Divider()
 			local configNames = {}
 			table.foreach(flagCreator.getConfigs(), function(_, _config)
 				table.insert(configNames, {
@@ -802,13 +808,6 @@ function darius:Window(windowProperty)
 				end
 			})
 		end
-
-		_settings:Button({
-			Name = "print filesystem",
-			Callback = function()
-				customFunctions.printFileSystem()
-			end
-		})
 	end
 
 	if customFunctions.getgenv then
