@@ -40,12 +40,12 @@ return function(target)
             HideBind = Enum.KeyCode.T,
             UseConfig = true,
             Workspace = "testing",
-            IsMobile = false,
+            IsMobile = true,
             noOffset = true,
             Parent = target,
             Configuration = {
                 Name = "Configuration",
-                Lock = true,
+                --Lock = true,
                 FlagValues = {
                     textbox = "hey",
                     textbox_n = "123",
@@ -175,7 +175,6 @@ return function(target)
         tab:ColorPicker({
             Name = "Color Picker",
             FLAG = "colorpicker",
-            HideTransparency = true,
             Callback = function(c, t)
                 print(`colorpicker: {c} : {t}`)
             end

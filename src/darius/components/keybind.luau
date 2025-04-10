@@ -415,6 +415,9 @@ return function(property)
 			if get(isMobile.boolean) and file.coordinate then
 				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
 				hasPlaced:set(true)
+			elseif get(isMobile.boolean) and not file.coordinate then
+				hasPlaced:set(false)
+				mobileButton.Position = UDim2.fromScale(0.5,0.5)
 			end
 		end)
 		if _flag.private then

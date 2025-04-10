@@ -557,7 +557,25 @@ return function(property)
 				noChange = false
 			end
 			if get(multiselect) then
-				_items:set(file)
+				local cleansed = {}
+				for _,v in file do
+					if checkIfExists(v) then
+						table.insert(cleansed, v)
+					end
+				end
+				local currents = get(_items)
+				local different = false
+				local longerTable = #currents > #cleansed and currents or cleansed
+				local shorterTable = #currents < #cleansed and currents or cleansed
+				for i,v in longerTable do
+					if shorterTable[i] ~= v then
+						different = true
+						break
+					end
+				end
+				if different then
+					_items:set(cleansed)
+				end
 			else
 				_item:set(file)
 			end
@@ -610,7 +628,19 @@ return function(property)
 						table.insert(cleansed, v)
 					end
 				end
-				_items:set(cleansed)
+				local currents = get(_items)
+				local different = false
+				local longerTable = #currents > #cleansed and currents or cleansed
+				local shorterTable = #currents < #cleansed and currents or cleansed
+				for i,v in longerTable do
+					if shorterTable[i] ~= v then
+						different = true
+						break
+					end
+				end
+				if different then
+					_items:set(cleansed)
+				end
 			end
 		else
 			if typeof(_flag.preregisteredValue) == "string" and checkIfExists(_flag.preregisteredValue) then

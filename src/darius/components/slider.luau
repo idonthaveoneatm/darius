@@ -402,7 +402,7 @@ return function(property)
 		_flag.file:Connect(function(file)
 			local noPercentageOf = true
 			if file ~= nil then
-				_flag.status.percentageOf:set(file)
+				_flag.status.percentageOf:set(math.clamp(file, get(min), get(max)))
 				noPercentageOf = false
 			end
 			if noPercentageOf then
@@ -416,7 +416,7 @@ return function(property)
 		_flag.status.percentageOf:set(get(default))
 	end
 	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "number" then
-		_flag.status.percentageOf:set(_flag.preregisteredValue)
+		_flag.status.percentageOf:set(math.clamp(_flag.preregisteredValue, get(min), get(max)))
 	end
 
 	local returnFunctions = {}
