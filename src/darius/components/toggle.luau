@@ -370,6 +370,7 @@ return function(property)
 
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
+							_flag.status.coordinate:set(nil)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
 						end,
 
@@ -463,10 +464,7 @@ return function(property)
 				_flag.status.boolean:set(file.boolean)
 				noBoolean = false
 			end
-			if file.keycode ~= nil then
-				if get(keyCode) and get(keyCode).Name == file.keycode then
-					return
-				end
+			if file.keycode ~= nil and ((get(keyCode) and get(keyCode).Name or  "") ~= file.keycode) then
 				local success, result = pcall(function()
 					return Enum.KeyCode[file.keycode]
 				end)
@@ -486,6 +484,10 @@ return function(property)
 			if get(isMobile.boolean) and file.coordinate then
 				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
 				hasPlaced:set(true)
+				_flag.status.coordinate:set(file.coordinate)
+			elseif get(isMobile.boolean) and not file.coordinate then
+				hasPlaced:set(false)
+				mobileButton.Position = UDim2.fromScale(0.5,0.5)
 			end
 		end)
 
@@ -520,6 +522,7 @@ return function(property)
 					if typeof(_flag.preregisteredValue.coordinate.X) == "number" and typeof(_flag.preregisteredValue.coordinate.Y) == "number" then
 						mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30)
 						hasPlaced:set(true)
+						_flag.status.coordinate:set(_flag.preregisteredValue.coordinate)
 					end
 				end
 			end

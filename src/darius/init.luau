@@ -813,6 +813,20 @@ function darius:Window(windowProperty)
 				end
 			})
 		end
+		--[[
+		_settings:Button({
+			Name = "files",
+			Callback = function()
+				customFunctions.printFileSystem()
+
+			end
+		})
+		_settings:Button({
+			Name = "configs",
+			Callback = function()
+				print(flagCreator.getConfigs())
+			end
+		})]]
 	end
 
 	if customFunctions.getgenv then

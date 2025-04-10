@@ -337,7 +337,7 @@ return function(property)
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
-							_flag.status.coordinate:set(mobileButton.AbsolutePosition)
+							_flag.status.coordinate:set(nil)
 						end,
 
 						[children] = {
@@ -395,10 +395,7 @@ return function(property)
 	if get(useConfig.boolean) and not get(ignoreConfig)  then
 		_flag.file:Connect(function(file)
 			local noKeyCode = true
-			if file.keycode ~= nil then
-				if get(keyCode) and get(keyCode).Name == file.keycode then
-					return
-				end
+			if file.keycode ~= nil and ((get(keyCode) and get(keyCode).Name or  "") ~= file.keycode) then
 				local success, result = pcall(function()
 					return Enum.KeyCode[file.keycode]
 				end)
@@ -415,6 +412,7 @@ return function(property)
 			if get(isMobile.boolean) and file.coordinate then
 				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
 				hasPlaced:set(true)
+				_flag.status.coordinate:set(file.coordinate)
 			elseif get(isMobile.boolean) and not file.coordinate then
 				hasPlaced:set(false)
 				mobileButton.Position = UDim2.fromScale(0.5,0.5)
