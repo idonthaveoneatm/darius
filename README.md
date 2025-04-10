@@ -5,7 +5,7 @@ Developed by - griffin(@idonthaveoneatm)
 
 Join the Discord [here](https://discord.gg/GtWwgVvm7r) and create a ticket if you want to report a problem. You can also contact me via Discord **@griffindoescooking** with the ID of `691337507157311661`.
 
-Video of user interface: [https://www.youtube.com/watch?v=-yLwTmJhK7A](https://www.youtube.com/watch?v=-yLwTmJhK7A)
+Video of user interface: [https://www.youtube.com/watch?v=Rip9_fAe1lY](https://www.youtube.com/watch?v=Rip9_fAe1lY)
 ### Credits:
 - [biggaboy212](https://github.com/biggaboy212) - Basically the entire design
 - [violin-suzutsuki/LinoriaLib](https://github.com/violin-suzutsuki/LinoriaLib) - Code for slider math
