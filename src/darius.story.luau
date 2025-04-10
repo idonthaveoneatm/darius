@@ -38,12 +38,12 @@ return function(target)
             Title = "Darius",
             Description = "What the sigma this isn't Quantum UI",
             HideBind = Enum.KeyCode.T,
-            --UseConfig = true,
-            --Workspace = "testing",
-            --IsMobile = true,
+            UseConfig = true,
+            Workspace = "testing",
+            IsMobile = true,
             noOffset = true,
             Parent = target,
-            --[[Configuration = {
+            Configuration = {
                 Name = "Configuration",
                 Lock = true,
                 FlagValues = {
@@ -57,7 +57,7 @@ return function(target)
                     keybind = {keycode = "H"},
                     colorpicker = {color = "#a49ae6", transparency = 0.5}
                 }
-            }]]
+            }
         })
 
         local tab = window:Tab({

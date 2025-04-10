@@ -69,6 +69,7 @@ return function(property)
 	local instanceName = data.find("instanceName")
 	local isListening = data.find("isListening")
 	local bindData = data.find("bindData")
+	local absoluteOffset = data.find("absoluteOffset").number
 	local keybind = data.add(property)
 
 	-- Properties
@@ -410,7 +411,7 @@ return function(property)
 				end
 			end
 			if get(isMobile.boolean) and file.coordinate then
-				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30)
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30 + get(absoluteOffset))
 				hasPlaced:set(true)
 				_flag.status.coordinate:set(file.coordinate)
 			elseif get(isMobile.boolean) and not file.coordinate then
@@ -441,7 +442,7 @@ return function(property)
 		else
 			if _flag.preregisteredValue.coordinate and typeof(_flag.preregisteredValue.coordinate) == "table" and _flag.preregisteredValue.coordinate.X and _flag.preregisteredValue.coordinate.Y then
 				if typeof(_flag.preregisteredValue.coordinate.X) == "number" and typeof(_flag.preregisteredValue.coordinate.Y) == "number" then
-					mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30)
+					mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30 + get(absoluteOffset))
 					hasPlaced:set(true)
 				end
 			end

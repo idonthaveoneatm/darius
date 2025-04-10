@@ -26,14 +26,15 @@ local function randomIcon():string
     return randomIcons[math.floor(math.random(1,#randomIcons))]
 end
 
-local format = "minified"
-local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/beta/{format}.luau?t={tostring(tick())}`))()
+local format = "bundled"
+local darius = loadstring(game:HttpGetAsync(`https://raw.githubusercontent.com/idonthaveoneatm/darius/refs/heads/main/{format}.luau?t={tostring(tick())}`))()
 
 local window = darius:Window({
     Title = "Darius",
     Description = "What the sigma this isn't Quantum UI",
     HideBind = Enum.KeyCode.T,
     UseConfig = true,
+    IsMobile = true,
     Workspace = "example",
     Configuration = {
         Name = "custom configuration",
@@ -48,8 +49,7 @@ local window = darius:Window({
             keybind = {keycode = "H"},
             colorpicker = {color = "#a49ae6", transparency = 0.5}
         }
-    },
-    IsMobile = false
+    }
 })
 
 local tab = window:Tab({
