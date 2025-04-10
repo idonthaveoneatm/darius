@@ -41,17 +41,23 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
+		Visible = false,
         Callback = function()end,
+
 		FLAG = "",
 		Color = Color3.new(),
 		Transparency = 0,
+		HideTransparency = true,
 		IgnoreConfig = true
 	},{
-		property.IsEnabled and "" or "IsEnabled",
 		property.DisabledText and "" or "DisabledText",
+		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
 		property.FLAG and "" or "FLAG",
 		property.Color and "" or "Color",
 		property.Transparency and "" or "Transparency",
+		property.HideTransparency and "" or "HideTransparency",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -69,12 +75,16 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local _color = property.Color or value(Color3.new(1))
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local _transparency = property.Transparency or value(0)
+	local hideTransparency = property.HideTransparency or value(false)
+
 	local flag = property.FLAG or value(colorpicker.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -145,7 +155,7 @@ return function(property)
 					[ref] = saturationValue,
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						saturationValueDown:set(true)
@@ -220,7 +230,7 @@ return function(property)
 					Size = UDim2.new(1,0,0,24),
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						hueDown:set(true)
@@ -256,13 +266,13 @@ return function(property)
 							BackgroundColor3 = theme.colorpickerBar,
 							Size = UDim2.new(0,2,1,0),
 							Position = computed(function()
-								local _hue = get(color):ToHSV()
 								return UDim2.fromScale(1 - get(hueAmount),0.5)
 							end)
 						}
 					}
 				},
 				new "ImageButton" { -- Transparency
+					Visible = not get(hideTransparency),
 					ZIndex = 2,
 					Size = UDim2.new(1,0,0,24),
 					BackgroundTransparency = 1,
@@ -270,7 +280,7 @@ return function(property)
 					ScaleType = Enum.ScaleType.Crop,
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						transparencyDown:set(true)
@@ -526,7 +536,7 @@ return function(property)
 			return get(isSelected)
 		end),
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -762,39 +772,57 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noColor = true
 			local noTransparency = true
 			if file.color ~= nil then
-				local a = string.split(file.color:gsub(" ", ""), ",")
-				table.foreach(a, function(i,v)
-					a[i] = tonumber(v)
-				end)
-				_flag.status.color:set(Color3.new(unpack(a)))
+				if string.find(file.color, ",") then
+					local a = string.split(file.color:gsub(" ", ""), ",")
+					table.foreach(a, function(i,v)
+						a[i] = tonumber(v)
+					end)
+					color:set(Color3.new(unpack(a)))
+				else
+					color:set(Color3.fromHex(`#{string.gsub(file.color,"#","")}`))
+				end
 				noColor = false
 			end
 			if file.transparency ~= nil then
-				_flag.status.transparency:set(tonumber(file.transparency))
+				transparency:set(tonumber(file.transparency))
 				noTransparency = false
 			end
 			if noColor then
-				_flag.status.color:set(get(_color))
+				color:set(get(_color))
 			end
 			if noTransparency then
-				_flag.status.transparency:set(get(_transparency))
+				transparency:set(get(_transparency))
 			end
 			hueAmount:set(({get(color):ToHSV()})[1])
 			saturationAmount:set(({get(color):ToHSV()})[2])
 			valueAmount:set(({get(color):ToHSV()})[3])
 		end)
 		if _flag.private then
-			_flag.status.color:set(get(_color))
-			_flag.status.transparency:set(get(_transparency))
+			color:set(get(_color))
+			transparency:set(get(_transparency))
 		end
 	else
-		_flag.status.color:set(get(_color))
-		_flag.status.transparency:set(get(_transparency))
+		color:set(get(_color))
+		transparency:set(get(_transparency))
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
+		if _flag.preregisteredValue.color and typeof(_flag.preregisteredValue.color) == "string" then
+			local s,result = pcall(function()
+				return Color3.fromHex(_flag.preregisteredValue.color)
+			end)
+			if s then
+				color:set(result)
+			end
+		end
+		if not get(hideTransparency) then
+			if _flag.preregisteredValue.transparency and typeof(_flag.preregisteredValue.transparency) == "number" then
+				transparency:set(_flag.preregisteredValue.transparency)
+			end
+		end
 	end
 
 	hueAmount:set(({get(color):ToHSV()})[1])
@@ -812,19 +840,29 @@ return function(property)
 		local _didPass, _failedItems = typecheck({['SetColor'] = newColor}, {SetColor = Color3.new()})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.color:set(newColor)
+		color:set(newColor)
+
+		hueAmount:set(({get(color):ToHSV()})[1])
+		saturationAmount:set(({get(color):ToHSV()})[2])
+		valueAmount:set(({get(color):ToHSV()})[3])
 	end
 	function returnFunctions:SetTransparency(newTransparency)
 		local _didPass, _failedItems = typecheck({['SetTransparency'] = newTransparency}, {SetTransparency = 0})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.transparency:set(newTransparency)
+		transparency:set(newTransparency)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

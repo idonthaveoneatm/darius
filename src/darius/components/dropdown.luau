@@ -35,20 +35,28 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
-        IsEnabled = false,
+		IsEnabled = false,
+		Visible = false,
         Callback = function()end,
+
+		FLAG = "",
         Items = {},
         Multiselect = true,
         Regex = function()end,
-		IgnoreConfig = true
+		IgnoreConfig = true,
+		Alphabetical = true,
+		AlwaysOpen = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
-		property.IgnoreConfig and "" or "IgnoreConfig"
+		property.IgnoreConfig and "" or "IgnoreConfig",
+		property.Alphabetical and "" or "Alphabetical",
+		property.AlwaysOpen and "" or "AlwaysOpen"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -74,14 +82,19 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local callback = property.Callback
+
 	local items = value({})
 	local multiselect = property.Multiselect or value(false)
 	local default = property.Default
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local isEnabled = property.IsEnabled or value(true)
-	local disabledText = property.DisabledText or value("Component Disabled")
+	local alphabetical = property.Alphabetical or value(false)
+	local alwaysOpen = property.AlwaysOpen or value(false)
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
+
 	local flag = property.FLAG or value(dropdown.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -92,35 +105,39 @@ return function(property)
 		},"dropdown", get(flag) == dropdown.uid)
 		_flag.user.Value = get(multiselect) and get(_flag.status.items) or  get(_flag.status.item)
 	end
+	local _items = _flag.status.items
+	local _item = _flag.status.item
 
 	-- Variables
 
-	local dropdownRef = value()
+
 	local searchRef = value()
 
 	local isDropped = value(false)
 	local lastReturnedValue = value(get(multiselect) and {} or "")
 	local itemElements = value({})
+	local displayValues = value({})
 	local hasSelectedAll = value(false)
 
-	observe(_flag.status.items):onChange(function()
-		if #get(_flag.status.items) == #get(items) then
+	observe(_items):onChange(function()
+		if #get(_items) == #get(items) then
 			hasSelectedAll:set(true)
 		else
 			hasSelectedAll:set(false)
 		end
+
 		local _cbTable = {}
-		for _,v in get(_flag.status.items) do
+		for _,v in get(_items) do
 			table.insert(_cbTable, get(regex)(v))
 		end
 		task.wait()
 		task.spawn(get(callback), _cbTable)
-		lastReturnedValue:set(get(_flag.status.items))
+		lastReturnedValue:set(get(_items))
 	end)
-	observe(_flag.status.item):onChange(function()
+	observe(_item):onChange(function()
 		task.wait()
-		task.spawn(get(callback), get(regex)(get(_flag.status.item)))
-		lastReturnedValue:set(get(regex)(get(_flag.status.item)))
+		task.spawn(get(callback), get(regex)(get(_item)))
+		lastReturnedValue:set(get(regex)(get(_item)))
 	end)
 	local isSelected = value(get(selectedTab.string) == get(dropdown.tab).uid)
 	observe(selectedTab.string):onChange(function()
@@ -129,28 +146,29 @@ return function(property)
 	local selectedAnimation = animate(function()
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
+	local function checkIfExists(item)
+		for _,eItem in get(items) do
+			local _value = typeof(eItem) == "table" and eItem.Value or eItem
+			if _value == item then
+				return true
+			end
+		end
+		return false
+	end
 
 	-- Dropdown
 
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
 		end),
 		Size = animate(function()
-			if get(isDropped) and get(dropdownRef) then
-				local _dropdown = get(dropdownRef)
-				local y = 3
-				for _,child in _dropdown:GetChildren() do
-					if child:IsA("UIListLayout") or child:IsA("UICorner") or not child.Visible then
-						continue
-					end
-					y += (4 + child.Size.Y.Offset)
-				end
-				return UDim2.new(1,0,0,y)
+			if get(isDropped) then
+				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4 + 6) or 6) + math.clamp((#get(items)*34), 34, 136))
 			end
 			return UDim2.new(1,0,0,36)
 		end, 40, 1),
@@ -158,11 +176,9 @@ return function(property)
 		BackgroundTransparency = selectedAnimation,
 		ClipsDescendants = true,
 
-		[ref] = dropdownRef,
-
 		[children] = {
 			UICorner(6),
-			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,4)),
+			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
 			new "TextButton" {
 				Interactable = computed(function()
 					if not get(isEnabled) then
@@ -174,6 +190,9 @@ return function(property)
 				BackgroundTransparency = 1,
 
 				[onevent "Activated"] = function()
+					if get(alwaysOpen) then
+						return
+					end
 					isDropped:set(not get(isDropped))
 				end,
 
@@ -239,12 +258,15 @@ return function(property)
 								Position = UDim2.new(0,0,0.5,0),
 								Text = computed(function()
 									if get(multiselect) then
-										return get(name).." "..tostring(#get(_flag.status.items)).."/"..tostring(#get(items))
+										return get(name).." "..tostring(#get(_items)).."/"..tostring(#get(items))
 									end
 									if typeof(get(lastReturnedValue)) == "table" then
 										return get(name)
 									end
-									return get(name)..": "..get(lastReturnedValue)
+									if get(displayValues)[get(lastReturnedValue)] then
+										return `{get(name)}: {get(displayValues)[get(lastReturnedValue)]}`
+									end
+									return `{get(name)}: {get(lastReturnedValue)}`
 								end),
 								TextTransparency = selectedAnimation,
 								TextXAlignment = Enum.TextXAlignment.Left,
@@ -268,6 +290,7 @@ return function(property)
 			new "Frame" {
 				Size = UDim2.new(1,0,0,32),
 				BackgroundTransparency = 1,
+
 				[children] = {
 					UIPadding(0,6),
 					new "TextBox" {
@@ -329,7 +352,7 @@ return function(property)
 									table.insert(tableToSet, get(regex)(item))
 								end
 							end
-							_flag.status.items:set(tableToSet)
+							_items:set(tableToSet)
 						end,
 
 						[children] = {
@@ -359,15 +382,22 @@ return function(property)
 			},
 			new "ScrollingFrame" {
 				ZIndex = 3,
-				Size = UDim2.new(1,0,0,136),
+				Size = computed(function()
+					return UDim2.new(1,-6,0,math.clamp((#get(items)*34), 34, 136))
+				end),
 				BackgroundTransparency = 1,
-				ScrollBarThickness = 0,
+				ScrollBarThickness = computed(function()
+					return #get(items) > 4 and 6 or 0
+				end),
+				ScrollBarImageColor3 = theme.scrollBar,
 				CanvasSize = UDim2.new(0,0,0,0),
 				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 
 				[children] = {
-					UIPadding(6,6,0,6),
-					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
+					UIPadding(6,computed(function()
+						return #get(items) > 4 and UDim.new(0,12) or UDim.new(0,0)
+					end),0,6),
+					UIListLayout(get(alphabetical) and SO.Name or SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
 					itemElements
 				}
 			}
@@ -377,14 +407,15 @@ return function(property)
 	observe(items):onChange(function()
 		local tableOfElements = {}
 		for _,item in get(items) do
-			local itemValue, itemImage
+			local itemValue, itemImage, itemDisplayValue
 			local isItemSelected = value(false)
 			if typeof(item) == "table" then
-				local _didPass, _failedItems = typecheck(item, {Value = "",Image = ""},{item.Image and "" or "Image"})
+				local _didPass, _failedItems = typecheck(item, {DisplayValue = "", Value = "",Image = ""},{item.Image and "" or "Image", item.DisplayValue and "" or "DisplayValue"})
 				assert(_didPass, table.concat(_failedItems, "\n"))
 
 				itemValue = item.Value
 				itemImage = item.Image or nil
+				itemDisplayValue = item.DisplayValue or nil
 			else
 				local _didPass, _failedItems = typecheck({['Item'] = item}, {Item = "",})
 				assert(_didPass, table.concat(_failedItems, "\n"))
@@ -392,16 +423,22 @@ return function(property)
 				itemValue = item
 			end
 			local cleanedItem = get(regex)(itemValue)
+			if itemDisplayValue then
+				local _displayValues = get(displayValues)
 
-			observe(_flag.status.items):onChange(function()
-				if table.find(get(_flag.status.items), cleanedItem) then
+				_displayValues[itemValue] = itemDisplayValue
+				displayValues:set(_displayValues)
+			end
+
+			observe(_items):onChange(function()
+				if table.find(get(_items), cleanedItem) then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
 				end
 			end)
-			observe(_flag.status.item):onChange(function()
-				if get(_flag.status.item) == cleanedItem then
+			observe(_item):onChange(function()
+				if get(_item) == cleanedItem then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
@@ -409,23 +446,27 @@ return function(property)
 			end)
 
 			local itemElement = new "TextButton" {
-				Name = itemValue,
+				Name = `{itemDisplayValue ~= nil and itemDisplayValue or itemValue}`,
 				Size = UDim2.new(1,0,0,28),
 				BackgroundTransparency = selectedAnimation,
 				BackgroundColor3 = theme.background,
 
 				[onevent "Activated"] = function()
 					if get(multiselect) then
-						local _items = get(_flag.status.items)
+						local _items2 = get(_items)
 						isItemSelected:set(not get(isItemSelected))
 						if get(isItemSelected) then
-							table.insert(_items, cleanedItem)
+							table.insert(_items2, cleanedItem)
 						else
-							table.remove(_items, table.find(_items, cleanedItem))
+							table.remove(_items2, table.find(_items2, cleanedItem))
 						end
-						_flag.status.items:set(_items)
+
+						_items:set(_items2)
 					else
-						_flag.status.item:set(cleanedItem)
+						_item:set(cleanedItem)
+						if get(alwaysOpen) then
+							return
+						end
 						isDropped:set(false)
 					end
 				end,
@@ -489,7 +530,7 @@ return function(property)
 						TextScaled = true,
 						AnchorPoint = Vector2.new(0,0.5),
 						Position = UDim2.new(0,0,0.5,0),
-						Text = itemValue,
+						Text = itemDisplayValue or itemValue,
 						TextTransparency = selectedAnimation,
 						TextXAlignment = Enum.TextXAlignment.Left,
 						RichText = true
@@ -505,27 +546,47 @@ return function(property)
 	-- Closure
 
 	items:set(get(property.Items))
+	if get(alwaysOpen) then
+		isDropped:set(true)
+	end
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noChange = true
 			if file ~= nil then
 				noChange = false
 			end
 			if get(multiselect) then
-				_flag.status.items:set(file)
+				local cleansed = {}
+				for _,v in file do
+					if checkIfExists(v) then
+						table.insert(cleansed, v)
+					end
+				end
+				local currents = get(_items)
+				local different = false
+				local longerTable = #currents > #cleansed and currents or cleansed
+				local shorterTable = #currents < #cleansed and currents or cleansed
+				for i,v in longerTable do
+					if shorterTable[i] ~= v then
+						different = true
+						break
+					end
+				end
+				if different then
+					_items:set(cleansed)
+				end
 			else
-				_flag.status.item:set(file)
+				_item:set(file)
 			end
 			if noChange then
 				if get(multiselect) then
 					if default and #get(default) > 0 then
-						_flag.status.items:set(get(default))
+						_items:set(get(default))
 					end
 				else
 					if default then
-						_flag.status.item:set(get(default))
+						_item:set(get(default))
 					end
 				end
 			end
@@ -533,22 +594,57 @@ return function(property)
 		if _flag.private then
 			if get(multiselect) then
 				if default and #get(default) > 0 then
-					_flag.status.items:set(get(default))
+					_items:set(get(default))
 				end
 			else
 				if default then
-					_flag.status.item:set(get(default))
+					for _,v in get(items) do
+						if typeof(v) == "table" and v.Value == get(default) then
+							_item:set(get(default))
+						elseif v == get(default) then
+							_item:set(get(default))
+						end
+					end
 				end
 			end
 		end
 	else
 		if get(multiselect) then
 			if default and #get(default) > 0 then
-				_flag.status.items:set(get(default))
+				_items:set(get(default))
 			end
 		else
 			if default then
-				_flag.status.item:set(get(default))
+				_item:set(get(default))
+			end
+		end
+	end
+	if _flag.preregistered and _flag.preregisteredValue then
+		if get(multiselect) then
+			if typeof(_flag.preregisteredValue) == "table" then
+				local cleansed = {}
+				for _,v in _flag.preregisteredValue do
+					if checkIfExists(v) then
+						table.insert(cleansed, v)
+					end
+				end
+				local currents = get(_items)
+				local different = false
+				local longerTable = #currents > #cleansed and currents or cleansed
+				local shorterTable = #currents < #cleansed and currents or cleansed
+				for i,v in longerTable do
+					if shorterTable[i] ~= v then
+						different = true
+						break
+					end
+				end
+				if different then
+					_items:set(cleansed)
+				end
+			end
+		else
+			if typeof(_flag.preregisteredValue) == "string" and checkIfExists(_flag.preregisteredValue) then
+				_item:set(_flag.preregisteredValue)
 			end
 		end
 	end
@@ -563,7 +659,6 @@ return function(property)
 	function returnFunctions:SetItems(newTable) -- Sets a new table of items
 		local _didPass, _failedItems = typecheck({['SetItems'] = newTable}, {SetItems = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-
 		items:set(newTable)
 		local multiselectTable = {}
 		local foundAnything = false
@@ -583,14 +678,20 @@ return function(property)
 			else
 				if get(lastReturnedValue) == cleanedItem then
 					foundAnything = true
-					_flag.status.item:set(cleanedItem)
+					_item:set(cleanedItem)
 					break
 				end
 			end
 		end
 		if foundAnything then
 			if get(multiselect) then
-				_flag.status.items:set(multiselectTable)
+				_items:set(multiselectTable)
+			end
+		else
+			if get(multiselect) then
+				_items:set({})
+			else
+				_item:set("")
 			end
 		end
 	end
@@ -613,7 +714,7 @@ return function(property)
 			end
 		end
 		assert(hasItem, ":SelectItem couldn't find "..item)
-		_flag.status.item:set(item)
+		_item:set(item)
 	end
 	function returnFunctions:SelectItems(newSelecteds) -- Sets items used when Multiselect is true
 		assert(get(multiselect), ":SelectItems requires Multiselect to be true")
@@ -635,13 +736,19 @@ return function(property)
 				table.remove(newSelecteds, i)
 			end
 		end
-		_flag.status.items:set(newSelecteds)
+		_items:set(newSelecteds)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

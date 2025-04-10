@@ -25,7 +25,13 @@ return function(property)
 
 	-- Typecheck
 
-	local didPass, failedItems = typecheck(property,{Title = "", Body = ""})
+	local didPass, failedItems = typecheck(property,{
+		Title = "",
+		Visible = false,
+		Body = ""
+	},{
+		property.Visible and "" or "Visible",
+	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
 	-- Data
@@ -39,6 +45,7 @@ return function(property)
 	local _parent = property.Parent
 	local title = property.Title
 	local body = property.Body
+	local visible = property.Visible or value(true)
 
 	-- Variables
 
@@ -79,7 +86,7 @@ return function(property)
 
 	new "Frame" {
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -147,6 +154,12 @@ return function(property)
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
 		title:set(newTitle)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

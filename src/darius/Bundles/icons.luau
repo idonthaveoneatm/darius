@@ -13,5 +13,6 @@ return {
     ['search'] = "rbxassetid://10734943674",
     ['finger'] = "rbxassetid://10734929723",
     ['alert'] = "rbxassetid://10709752996",
-    ['paint'] = "rbxassetid://10734910187"
+    ['paint'] = "rbxassetid://10734910187",
+    ['cog'] = "rbxassetid://10709810948"
 }

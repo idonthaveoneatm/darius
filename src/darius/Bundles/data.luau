@@ -1,5 +1,6 @@
 local randomString = require(script.Parent.Parent.utilities.randomString)
-local fusion = require(script.Parent.Fusion)
+local bundles = require(script.Parent)
+local fusion = bundles.Fusion
 local value = fusion.Value
 
 local data = {}

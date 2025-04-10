@@ -1,4 +1,4 @@
-local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(AspectRatio:number, AspectType:Enum.AspectType, DominantAxis:Enum.DominantAxis)
     AspectType = AspectType or Enum.AspectType.FitWithinMaxSize

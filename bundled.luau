@@ -7,6 +7,7 @@ local ImportGlobals
 local ClosureBindings = {
     function()local wax,script,require=ImportGlobals(1)local ImportGlobals return (function(...)local Bundles = require(script.Bundles)
 local data = Bundles.data
+local icons = Bundles.icons
 local theme = Bundles.themeSystem
 local services = Bundles.services
 	local HttpService = services.HttpService
@@ -59,6 +60,7 @@ function darius:Window(windowProperty)
         IsMobile = false,
 		Offset = 0,
         Theme = {},
+		Configuration = {},
         noOffset = false,
 		Parent = Instance.new("Part")
 	},{
@@ -67,30 +69,28 @@ function darius:Window(windowProperty)
 		windowProperty.IsMobile and "" or "IsMobile",
 		windowProperty.UseConfig and "" or "UseConfig",
 		windowProperty.Theme and "" or "Theme",
+		windowProperty.Configuration and "" or "Configuration",
 		windowProperty.Parent and "" or "Parent",
 		windowProperty.Offset and "" or "Offset"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
-	didPass, failedItems = typecheck(windowProperty,{
-		Config = "",
-	},{
-		windowProperty.UseConfig and "" or "Config"
-	})
-	assert(didPass, table.concat(failedItems, "\n"))
+	if windowProperty.UseConfig then
+		didPass, failedItems = typecheck(windowProperty,{
+			Workspace = ""
+		},{})
+		assert(didPass, table.concat(failedItems, "\n"))
+	end
 
 	-- Warn
 
 	setWarnTitle(windowProperty.Title)
 
-	-- Theme
-
-	theme.create(windowProperty.Theme or {})
-
 	-- Data
 
 	data.add({string = ""}, "selectedTab")
 	data.add({boolean = false}, "isFirst")
+	local setTheme = data.add({tbl = {}}, "setTheme")
 	data.add({number = windowProperty.noOffset and 0 or 58}, "absoluteOffset")
 	data.add({name = randomString(32)}, "instanceName")
 	data.add({binds = {}}, "currentBinds")
@@ -98,23 +98,19 @@ function darius:Window(windowProperty)
 	data.add({string = ""}, "searchText")
 	local toggles = data.add({list = {}}, "toggles", true)
 	data.add({module = function()end}, "currentPicker")
+	data.add({module = function()end}, "currentPicker")
 	data.add({boolean = true}, "isVisible")
 	data.add({boolean = windowProperty.IsMobile}, "isMobile")
 	data.add({boolean = false}, "isListening")
 	local destroyFunc = data.add({func = function()end}, "destroyFunc")
 	local flags = data.find("flags")
-	local configLoaded = data.add({boolean = false}, "configLoaded")
 	local useConfig = data.add({boolean = false}, "useConfig")
 	local windowData = data.add({data = windowProperty})
 
-	-- Flags
+	-- Files
 
-	local config
 	if windowProperty.UseConfig then
-		useConfig:update("boolean", windowProperty.UseConfig)
-		config = windowProperty.Config
-
-		local path = {"darius",`/{config}`}
+		local path = {"darius",`/{windowProperty.Workspace}`}
 		local built = ""
 		for i=1,#path do
 			built = built..path[i]
@@ -122,12 +118,55 @@ function darius:Window(windowProperty)
 				customFunctions.makefolder(built)
 			end
 		end
-		darius.Folder = built
-		config = built.."/config.json"
-		darius.File = config
-		if not customFunctions.isfile(config) then
-			customFunctions.writefile(config, "{}")
+		flagCreator.writeFiles = true
+		flagCreator.path = `darius/{windowProperty.Workspace}`
+		darius.Folder = `darius/{windowProperty.Workspace}`
+	end
+	local path = {"darius",`/themes`}
+	local built = ""
+	for i=1,#path do
+		built = built..path[i]
+		if not customFunctions.isfolder(built) then
+			customFunctions.makefolder(built)
 		end
+	end
+	theme.path = `darius/themes`
+
+	-- Themes
+
+	theme.init()
+	local defaultTheme = theme.getTheme().uid
+	if windowProperty.Theme then
+		didPass, failedItems = typecheck(windowProperty.Theme, {
+			Name = "",
+			Colors = {}
+		})
+		assert(didPass, table.concat(failedItems, "\n"))
+		setTheme:update("tbl", windowProperty.Theme)
+		task.wait()
+		theme.set(theme.create(windowProperty.Theme.Name, windowProperty.Theme.Colors, nil, nil, true))
+	end
+
+	-- Configs
+
+	flagCreator.init()
+	if windowProperty.Configuration then
+		didPass, failedItems = typecheck(windowProperty.Configuration, {
+			Name = "",
+			FlagValues = {}
+		})
+		assert(didPass, table.concat(failedItems, "\n"))
+		local uid = flagCreator.create(windowProperty.Configuration.Name, nil, nil, windowProperty.Configuration.FlagValues, true, windowProperty.Configuration.Lock)
+		flagCreator.set(uid)
+		for i,v in windowProperty.Configuration.FlagValues do
+			flagCreator.preregister(i, v)
+		end
+	end
+
+	-- Flags
+
+	if windowProperty.UseConfig then
+		useConfig:update("boolean", windowProperty.UseConfig)
 	end
 
 	darius.flags = {}
@@ -216,6 +255,9 @@ function darius:Window(windowProperty)
 		function components:KeybindList()
 			return addComponent("keybindList", tabFrame, {tab = tab})
 		end
+		function components:ButtonGroup()
+			return addComponent("buttonGroup", tabFrame, {tab = tab})
+		end
 		return tabs[tab.uid]
 	end
 	darius.Destroyed = false
@@ -225,39 +267,573 @@ function darius:Window(windowProperty)
 	function darius:Destroy()
 		darius.Destroyed = true
 		bindableEvent:Fire()
-		for _,toggle in toggles.list do
-			toggle:set(false)
-		end
-		task.wait(0.1)
+		task.spawn(function()
+			for _,toggle in toggles.list do
+				toggle:set(false)
+			end	
+		end)
+		task.wait()
 		connections:deleteConnections()
 		references:clear()
 		bindableEvent:Destroy()
 	end
-	function darius:LoadConfig()
-		if not windowProperty.UseConfig then
-			return
-		end
-		flagCreator.load(HttpService:JSONDecode(customFunctions.readfile(config)))
-		flagCreator.config:set(config)
-		configLoaded:update("boolean", true)
-	end
-	function darius:SetTheme(newTheme)
-		local _didPass, _failedItems = typecheck({['New Theme'] = newTheme}, {['New Theme'] = {}})
+
+	function darius:SetTheme(uid)
+		local _didPass, _failedItems = typecheck({['New Theme'] = uid}, {['New Theme'] = ""})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-		theme.create(newTheme)
-	end
-	function darius:ExportTheme(json)
-		local currentTheme = theme.getTheme()
-		if json and typeof(json) == "boolean" and json == true then
-			local _string = "{"
-			for name,color in currentTheme do
-				_string = _string..`\n\t[{name}] = Color3.new({tostring(color)})`
-			end
-			_string = _string.."\n}"
-			return _string
-		else
-			return HttpService:JSONEncode(currentTheme)
+
+		if theme.find(uid) then
+			theme.set(uid)
 		end
+	end
+	function darius:GetThemeUID()
+		return theme.getTheme().uid
+	end
+	function darius:ImportTheme(...)
+		local args = {...}
+		if #args == 1 then
+			didPass, failedItems = typecheck(args,{[1] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return theme.create(`Import_{randomString(5)}`, args[1])
+		elseif #args == 2 then
+			didPass, failedItems = typecheck(args,{[1] = "",[2] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return theme.create(args[1], args[2])
+		end
+	end
+	function darius:ExportTheme()
+		return theme.export()
+	end
+
+	function darius:SetConfiguration(uid)
+		flagCreator.set(uid)
+	end
+	function darius:GetConfigurationUID()
+		return flagCreator.getConfig().uid
+	end
+	function darius:ImportConfiguration(...)
+		local args = {...}
+		if #args == 1 then
+			didPass, failedItems = typecheck(args,{[1] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return flagCreator.create(`Import_{randomString(5)}`, nil, nil, args[1])
+		elseif #args == 2 then
+			didPass, failedItems = typecheck(args,{[1] = "",[2] = {}},{})
+			assert(didPass, table.concat(failedItems, "\n"))
+			return flagCreator.create(args[1], nil, nil, args[2])
+		end
+	end
+	function darius:ExportConfiguration()
+		return flagCreator.export()
+	end
+
+	function darius:CreateSettings()
+		local _settings = tabs:Tab({
+			Name = "Settings",
+			Image = icons.cog
+		})
+
+		-- Theme Manager
+
+		do
+			local themeTable = theme.getTheme().palette
+			local cachedTheme = {}
+			local colorNames = {}
+			local savedThemesNames = {}
+			table.foreach(themeTable,function(i)
+				table.insert(colorNames, i)
+			end)
+			table.foreach(theme.getThemes(), function(_, _theme)
+				table.insert(savedThemesNames, {
+					DisplayValue = _theme.name,
+					Value = _theme.uid
+				})
+			end)
+
+			local _name = ""
+			local _colorPicker,_reset,_themeNames,_delete,_save,_changeName,_confirmName
+			local isToggledE = false
+			local displayReset = false
+			local function editToggle(value)
+				if value then
+					_themeNames:Visible()
+					_colorPicker:Visible()
+					if displayReset then
+						_reset:Visible()
+					end
+					if theme.getTheme().uid ~= "original" then
+						_changeName:Visible()
+						_confirmName:Visible()
+					else
+						_changeName:Invisible()
+						_confirmName:Invisible()
+					end
+				else
+					_reset:Invisible()
+					_colorPicker:Invisible()
+					_themeNames:Invisible()
+					_changeName:Invisible()
+					_confirmName:Invisible()
+				end
+			end
+
+			local savedThemesDD = _settings:Dropdown({
+				Name = "Current Theme",
+				Items = savedThemesNames,
+				Default = theme.getTheme().uid,
+				Callback = function(uid)
+					theme.set(uid)
+					if _colorPicker and _name ~= "" then
+						_colorPicker:SetColor(theme.get(_name))
+					end
+					if uid == "original" and _delete then
+						_delete:Disable()
+					elseif uid ~= "original" and _delete then
+						_delete:Enable()
+					end
+					if uid == "original" and _save then
+						_save:Disable()
+					elseif uid ~= "original" and _save then
+						_save:Enable()
+					end
+					if _confirmName then
+						editToggle(isToggledE)
+					end
+				end
+			})
+			local function refreshThemes(value:string?)
+				table.clear(savedThemesNames)
+				table.foreach(theme.getThemes(), function(_, _theme)
+					table.insert(savedThemesNames, {
+						DisplayValue = _theme.name,
+						Value = _theme.uid
+					})
+				end)
+				savedThemesDD:SetItems(savedThemesNames)
+				if value then
+					savedThemesDD:SelectItem(value)
+				end
+			end
+
+			theme.onChange(function()
+				savedThemesDD:SelectItem(theme.getTheme().uid)
+				table.clear(cachedTheme)
+				table.foreach(theme.getTheme().palette, function(i,v)
+					cachedTheme[i] = v
+				end)
+			end)
+			theme.onCreate(function()
+				refreshThemes()
+			end)
+
+			local themeGroup = _settings:ButtonGroup()
+			local isToggledC = false
+			local _nameTheme,_createTheme,_cancelTheme
+			local function createToggle(value)
+				if value then
+					_nameTheme:Visible()
+					_createTheme:Visible()
+					_cancelTheme:Visible()
+				else
+					_nameTheme:Invisible()
+					_createTheme:Invisible()
+					_cancelTheme:Invisible()
+				end
+			end
+
+			-- Edit Button
+
+			themeGroup:Button({
+				Name = "Edit",
+				Callback = function()
+					isToggledC = false
+					createToggle(false)
+					isToggledE = not isToggledE
+					editToggle(isToggledE)
+				end
+			})
+
+			_themeNames = _settings:Dropdown({
+				Name = "Colors",
+				Visible = false,
+				Items = colorNames,
+				Callback = function(v)
+					_name = v
+					_colorPicker:SetColor(theme.get(_name))
+					_colorPicker:Enable()
+					_colorPicker:SetName(`Editing: {_name}`)
+				end
+			})
+			_colorPicker = _settings:ColorPicker({
+				Name = "Editing Color: ",
+				IsEnabled = false,
+				Visible = false,
+				DisabledText = "Select Color First!",
+				HideTransparency = true,
+				Callback = function(color)
+					local currentTheme = theme.getTheme().palette
+					if currentTheme[_name]:ToHex() ~= color:ToHex() then
+						displayReset = true
+						_reset:Visible()
+					else
+						_reset:Invisible()
+						displayReset = false
+					end
+					theme.edit(_name, color)
+				end
+			})
+			_reset = _settings:Button({
+				Name = "Reset Color",
+				Visible = false,
+				Callback = function()
+					displayReset = false
+					_colorPicker:SetColor(cachedTheme[_name])
+					_reset:Invisible()
+				end
+			})
+			local newName = ""
+			_changeName = _settings:TextBox({
+				Name = "New Name",
+				Visible = false,
+				Callback = function(v)
+					newName = v
+				end
+			})
+			_confirmName = _settings:Button({
+				Name = "Set Name",
+				Visible = false,
+				Callback = function()
+					theme.editTheme(theme.getTheme().uid, "name", newName)
+					refreshThemes()
+					_changeName:SetInput("")
+				end
+			})
+
+			-- Create Button
+
+			local _themeName = ""
+			themeGroup:Button({
+				Name = "Create",
+				Callback = function()
+					isToggledE = false
+					editToggle(false)
+					isToggledC = not isToggledC
+					createToggle(isToggledC)
+				end
+			})
+
+			_nameTheme = _settings:TextBox({
+				Name = "Name your theme",
+				Visible = false,
+				Callback = function(v)
+					_themeName = v
+				end
+			})
+			_createTheme = _settings:Button({
+				Name = "Create theme",
+				Visible = false,
+				Callback = function()
+					if _themeName == "" then
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = "Theme name cannot be empty!",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+						return
+					end
+					local newTheme = theme.create(_themeName, theme.getColors())
+					local response = {theme.set(newTheme)}
+
+					if response[1] then
+						refreshThemes(newTheme)
+						isToggledC = false
+						createToggle(isToggledC)
+					end
+				end
+			})
+			_cancelTheme = _settings:Button({
+				Name = "Cancel",
+				Visible = false,
+				Callback = function()
+					isToggledC = false
+					createToggle(isToggledC)
+					_nameTheme:SetInput("")
+				end
+			})
+
+			-- Save Button
+
+			_save = themeGroup:Button({
+				Name = "Save",
+				DisabledText = "Disabled",
+				Callback = function()
+					local response = theme.save(theme.getTheme().uid)
+					if response then
+						task.wait()
+						local currentTheme = theme.getTheme().palette
+						if currentTheme[_name]:ToHex() ~= cachedTheme[_name]:ToHex() then
+							displayReset = true
+							_reset:Visible()
+						else
+							_reset:Invisible()
+							displayReset = false
+						end
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Saved theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Theme Manager Error",
+							Body = `Couldn't find/save theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+
+			-- Delete Button
+
+			_delete = themeGroup:Button({
+				Name = "Delete",
+				DisabledText = "Disabled",
+				Callback = function()
+					local response = {theme.find(theme.getTheme().uid)}
+					if response[1] then
+						local _theme = response[2]
+						theme.delete(_theme.uid)
+						refreshThemes(defaultTheme)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Deleted theme with uid "{_theme.uid}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Theme Manager Error",
+							Body = `Couldn't find theme with uid "{theme.getTheme().uid}"`,
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+		end
+
+		-- Configuration Manager
+
+		if windowProperty.UseConfig then
+			_settings:Divider()
+			local configNames = {}
+			table.foreach(flagCreator.getConfigs(), function(_, _config)
+				table.insert(configNames, {
+					DisplayValue = _config.name,
+					Value = _config.uid
+				})
+			end)
+			local selectedConfig = ""
+			local _save, _delete
+
+			local configs = _settings:Dropdown({
+				Name = "Configs",
+				Items = configNames,
+				Default = flagCreator.getConfig().uid,
+				AlwaysOpen = true,
+				Callback = function(uid)
+					selectedConfig = uid
+					local config = flagCreator.find(uid)
+					if not config then
+						_delete:Enable()
+						_save:Enable()
+						return
+					end
+					if config.lock and _delete then
+						_delete:Disable()
+						_save:Disable()
+					elseif not config.lock and _delete then
+						_delete:Enable()
+						_save:Enable()
+					end
+				end
+			})
+			local configButtons = _settings:ButtonGroup()
+			configButtons:Button({
+				Name = "Load",
+				Callback = function()
+					if selectedConfig ~= "" then
+						flagCreator.set(selectedConfig)
+						local _config = flagCreator.find(selectedConfig)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Set configuration to "{_config.name}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+			local function refreshConfigList(value)
+				table.clear(configNames)
+				table.foreach(flagCreator.getConfigs(), function(_, _config)
+					table.insert(configNames, {
+						DisplayValue = _config.name,
+						Value = _config.uid
+					})
+				end)
+				configs:SetItems(configNames)
+				if value then
+					configs:SelectItem(value)
+				end
+			end
+			flagCreator.onCreate(refreshConfigList)
+			flagCreator.onSelect(refreshConfigList)
+
+			-- Create
+
+			local createA, createB, createC
+			local configName = ""
+			configButtons:Button({
+				Name = "Create",
+				Callback = function()
+					configButtons:Invisible()
+					configs:Invisible()
+					createA:Visible()
+					createB:Visible()
+					createC:Visible()
+				end
+			})
+
+			createA = _settings:TextBox({
+				Visible = false,
+				Name = "Name your configuration",
+				Callback = function(name)
+					configName = name
+				end
+			})
+			createB = _settings:Button({
+				Visible = false,
+				Name = "Complete new configuration",
+				Callback = function()
+					if configName ~= "" then
+						flagCreator.create(configName, nil, false, nil)
+
+						refreshConfigList()
+
+						configButtons:Visible()
+						configs:Visible()
+						createA:Invisible()
+						createB:Invisible()
+						createC:Invisible()
+
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Created "{configName}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+						createA:SetInput("")
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "Name cannot be empty",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+			createC = _settings:Button({
+				Visible = false,
+				Name = "Cancel",
+				Callback = function()
+					configButtons:Visible()
+					configs:Visible()
+					createA:Invisible()
+					createB:Invisible()
+					createC:Invisible()
+					createA:SetInput("")
+				end
+			})
+
+			-- Save
+
+			_save = configButtons:Button({
+				Name = "Save",
+				DisabledText = "Disabled",
+				Callback = function()
+					if selectedConfig ~= "" then
+						flagCreator.save(selectedConfig)
+						local _config = flagCreator.find(selectedConfig)
+						darius:Notify({
+							Title = windowProperty.Title,
+							Body = `Saved configuration "{_config.name}"`,
+							Duration = 3,
+							Image = icons.check
+						})
+					else
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+					end
+				end
+			})
+
+			-- Delete
+
+			_delete = configButtons:Button({
+				Name = "Delete",
+				DisabledText = "Disabled",
+				Callback = function()
+					if selectedConfig == "" then
+						darius:Notify({
+							Title = "Configuration Error",
+							Body = "No configuration selected",
+							Duration = 3,
+							Image = icons.alert,
+							ImageColor = theme.get("red")
+						})
+						return
+					end
+					flagCreator.delete(selectedConfig)
+					refreshConfigList()
+				end
+			})
+		end
+		--[[
+		_settings:Button({
+			Name = "files",
+			Callback = function()
+				customFunctions.printFileSystem()
+
+			end
+		})
+		_settings:Button({
+			Name = "configs",
+			Callback = function()
+				print(flagCreator.getConfigs())
+			end
+		})]]
 	end
 
 	if customFunctions.getgenv then
@@ -3920,7 +4496,8 @@ end
 return xtypeof
 end)() end,
     [57] = function()local wax,script,require=ImportGlobals(57)local ImportGlobals return (function(...)local randomString = require(script.Parent.Parent.utilities.randomString)
-local fusion = require(script.Parent.Fusion)
+local bundles = require(script.Parent)
+local fusion = bundles.Fusion
 local value = fusion.Value
 
 local data = {}
@@ -4000,21 +4577,28 @@ local HttpService = services.HttpService
 local fusion = require(script.Parent).Fusion
 local observe = fusion.Observer
 local value = fusion.Value
-local connections = require(script.Parent.Parent.utilities).connections
-local customFunctions = require(script.Parent.Parent.utilities).customFunctions
+
+local utilities = require(script.Parent.Parent.utilities)
+local connections = utilities.connections
+local customFunctions = utilities.customFunctions
+local randomString = utilities.randomString
 
 local funcs = {}
 local flags = data.add({list = {}},"flags")
 local names = {}
 local preregistered = {}
+local functionsOnCreate = {}
+local functionsOnSelect = {}
+local configs = {}
+local potentialFromFiles = {}
+funcs.currentConfig = {}
+funcs.writeFiles = false
+funcs.path = ""
 
 local types = {
     ['toggle'] = function(flag)
         local boolean = flag.status.boolean
         connections.add(observe(boolean):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(boolean)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -4023,9 +4607,6 @@ local types = {
     ['dropdown'] = function(flag)
         local observable = flag.status.multiselect and flag.status.items or flag.status.item
         connections.add(observe(observable):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(observable)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -4034,9 +4615,6 @@ local types = {
     ['keybind'] = function(flag)
         local observable = flag.status.mobile and flag.status.coordinate or flag.status.keycode
         connections.add(observe(observable):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(observable)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -4045,9 +4623,6 @@ local types = {
     ['slider'] = function(flag)
         local percentageOf = flag.status.percentageOf
         connections.add(observe(percentageOf):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(percentageOf)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -4056,9 +4631,6 @@ local types = {
     ['textbox'] = function(flag)
         local correctText = flag.status.correctText
         connections.add(observe(correctText):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             local cValue = get(correctText)
             flag.user.Value = cValue
             flag.bindableEvent:Fire(cValue)
@@ -4068,16 +4640,10 @@ local types = {
         local color = flag.status.color
         local transparency = flag.status.transparency
         connections.add(observe(color):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             flag.user.Value = {get(color), get(transparency)}
             flag.bindableEvent:Fire(unpack(flag.user.Value))
         end))
         connections.add(observe(transparency):onChange(function()
-            if not flag.private then
-                task.spawn(funcs.export)
-            end
             flag.user.Value = {get(color), get(transparency)}
             flag.bindableEvent:Fire(unpack(flag.user.Value))
         end))
@@ -4092,18 +4658,21 @@ local cleaner = {
         if status.keycode then
             clean.keycode = get(status.keycode)
         end
+        if get(status.coordinate) then
+            clean.coordinate = {X = get(status.coordinate).X, Y = get(status.coordinate).Y}
+        end
         return clean
     end,
     ['dropdown'] = function(status)
-        return status.multiselect and get(status.items) or get(status.item)
+        return status.multiselect and {unpack(get(status.items))} or get(status.item)
     end,
     ['keybind'] = function(status)
         local clean = {}
         if status.keycode then
             clean.keycode = get(status.keycode)
         end
-        if status.coordinate then
-            clean.coordinate = get(status.coordinate)
+        if get(status.coordinate) then
+            clean.coordinate = {X = get(status.coordinate).X, Y = get(status.coordinate).Y}
         end
         return clean
     end,
@@ -4114,17 +4683,18 @@ local cleaner = {
         return get(status.correctText)
     end,
     ['colorpicker'] = function(status)
-        return {color = get(status.color), transparency = get(status.transparency)}
+        return {color = get(status.color):ToHex(), transparency = get(status.transparency)}
     end
 }
 
-function funcs.preregister(name)
+function funcs.preregister(name, preregisteredValue)
     local flagEvent = fusion.New "BindableEvent" {}
     local onChange = {}
     function onChange:Connect(func)
         assert(typeof(func) == "function", "Connect only takes functions")
         connections.add(flagEvent.Event:Connect(func))
     end
+    local fileChange = (fusion.New "BindableEvent" {})
     local _flag
     _flag = {
         name = name,
@@ -4132,7 +4702,9 @@ function funcs.preregister(name)
         type = "unknown",
         preregistered = true,
         bindableEvent = flagEvent,
-        file = value({}),
+        file = fileChange.Event,
+        fileEvent = fileChange,
+        preregisteredValue = preregisteredValue,
         user = {
             Value = nil,
             OnChange = setmetatable(onChange,{
@@ -4161,6 +4733,7 @@ function funcs.register(name, default, type, private)
     end
     local _flag
     if not preregistered[name] then
+        local fileChange = (fusion.New "BindableEvent" {})
         _flag = {
             name = name,
             status = default,
@@ -4168,7 +4741,8 @@ function funcs.register(name, default, type, private)
             private = private,
             preregistered = false,
             bindableEvent = flagEvent,
-            file = value({}),
+            file = fileChange.Event,
+            fileEvent = fileChange,
             user = {
                 Value = nil,
                 OnChange = setmetatable(onChange,{
@@ -4186,7 +4760,6 @@ function funcs.register(name, default, type, private)
     else
         _flag = preregistered[name]
         _flag.type = type
-        _flag.preregistered = false
         _flag.status = default
         _flag.private = private
         types[_flag.type](_flag)
@@ -4195,33 +4768,147 @@ function funcs.register(name, default, type, private)
     return _flag
 end
 
-funcs.config = value("")
+function funcs.find(uid)
+    for i,v in configs do
+        if v.uid == uid then
+            return v, i
+        end
+    end
+    return false
+end
 
-function funcs.export()
-    local exported = {}
-    local _list = get(flags.list)
-    for _,flag in _list do
+function funcs.create(name, uid, fromFile, tbl, fromSet, lock)
+    fromFile = fromFile or false
+    fromSet = fromSet or false
+    lock = lock or false
+    if uid == "original" and fromFile then
+        return
+    end
+    if fromSet and fromFile then
+        table.insert(potentialFromFiles, uid)
+    end
+    if fromSet and not fromFile then
+        for _,v in potentialFromFiles do
+            local config = funcs.find(v)
+            if config and config.name == name then
+                return v
+            end
+        end
+    end
+
+    uid = uid or randomString(5)
+    local config = {}
+    config.name = name
+    config.fromSet = fromSet
+    config.lock = lock
+    config.uid = uid
+    config.flagValues = {}
+    if tbl ~= nil then
+        config.flagValues = tbl
+    else
+        for _,flag in get(flags.list) do
+            if flag.private then
+                continue
+            end
+            if flag.type == "unknown" then
+                continue
+            end
+            config.flagValues[flag.name] = cleaner[flag.type](flag.status)
+        end
+    end
+    table.insert(configs, config)
+    if funcs.writeFiles then
+        customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
+    end
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v)
+        end
+    end)
+    return uid
+end
+
+function funcs.init()
+    if funcs.writeFiles then
+        for _,file in customFunctions.listfiles(funcs.path) do
+            local config = HttpService:JSONDecode(customFunctions.readfile(file))
+            funcs.create(config.name, config.uid, true, config.flagValues, config.fromSet, config.lock)
+        end
+    end
+end
+
+function load(config)
+    for i,v in config.flagValues do
+        local flag = get(flags.list)[i]
+        if not flag then
+            continue
+        end
+        flag.fileEvent:Fire(v)
+    end
+end
+
+function funcs.set(uid)
+    if not uid then
+        funcs.currentConfig = {}
+        return
+    end
+    local config = funcs.find(uid)
+    if not config then
+        return
+    end
+    funcs.currentConfig = config
+    load(config)
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v, uid)
+        end
+    end)
+end
+
+function funcs.save(uid)
+    local config = funcs.find(uid)
+    for _,flag in get(flags.list) do
         if flag.private then
             continue
         end
         if flag.type == "unknown" then
             continue
         end
-        exported[flag.name] = cleaner[flag.type](flag.status)
+        config.flagValues[flag.name] = cleaner[flag.type](flag.status)
     end
-    if get(funcs.config) ~= "" then
-        customFunctions.writefile(get(funcs.config), HttpService:JSONEncode(exported))
+    if funcs.writeFiles then
+        customFunctions.writefile(`{funcs.path}/{config.uid}.json`, HttpService:JSONEncode(config))
     end
 end
 
-function funcs.load(fileTable)
-    for i,v in fileTable do
-        local flag = get(flags.list)[i]
-        if not flag then
-            continue
+function funcs.delete(uid)
+    local config, index = funcs.find(uid)
+    if config then
+        if funcs.writeFiles then
+            if customFunctions.isfile(`{funcs.path}/{config.uid}.json`) then
+                customFunctions.delfile(`{funcs.path}/{config.uid}.json`)
+                table.remove(configs, index)
+            end
         end
-        flag.file:set(v)
+        table.remove(configs, index)
     end
+    funcs.set(nil)
+end
+function funcs.export()
+    return HttpService:JSONEncode(funcs.currentConfig)
+end
+
+function funcs.getConfigs()
+    return configs
+end
+function funcs.getConfig()
+    return funcs.currentConfig
+end
+function funcs.onCreate(func)
+    table.insert(functionsOnCreate, func)
+end
+function funcs.onSelect(func)
+    table.insert(functionsOnSelect, func)
 end
 
 return funcs
@@ -4241,832 +4928,22 @@ end)() end,
     ['search'] = "rbxassetid://10734943674",
     ['finger'] = "rbxassetid://10734929723",
     ['alert'] = "rbxassetid://10709752996",
-    ['paint'] = "rbxassetid://10734910187"
+    ['paint'] = "rbxassetid://10734910187",
+    ['cog'] = "rbxassetid://10709810948"
 }
 end)() end,
-    [60] = function()local wax,script,require=ImportGlobals(60)local ImportGlobals return (function(...)--[[ This file was @generated by Tarmac. It is not intended for manual editing.
-local assets = {
-	["accessibility"] = "rbxassetid://10709751939",
-	["activity"] = "rbxassetid://10709752035",
-	["air-vent"] = "rbxassetid://10709752131",
-	["airplay"] = "rbxassetid://10709752254",
-	["alarm-check"] = "rbxassetid://10709752405",
-	["alarm-clock"] = "rbxassetid://10709752630",
-	["alarm-clock-off"] = "rbxassetid://10709752508",
-	["alarm-minus"] = "rbxassetid://10709752732",
-	["alarm-plus"] = "rbxassetid://10709752825",
-	["album"] = "rbxassetid://10709752906",
-	["alert-circle"] = "rbxassetid://10709752996",
-	["alert-octagon"] = "rbxassetid://10709753064",
-	["alert-triangle"] = "rbxassetid://10709753149",
-	["align-center"] = "rbxassetid://10709753570",
-	["align-center-horizontal"] = "rbxassetid://10709753272",
-	["align-center-vertical"] = "rbxassetid://10709753421",
-	["align-end-horizontal"] = "rbxassetid://10709753692",
-	["align-end-vertical"] = "rbxassetid://10709753808",
-	["align-horizontal-distribute-center"] = "rbxassetid://10747779791",
-	["align-horizontal-distribute-end"] = "rbxassetid://10747784534",
-	["align-horizontal-distribute-start"] = "rbxassetid://10709754118",
-	["align-horizontal-justify-center"] = "rbxassetid://10709754204",
-	["align-horizontal-justify-end"] = "rbxassetid://10709754317",
-	["align-horizontal-justify-start"] = "rbxassetid://10709754436",
-	["align-horizontal-space-around"] = "rbxassetid://10709754590",
-	["align-horizontal-space-between"] = "rbxassetid://10709754749",
-	["align-justify"] = "rbxassetid://10709759610",
-	["align-left"] = "rbxassetid://10709759764",
-	["align-right"] = "rbxassetid://10709759895",
-	["align-start-horizontal"] = "rbxassetid://10709760051",
-	["align-start-vertical"] = "rbxassetid://10709760244",
-	["align-vertical-distribute-center"] = "rbxassetid://10709760351",
-	["align-vertical-distribute-end"] = "rbxassetid://10709760434",
-	["align-vertical-distribute-start"] = "rbxassetid://10709760612",
-	["align-vertical-justify-center"] = "rbxassetid://10709760814",
-	["align-vertical-justify-end"] = "rbxassetid://10709761003",
-	["align-vertical-justify-start"] = "rbxassetid://10709761176",
-	["align-vertical-space-around"] = "rbxassetid://10709761324",
-	["align-vertical-space-between"] = "rbxassetid://10709761434",
-	["anchor"] = "rbxassetid://10709761530",
-	["angry"] = "rbxassetid://10709761629",
-	["annoyed"] = "rbxassetid://10709761722",
-	["aperture"] = "rbxassetid://10709761813",
-	["apple"] = "rbxassetid://10709761889",
-	["archive"] = "rbxassetid://10709762233",
-	["archive-restore"] = "rbxassetid://10709762058",
-	["armchair"] = "rbxassetid://10709762327",
-	["arrow-big-down"] = "rbxassetid://10747796644",
-	["arrow-big-left"] = "rbxassetid://10709762574",
-	["arrow-big-right"] = "rbxassetid://10709762727",
-	["arrow-big-up"] = "rbxassetid://10709762879",
-	["arrow-down"] = "rbxassetid://10709767827",
-	["arrow-down-circle"] = "rbxassetid://10709763034",
-	["arrow-down-left"] = "rbxassetid://10709767656",
-	["arrow-down-right"] = "rbxassetid://10709767750",
-	["arrow-left"] = "rbxassetid://10709768114",
-	["arrow-left-circle"] = "rbxassetid://10709767936",
-	["arrow-left-right"] = "rbxassetid://10709768019",
-	["arrow-right"] = "rbxassetid://10709768347",
-	["arrow-right-circle"] = "rbxassetid://10709768226",
-	["arrow-up"] = "rbxassetid://10709768939",
-	["arrow-up-circle"] = "rbxassetid://10709768432",
-	["arrow-up-down"] = "rbxassetid://10709768538",
-	["arrow-up-left"] = "rbxassetid://10709768661",
-	["arrow-up-right"] = "rbxassetid://10709768787",
-	["asterisk"] = "rbxassetid://10709769095",
-	["at-sign"] = "rbxassetid://10709769286",
-	["award"] = "rbxassetid://10709769406",
-	["axe"] = "rbxassetid://10709769508",
-	["axis-3d"] = "rbxassetid://10709769598",
-	["baby"] = "rbxassetid://10709769732",
-	["backpack"] = "rbxassetid://10709769841",
-	["baggage-claim"] = "rbxassetid://10709769935",
-	["banana"] = "rbxassetid://10709770005",
-	["banknote"] = "rbxassetid://10709770178",
-	["bar-chart"] = "rbxassetid://10709773755",
-	["bar-chart-2"] = "rbxassetid://10709770317",
-	["bar-chart-3"] = "rbxassetid://10709770431",
-	["bar-chart-4"] = "rbxassetid://10709770560",
-	["bar-chart-horizontal"] = "rbxassetid://10709773669",
-	["barcode"] = "rbxassetid://10747360675",
-	["baseline"] = "rbxassetid://10709773863",
-	["bath"] = "rbxassetid://10709773963",
-	["battery"] = "rbxassetid://10709774640",
-	["battery-charging"] = "rbxassetid://10709774068",
-	["battery-full"] = "rbxassetid://10709774206",
-	["battery-low"] = "rbxassetid://10709774370",
-	["battery-medium"] = "rbxassetid://10709774513",
-	["beaker"] = "rbxassetid://10709774756",
-	["bed"] = "rbxassetid://10709775036",
-	["bed-double"] = "rbxassetid://10709774864",
-	["bed-single"] = "rbxassetid://10709774968",
-	["beer"] = "rbxassetid://10709775167",
-	["bell"] = "rbxassetid://10709775704",
-	["bell-minus"] = "rbxassetid://10709775241",
-	["bell-off"] = "rbxassetid://10709775320",
-	["bell-plus"] = "rbxassetid://10709775448",
-	["bell-ring"] = "rbxassetid://10709775560",
-	["bike"] = "rbxassetid://10709775894",
-	["binary"] = "rbxassetid://10709776050",
-	["bitcoin"] = "rbxassetid://10709776126",
-	["bluetooth"] = "rbxassetid://10709776655",
-	["bluetooth-connected"] = "rbxassetid://10709776240",
-	["bluetooth-off"] = "rbxassetid://10709776344",
-	["bluetooth-searching"] = "rbxassetid://10709776501",
-	["bold"] = "rbxassetid://10747813908",
-	["bomb"] = "rbxassetid://10709781460",
-	["bone"] = "rbxassetid://10709781605",
-	["book"] = "rbxassetid://10709781824",
-	["book-open"] = "rbxassetid://10709781717",
-	["bookmark"] = "rbxassetid://10709782154",
-	["bookmark-minus"] = "rbxassetid://10709781919",
-	["bookmark-plus"] = "rbxassetid://10709782044",
-	["bot"] = "rbxassetid://10709782230",
-	["box"] = "rbxassetid://10709782497",
-	["box-select"] = "rbxassetid://10709782342",
-	["boxes"] = "rbxassetid://10709782582",
-	["briefcase"] = "rbxassetid://10709782662",
-	["brush"] = "rbxassetid://10709782758",
-	["bug"] = "rbxassetid://10709782845",
-	["building"] = "rbxassetid://10709783051",
-	["building-2"] = "rbxassetid://10709782939",
-	["bus"] = "rbxassetid://10709783137",
-	["cake"] = "rbxassetid://10709783217",
-	["calculator"] = "rbxassetid://10709783311",
-	["calendar"] = "rbxassetid://10709789505",
-	["calendar-check"] = "rbxassetid://10709783474",
-	["calendar-check-2"] = "rbxassetid://10709783392",
-	["calendar-clock"] = "rbxassetid://10709783577",
-	["calendar-days"] = "rbxassetid://10709783673",
-	["calendar-heart"] = "rbxassetid://10709783835",
-	["calendar-minus"] = "rbxassetid://10709783959",
-	["calendar-off"] = "rbxassetid://10709788784",
-	["calendar-plus"] = "rbxassetid://10709788937",
-	["calendar-range"] = "rbxassetid://10709789053",
-	["calendar-search"] = "rbxassetid://10709789200",
-	["calendar-x"] = "rbxassetid://10709789407",
-	["calendar-x-2"] = "rbxassetid://10709789329",
-	["camera"] = "rbxassetid://10709789686",
-	["camera-off"] = "rbxassetid://10747822677",
-	["car"] = "rbxassetid://10709789810",
-	["carrot"] = "rbxassetid://10709789960",
-	["cast"] = "rbxassetid://10709790097",
-	["charge"] = "rbxassetid://10709790202",
-	["check"] = "rbxassetid://10709790644",
-	["check-circle"] = "rbxassetid://10709790387",
-	["check-circle-2"] = "rbxassetid://10709790298",
-	["check-square"] = "rbxassetid://10709790537",
-	["chef-hat"] = "rbxassetid://10709790757",
-	["cherry"] = "rbxassetid://10709790875",
-	["chevron-down"] = "rbxassetid://10709790948",
-	["chevron-first"] = "rbxassetid://10709791015",
-	["chevron-last"] = "rbxassetid://10709791130",
-	["chevron-left"] = "rbxassetid://10709791281",
-	["chevron-right"] = "rbxassetid://10709791437",
-	["chevron-up"] = "rbxassetid://10709791523",
-	["chevrons-down"] = "rbxassetid://10709796864",
-	["chevrons-down-up"] = "rbxassetid://10709791632",
-	["chevrons-left"] = "rbxassetid://10709797151",
-	["chevrons-left-right"] = "rbxassetid://10709797006",
-	["chevrons-right"] = "rbxassetid://10709797382",
-	["chevrons-right-left"] = "rbxassetid://10709797274",
-	["chevrons-up"] = "rbxassetid://10709797622",
-	["chevrons-up-down"] = "rbxassetid://10709797508",
-	["chrome"] = "rbxassetid://10709797725",
-	["circle"] = "rbxassetid://10709798174",
-	["circle-dot"] = "rbxassetid://10709797837",
-	["circle-ellipsis"] = "rbxassetid://10709797985",
-	["circle-slashed"] = "rbxassetid://10709798100",
-	["citrus"] = "rbxassetid://10709798276",
-	["clapperboard"] = "rbxassetid://10709798350",
-	["clipboard"] = "rbxassetid://10709799288",
-	["clipboard-check"] = "rbxassetid://10709798443",
-	["clipboard-copy"] = "rbxassetid://10709798574",
-	["clipboard-edit"] = "rbxassetid://10709798682",
-	["clipboard-list"] = "rbxassetid://10709798792",
-	["clipboard-signature"] = "rbxassetid://10709798890",
-	["clipboard-type"] = "rbxassetid://10709798999",
-	["clipboard-x"] = "rbxassetid://10709799124",
-	["clock"] = "rbxassetid://10709805144",
-	["clock-1"] = "rbxassetid://10709799535",
-	["clock-10"] = "rbxassetid://10709799718",
-	["clock-11"] = "rbxassetid://10709799818",
-	["clock-12"] = "rbxassetid://10709799962",
-	["clock-2"] = "rbxassetid://10709803876",
-	["clock-3"] = "rbxassetid://10709803989",
-	["clock-4"] = "rbxassetid://10709804164",
-	["clock-5"] = "rbxassetid://10709804291",
-	["clock-6"] = "rbxassetid://10709804435",
-	["clock-7"] = "rbxassetid://10709804599",
-	["clock-8"] = "rbxassetid://10709804784",
-	["clock-9"] = "rbxassetid://10709804996",
-	["cloud"] = "rbxassetid://10709806740",
-	["cloud-cog"] = "rbxassetid://10709805262",
-	["cloud-drizzle"] = "rbxassetid://10709805371",
-	["cloud-fog"] = "rbxassetid://10709805477",
-	["cloud-hail"] = "rbxassetid://10709805596",
-	["cloud-lightning"] = "rbxassetid://10709805727",
-	["cloud-moon"] = "rbxassetid://10709805942",
-	["cloud-moon-rain"] = "rbxassetid://10709805838",
-	["cloud-off"] = "rbxassetid://10709806060",
-	["cloud-rain"] = "rbxassetid://10709806277",
-	["cloud-rain-wind"] = "rbxassetid://10709806166",
-	["cloud-snow"] = "rbxassetid://10709806374",
-	["cloud-sun"] = "rbxassetid://10709806631",
-	["cloud-sun-rain"] = "rbxassetid://10709806475",
-	["cloudy"] = "rbxassetid://10709806859",
-	["clover"] = "rbxassetid://10709806995",
-	["code"] = "rbxassetid://10709810463",
-	["code-2"] = "rbxassetid://10709807111",
-	["codepen"] = "rbxassetid://10709810534",
-	["codesandbox"] = "rbxassetid://10709810676",
-	["coffee"] = "rbxassetid://10709810814",
-	["cog"] = "rbxassetid://10709810948",
-	["coins"] = "rbxassetid://10709811110",
-	["columns"] = "rbxassetid://10709811261",
-	["command"] = "rbxassetid://10709811365",
-	["compass"] = "rbxassetid://10709811445",
-	["component"] = "rbxassetid://10709811595",
-	["concierge-bell"] = "rbxassetid://10709811706",
-	["connection"] = "rbxassetid://10747361219",
-	["contact"] = "rbxassetid://10709811834",
-	["contrast"] = "rbxassetid://10709811939",
-	["cookie"] = "rbxassetid://10709812067",
-	["copy"] = "rbxassetid://10709812159",
-	["copyleft"] = "rbxassetid://10709812251",
-	["copyright"] = "rbxassetid://10709812311",
-	["corner-down-left"] = "rbxassetid://10709812396",
-	["corner-down-right"] = "rbxassetid://10709812485",
-	["corner-left-down"] = "rbxassetid://10709812632",
-	["corner-left-up"] = "rbxassetid://10709812784",
-	["corner-right-down"] = "rbxassetid://10709812939",
-	["corner-right-up"] = "rbxassetid://10709813094",
-	["corner-up-left"] = "rbxassetid://10709813185",
-	["corner-up-right"] = "rbxassetid://10709813281",
-	["cpu"] = "rbxassetid://10709813383",
-	["croissant"] = "rbxassetid://10709818125",
-	["crop"] = "rbxassetid://10709818245",
-	["cross"] = "rbxassetid://10709818399",
-	["crosshair"] = "rbxassetid://10709818534",
-	["crown"] = "rbxassetid://10709818626",
-	["cup-soda"] = "rbxassetid://10709818763",
-	["curly-braces"] = "rbxassetid://10709818847",
-	["currency"] = "rbxassetid://10709818931",
-	["database"] = "rbxassetid://10709818996",
-	["delete"] = "rbxassetid://10709819059",
-	["diamond"] = "rbxassetid://10709819149",
-	["dice-1"] = "rbxassetid://10709819266",
-	["dice-2"] = "rbxassetid://10709819361",
-	["dice-3"] = "rbxassetid://10709819508",
-	["dice-4"] = "rbxassetid://10709819670",
-	["dice-5"] = "rbxassetid://10709819801",
-	["dice-6"] = "rbxassetid://10709819896",
-	["dices"] = "rbxassetid://10723343321",
-	["diff"] = "rbxassetid://10723343416",
-	["disc"] = "rbxassetid://10723343537",
-	["divide"] = "rbxassetid://10723343805",
-	["divide-circle"] = "rbxassetid://10723343636",
-	["divide-square"] = "rbxassetid://10723343737",
-	["dollar-sign"] = "rbxassetid://10723343958",
-	["download"] = "rbxassetid://10723344270",
-	["download-cloud"] = "rbxassetid://10723344088",
-	["droplet"] = "rbxassetid://10723344432",
-	["droplets"] = "rbxassetid://10734883356",
-	["drumstick"] = "rbxassetid://10723344737",
-	["edit"] = "rbxassetid://10734883598",
-	["edit-2"] = "rbxassetid://10723344885",
-	["edit-3"] = "rbxassetid://10723345088",
-	["egg"] = "rbxassetid://10723345518",
-	["egg-fried"] = "rbxassetid://10723345347",
-	["electricity"] = "rbxassetid://10723345749",
-	["electricity-off"] = "rbxassetid://10723345643",
-	["equal"] = "rbxassetid://10723345990",
-	["equal-not"] = "rbxassetid://10723345866",
-	["eraser"] = "rbxassetid://10723346158",
-	["euro"] = "rbxassetid://10723346372",
-	["expand"] = "rbxassetid://10723346553",
-	["external-link"] = "rbxassetid://10723346684",
-	["eye"] = "rbxassetid://10723346959",
-	["eye-off"] = "rbxassetid://10723346871",
-	["factory"] = "rbxassetid://10723347051",
-	["fan"] = "rbxassetid://10723354359",
-	["fast-forward"] = "rbxassetid://10723354521",
-	["feather"] = "rbxassetid://10723354671",
-	["figma"] = "rbxassetid://10723354801",
-	["file"] = "rbxassetid://10723374641",
-	["file-archive"] = "rbxassetid://10723354921",
-	["file-audio"] = "rbxassetid://10723355148",
-	["file-audio-2"] = "rbxassetid://10723355026",
-	["file-axis-3d"] = "rbxassetid://10723355272",
-	["file-badge"] = "rbxassetid://10723355622",
-	["file-badge-2"] = "rbxassetid://10723355451",
-	["file-bar-chart"] = "rbxassetid://10723355887",
-	["file-bar-chart-2"] = "rbxassetid://10723355746",
-	["file-box"] = "rbxassetid://10723355989",
-	["file-check"] = "rbxassetid://10723356210",
-	["file-check-2"] = "rbxassetid://10723356100",
-	["file-clock"] = "rbxassetid://10723356329",
-	["file-code"] = "rbxassetid://10723356507",
-	["file-cog"] = "rbxassetid://10723356830",
-	["file-cog-2"] = "rbxassetid://10723356676",
-	["file-diff"] = "rbxassetid://10723357039",
-	["file-digit"] = "rbxassetid://10723357151",
-	["file-down"] = "rbxassetid://10723357322",
-	["file-edit"] = "rbxassetid://10723357495",
-	["file-heart"] = "rbxassetid://10723357637",
-	["file-image"] = "rbxassetid://10723357790",
-	["file-input"] = "rbxassetid://10723357933",
-	["file-json"] = "rbxassetid://10723364435",
-	["file-json-2"] = "rbxassetid://10723364361",
-	["file-key"] = "rbxassetid://10723364605",
-	["file-key-2"] = "rbxassetid://10723364515",
-	["file-line-chart"] = "rbxassetid://10723364725",
-	["file-lock"] = "rbxassetid://10723364957",
-	["file-lock-2"] = "rbxassetid://10723364861",
-	["file-minus"] = "rbxassetid://10723365254",
-	["file-minus-2"] = "rbxassetid://10723365086",
-	["file-output"] = "rbxassetid://10723365457",
-	["file-pie-chart"] = "rbxassetid://10723365598",
-	["file-plus"] = "rbxassetid://10723365877",
-	["file-plus-2"] = "rbxassetid://10723365766",
-	["file-question"] = "rbxassetid://10723365987",
-	["file-scan"] = "rbxassetid://10723366167",
-	["file-search"] = "rbxassetid://10723366550",
-	["file-search-2"] = "rbxassetid://10723366340",
-	["file-signature"] = "rbxassetid://10723366741",
-	["file-spreadsheet"] = "rbxassetid://10723366962",
-	["file-symlink"] = "rbxassetid://10723367098",
-	["file-terminal"] = "rbxassetid://10723367244",
-	["file-text"] = "rbxassetid://10723367380",
-	["file-type"] = "rbxassetid://10723367606",
-	["file-type-2"] = "rbxassetid://10723367509",
-	["file-up"] = "rbxassetid://10723367734",
-	["file-video"] = "rbxassetid://10723373884",
-	["file-video-2"] = "rbxassetid://10723367834",
-	["file-volume"] = "rbxassetid://10723374172",
-	["file-volume-2"] = "rbxassetid://10723374030",
-	["file-warning"] = "rbxassetid://10723374276",
-	["file-x"] = "rbxassetid://10723374544",
-	["file-x-2"] = "rbxassetid://10723374378",
-	["files"] = "rbxassetid://10723374759",
-	["film"] = "rbxassetid://10723374981",
-	["filter"] = "rbxassetid://10723375128",
-	["fingerprint"] = "rbxassetid://10723375250",
-	["flag"] = "rbxassetid://10723375890",
-	["flag-off"] = "rbxassetid://10723375443",
-	["flag-triangle-left"] = "rbxassetid://10723375608",
-	["flag-triangle-right"] = "rbxassetid://10723375727",
-	["flame"] = "rbxassetid://10723376114",
-	["flashlight"] = "rbxassetid://10723376471",
-	["flashlight-off"] = "rbxassetid://10723376365",
-	["flask-conical"] = "rbxassetid://10734883986",
-	["flask-round"] = "rbxassetid://10723376614",
-	["flip-horizontal"] = "rbxassetid://10723376884",
-	["flip-horizontal-2"] = "rbxassetid://10723376745",
-	["flip-vertical"] = "rbxassetid://10723377138",
-	["flip-vertical-2"] = "rbxassetid://10723377026",
-	["flower"] = "rbxassetid://10747830374",
-	["flower-2"] = "rbxassetid://10723377305",
-	["focus"] = "rbxassetid://10723377537",
-	["folder"] = "rbxassetid://10723387563",
-	["folder-archive"] = "rbxassetid://10723384478",
-	["folder-check"] = "rbxassetid://10723384605",
-	["folder-clock"] = "rbxassetid://10723384731",
-	["folder-closed"] = "rbxassetid://10723384893",
-	["folder-cog"] = "rbxassetid://10723385213",
-	["folder-cog-2"] = "rbxassetid://10723385036",
-	["folder-down"] = "rbxassetid://10723385338",
-	["folder-edit"] = "rbxassetid://10723385445",
-	["folder-heart"] = "rbxassetid://10723385545",
-	["folder-input"] = "rbxassetid://10723385721",
-	["folder-key"] = "rbxassetid://10723385848",
-	["folder-lock"] = "rbxassetid://10723386005",
-	["folder-minus"] = "rbxassetid://10723386127",
-	["folder-open"] = "rbxassetid://10723386277",
-	["folder-output"] = "rbxassetid://10723386386",
-	["folder-plus"] = "rbxassetid://10723386531",
-	["folder-search"] = "rbxassetid://10723386787",
-	["folder-search-2"] = "rbxassetid://10723386674",
-	["folder-symlink"] = "rbxassetid://10723386930",
-	["folder-tree"] = "rbxassetid://10723387085",
-	["folder-up"] = "rbxassetid://10723387265",
-	["folder-x"] = "rbxassetid://10723387448",
-	["folders"] = "rbxassetid://10723387721",
-	["form-input"] = "rbxassetid://10723387841",
-	["forward"] = "rbxassetid://10723388016",
-	["frame"] = "rbxassetid://10723394389",
-	["framer"] = "rbxassetid://10723394565",
-	["frown"] = "rbxassetid://10723394681",
-	["fuel"] = "rbxassetid://10723394846",
-	["function-square"] = "rbxassetid://10723395041",
-	["gamepad"] = "rbxassetid://10723395457",
-	["gamepad-2"] = "rbxassetid://10723395215",
-	["gauge"] = "rbxassetid://10723395708",
-	["gavel"] = "rbxassetid://10723395896",
-	["gem"] = "rbxassetid://10723396000",
-	["ghost"] = "rbxassetid://10723396107",
-	["gift"] = "rbxassetid://10723396402",
-	["gift-card"] = "rbxassetid://10723396225",
-	["git-branch"] = "rbxassetid://10723396676",
-	["git-branch-plus"] = "rbxassetid://10723396542",
-	["git-commit"] = "rbxassetid://10723396812",
-	["git-compare"] = "rbxassetid://10723396954",
-	["git-fork"] = "rbxassetid://10723397049",
-	["git-merge"] = "rbxassetid://10723397165",
-	["git-pull-request"] = "rbxassetid://10723397431",
-	["git-pull-request-closed"] = "rbxassetid://10723397268",
-	["git-pull-request-draft"] = "rbxassetid://10734884302",
-	["glass"] = "rbxassetid://10723397788",
-	["glass-2"] = "rbxassetid://10723397529",
-	["glass-water"] = "rbxassetid://10723397678",
-	["glasses"] = "rbxassetid://10723397895",
-	["globe"] = "rbxassetid://10723404337",
-	["globe-2"] = "rbxassetid://10723398002",
-	["grab"] = "rbxassetid://10723404472",
-	["graduation-cap"] = "rbxassetid://10723404691",
-	["grape"] = "rbxassetid://10723404822",
-	["grid"] = "rbxassetid://10723404936",
-	["grip-horizontal"] = "rbxassetid://10723405089",
-	["grip-vertical"] = "rbxassetid://10723405236",
-	["hammer"] = "rbxassetid://10723405360",
-	["hand"] = "rbxassetid://10723405649",
-	["hand-metal"] = "rbxassetid://10723405508",
-	["hard-drive"] = "rbxassetid://10723405749",
-	["hard-hat"] = "rbxassetid://10723405859",
-	["hash"] = "rbxassetid://10723405975",
-	["haze"] = "rbxassetid://10723406078",
-	["headphones"] = "rbxassetid://10723406165",
-	["heart"] = "rbxassetid://10723406885",
-	["heart-crack"] = "rbxassetid://10723406299",
-	["heart-handshake"] = "rbxassetid://10723406480",
-	["heart-off"] = "rbxassetid://10723406662",
-	["heart-pulse"] = "rbxassetid://10723406795",
-	["help-circle"] = "rbxassetid://10723406988",
-	["hexagon"] = "rbxassetid://10723407092",
-	["highlighter"] = "rbxassetid://10723407192",
-	["history"] = "rbxassetid://10723407335",
-	["home"] = "rbxassetid://10723407389",
-	["hourglass"] = "rbxassetid://10723407498",
-	["ice-cream"] = "rbxassetid://10723414308",
-	["image"] = "rbxassetid://10723415040",
-	["image-minus"] = "rbxassetid://10723414487",
-	["image-off"] = "rbxassetid://10723414677",
-	["image-plus"] = "rbxassetid://10723414827",
-	["import"] = "rbxassetid://10723415205",
-	["inbox"] = "rbxassetid://10723415335",
-	["indent"] = "rbxassetid://10723415494",
-	["indian-rupee"] = "rbxassetid://10723415642",
-	["infinity"] = "rbxassetid://10723415766",
-	["info"] = "rbxassetid://10723415903",
-	["inspect"] = "rbxassetid://10723416057",
-	["italic"] = "rbxassetid://10723416195",
-	["japanese-yen"] = "rbxassetid://10723416363",
-	["joystick"] = "rbxassetid://10723416527",
-	["key"] = "rbxassetid://10723416652",
-	["keyboard"] = "rbxassetid://10723416765",
-	["lamp"] = "rbxassetid://10723417513",
-	["lamp-ceiling"] = "rbxassetid://10723416922",
-	["lamp-desk"] = "rbxassetid://10723417016",
-	["lamp-floor"] = "rbxassetid://10723417131",
-	["lamp-wall-down"] = "rbxassetid://10723417240",
-	["lamp-wall-up"] = "rbxassetid://10723417356",
-	["landmark"] = "rbxassetid://10723417608",
-	["languages"] = "rbxassetid://10723417703",
-	["laptop"] = "rbxassetid://10723423881",
-	["laptop-2"] = "rbxassetid://10723417797",
-	["lasso"] = "rbxassetid://10723424235",
-	["lasso-select"] = "rbxassetid://10723424058",
-	["laugh"] = "rbxassetid://10723424372",
-	["layers"] = "rbxassetid://10723424505",
-	["layout"] = "rbxassetid://10723425376",
-	["layout-dashboard"] = "rbxassetid://10723424646",
-	["layout-grid"] = "rbxassetid://10723424838",
-	["layout-list"] = "rbxassetid://10723424963",
-	["layout-template"] = "rbxassetid://10723425187",
-	["leaf"] = "rbxassetid://10723425539",
-	["library"] = "rbxassetid://10723425615",
-	["life-buoy"] = "rbxassetid://10723425685",
-	["lightbulb"] = "rbxassetid://10723425852",
-	["lightbulb-off"] = "rbxassetid://10723425762",
-	["line-chart"] = "rbxassetid://10723426393",
-	["link"] = "rbxassetid://10723426722",
-	["link-2"] = "rbxassetid://10723426595",
-	["link-2-off"] = "rbxassetid://10723426513",
-	["list"] = "rbxassetid://10723433811",
-	["list-checks"] = "rbxassetid://10734884548",
-	["list-end"] = "rbxassetid://10723426886",
-	["list-minus"] = "rbxassetid://10723426986",
-	["list-music"] = "rbxassetid://10723427081",
-	["list-ordered"] = "rbxassetid://10723427199",
-	["list-plus"] = "rbxassetid://10723427334",
-	["list-start"] = "rbxassetid://10723427494",
-	["list-video"] = "rbxassetid://10723427619",
-	["list-x"] = "rbxassetid://10723433655",
-	["loader"] = "rbxassetid://10723434070",
-	["loader-2"] = "rbxassetid://10723433935",
-	["locate"] = "rbxassetid://10723434557",
-	["locate-fixed"] = "rbxassetid://10723434236",
-	["locate-off"] = "rbxassetid://10723434379",
-	["lock"] = "rbxassetid://10723434711",
-	["log-in"] = "rbxassetid://10723434830",
-	["log-out"] = "rbxassetid://10723434906",
-	["luggage"] = "rbxassetid://10723434993",
-	["magnet"] = "rbxassetid://10723435069",
-	["mail"] = "rbxassetid://10734885430",
-	["mail-check"] = "rbxassetid://10723435182",
-	["mail-minus"] = "rbxassetid://10723435261",
-	["mail-open"] = "rbxassetid://10723435342",
-	["mail-plus"] = "rbxassetid://10723435443",
-	["mail-question"] = "rbxassetid://10723435515",
-	["mail-search"] = "rbxassetid://10734884739",
-	["mail-warning"] = "rbxassetid://10734885015",
-	["mail-x"] = "rbxassetid://10734885247",
-	["mails"] = "rbxassetid://10734885614",
-	["map"] = "rbxassetid://10734886202",
-	["map-pin"] = "rbxassetid://10734886004",
-	["map-pin-off"] = "rbxassetid://10734885803",
-	["maximize"] = "rbxassetid://10734886735",
-	["maximize-2"] = "rbxassetid://10734886496",
-	["medal"] = "rbxassetid://10734887072",
-	["megaphone"] = "rbxassetid://10734887454",
-	["megaphone-off"] = "rbxassetid://10734887311",
-	["meh"] = "rbxassetid://10734887603",
-	["menu"] = "rbxassetid://10734887784",
-	["message-circle"] = "rbxassetid://10734888000",
-	["message-square"] = "rbxassetid://10734888228",
-	["mic"] = "rbxassetid://10734888864",
-	["mic-2"] = "rbxassetid://10734888430",
-	["mic-off"] = "rbxassetid://10734888646",
-	["microscope"] = "rbxassetid://10734889106",
-	["microwave"] = "rbxassetid://10734895076",
-	["milestone"] = "rbxassetid://10734895310",
-	["minimize"] = "rbxassetid://10734895698",
-	["minimize-2"] = "rbxassetid://10734895530",
-	["minus"] = "rbxassetid://10734896206",
-	["minus-circle"] = "rbxassetid://10734895856",
-	["minus-square"] = "rbxassetid://10734896029",
-	["monitor"] = "rbxassetid://10734896881",
-	["monitor-off"] = "rbxassetid://10734896360",
-	["monitor-speaker"] = "rbxassetid://10734896512",
-	["moon"] = "rbxassetid://10734897102",
-	["more-horizontal"] = "rbxassetid://10734897250",
-	["more-vertical"] = "rbxassetid://10734897387",
-	["mountain"] = "rbxassetid://10734897956",
-	["mountain-snow"] = "rbxassetid://10734897665",
-	["mouse"] = "rbxassetid://10734898592",
-	["mouse-pointer"] = "rbxassetid://10734898476",
-	["mouse-pointer-2"] = "rbxassetid://10734898194",
-	["mouse-pointer-click"] = "rbxassetid://10734898355",
-	["move"] = "rbxassetid://10734900011",
-	["move-3d"] = "rbxassetid://10734898756",
-	["move-diagonal"] = "rbxassetid://10734899164",
-	["move-diagonal-2"] = "rbxassetid://10734898934",
-	["move-horizontal"] = "rbxassetid://10734899414",
-	["move-vertical"] = "rbxassetid://10734899821",
-	["music"] = "rbxassetid://10734905958",
-	["music-2"] = "rbxassetid://10734900215",
-	["music-3"] = "rbxassetid://10734905665",
-	["music-4"] = "rbxassetid://10734905823",
-	["navigation"] = "rbxassetid://10734906744",
-	["navigation-2"] = "rbxassetid://10734906332",
-	["navigation-2-off"] = "rbxassetid://10734906144",
-	["navigation-off"] = "rbxassetid://10734906580",
-	["network"] = "rbxassetid://10734906975",
-	["newspaper"] = "rbxassetid://10734907168",
-	["octagon"] = "rbxassetid://10734907361",
-	["option"] = "rbxassetid://10734907649",
-	["outdent"] = "rbxassetid://10734907933",
-	["package"] = "rbxassetid://10734909540",
-	["package-2"] = "rbxassetid://10734908151",
-	["package-check"] = "rbxassetid://10734908384",
-	["package-minus"] = "rbxassetid://10734908626",
-	["package-open"] = "rbxassetid://10734908793",
-	["package-plus"] = "rbxassetid://10734909016",
-	["package-search"] = "rbxassetid://10734909196",
-	["package-x"] = "rbxassetid://10734909375",
-	["paint-bucket"] = "rbxassetid://10734909847",
-	["paintbrush"] = "rbxassetid://10734910187",
-	["paintbrush-2"] = "rbxassetid://10734910030",
-	["palette"] = "rbxassetid://10734910430",
-	["palmtree"] = "rbxassetid://10734910680",
-	["paperclip"] = "rbxassetid://10734910927",
-	["party-popper"] = "rbxassetid://10734918735",
-	["pause"] = "rbxassetid://10734919336",
-	["pause-circle"] = "rbxassetid://10735024209",
-	["pause-octagon"] = "rbxassetid://10734919143",
-	["pen-tool"] = "rbxassetid://10734919503",
-	["pencil"] = "rbxassetid://10734919691",
-	["percent"] = "rbxassetid://10734919919",
-	["person-standing"] = "rbxassetid://10734920149",
-	["phone"] = "rbxassetid://10734921524",
-	["phone-call"] = "rbxassetid://10734920305",
-	["phone-forwarded"] = "rbxassetid://10734920508",
-	["phone-incoming"] = "rbxassetid://10734920694",
-	["phone-missed"] = "rbxassetid://10734920845",
-	["phone-off"] = "rbxassetid://10734921077",
-	["phone-outgoing"] = "rbxassetid://10734921288",
-	["pie-chart"] = "rbxassetid://10734921727",
-	["piggy-bank"] = "rbxassetid://10734921935",
-	["pin"] = "rbxassetid://10734922324",
-	["pin-off"] = "rbxassetid://10734922180",
-	["pipette"] = "rbxassetid://10734922497",
-	["pizza"] = "rbxassetid://10734922774",
-	["plane"] = "rbxassetid://10734922971",
-	["play"] = "rbxassetid://10734923549",
-	["play-circle"] = "rbxassetid://10734923214",
-	["plus"] = "rbxassetid://10734924532",
-	["plus-circle"] = "rbxassetid://10734923868",
-	["plus-square"] = "rbxassetid://10734924219",
-	["podcast"] = "rbxassetid://10734929553",
-	["pointer"] = "rbxassetid://10734929723",
-	["pound-sterling"] = "rbxassetid://10734929981",
-	["power"] = "rbxassetid://10734930466",
-	["power-off"] = "rbxassetid://10734930257",
-	["printer"] = "rbxassetid://10734930632",
-	["puzzle"] = "rbxassetid://10734930886",
-	["quote"] = "rbxassetid://10734931234",
-	["radio"] = "rbxassetid://10734931596",
-	["radio-receiver"] = "rbxassetid://10734931402",
-	["rectangle-horizontal"] = "rbxassetid://10734931777",
-	["rectangle-vertical"] = "rbxassetid://10734932081",
-	["recycle"] = "rbxassetid://10734932295",
-	["redo"] = "rbxassetid://10734932822",
-	["redo-2"] = "rbxassetid://10734932586",
-	["refresh-ccw"] = "rbxassetid://10734933056",
-	["refresh-cw"] = "rbxassetid://10734933222",
-	["refrigerator"] = "rbxassetid://10734933465",
-	["regex"] = "rbxassetid://10734933655",
-	["repeat"] = "rbxassetid://10734933966",
-	["repeat-1"] = "rbxassetid://10734933826",
-	["reply"] = "rbxassetid://10734934252",
-	["reply-all"] = "rbxassetid://10734934132",
-	["rewind"] = "rbxassetid://10734934347",
-	["rocket"] = "rbxassetid://10734934585",
-	["rocking-chair"] = "rbxassetid://10734939942",
-	["rotate-3d"] = "rbxassetid://10734940107",
-	["rotate-ccw"] = "rbxassetid://10734940376",
-	["rotate-cw"] = "rbxassetid://10734940654",
-	["rss"] = "rbxassetid://10734940825",
-	["ruler"] = "rbxassetid://10734941018",
-	["russian-ruble"] = "rbxassetid://10734941199",
-	["sailboat"] = "rbxassetid://10734941354",
-	["save"] = "rbxassetid://10734941499",
-	["scale"] = "rbxassetid://10734941912",
-	["scale-3d"] = "rbxassetid://10734941739",
-	["scaling"] = "rbxassetid://10734942072",
-	["scan"] = "rbxassetid://10734942565",
-	["scan-face"] = "rbxassetid://10734942198",
-	["scan-line"] = "rbxassetid://10734942351",
-	["scissors"] = "rbxassetid://10734942778",
-	["screen-share"] = "rbxassetid://10734943193",
-	["screen-share-off"] = "rbxassetid://10734942967",
-	["scroll"] = "rbxassetid://10734943448",
-	["search"] = "rbxassetid://10734943674",
-	["send"] = "rbxassetid://10734943902",
-	["separator-horizontal"] = "rbxassetid://10734944115",
-	["separator-vertical"] = "rbxassetid://10734944326",
-	["server"] = "rbxassetid://10734949856",
-	["server-cog"] = "rbxassetid://10734944444",
-	["server-crash"] = "rbxassetid://10734944554",
-	["server-off"] = "rbxassetid://10734944668",
-	["settings"] = "rbxassetid://10734950309",
-	["settings-2"] = "rbxassetid://10734950020",
-	["share"] = "rbxassetid://10734950813",
-	["share-2"] = "rbxassetid://10734950553",
-	["sheet"] = "rbxassetid://10734951038",
-	["shield"] = "rbxassetid://10734951847",
-	["shield-alert"] = "rbxassetid://10734951173",
-	["shield-check"] = "rbxassetid://10734951367",
-	["shield-close"] = "rbxassetid://10734951535",
-	["shield-off"] = "rbxassetid://10734951684",
-	["shirt"] = "rbxassetid://10734952036",
-	["shopping-bag"] = "rbxassetid://10734952273",
-	["shopping-cart"] = "rbxassetid://10734952479",
-	["shovel"] = "rbxassetid://10734952773",
-	["shower-head"] = "rbxassetid://10734952942",
-	["shrink"] = "rbxassetid://10734953073",
-	["shrub"] = "rbxassetid://10734953241",
-	["shuffle"] = "rbxassetid://10734953451",
-	["sidebar"] = "rbxassetid://10734954301",
-	["sidebar-close"] = "rbxassetid://10734953715",
-	["sidebar-open"] = "rbxassetid://10734954000",
-	["sigma"] = "rbxassetid://10734954538",
-	["signal"] = "rbxassetid://10734961133",
-	["signal-high"] = "rbxassetid://10734954807",
-	["signal-low"] = "rbxassetid://10734955080",
-	["signal-medium"] = "rbxassetid://10734955336",
-	["signal-zero"] = "rbxassetid://10734960878",
-	["siren"] = "rbxassetid://10734961284",
-	["skip-back"] = "rbxassetid://10734961526",
-	["skip-forward"] = "rbxassetid://10734961809",
-	["skull"] = "rbxassetid://10734962068",
-	["slack"] = "rbxassetid://10734962339",
-	["slash"] = "rbxassetid://10734962600",
-	["slice"] = "rbxassetid://10734963024",
-	["sliders"] = "rbxassetid://10734963400",
-	["sliders-horizontal"] = "rbxassetid://10734963191",
-	["smartphone"] = "rbxassetid://10734963940",
-	["smartphone-charging"] = "rbxassetid://10734963671",
-	["smile"] = "rbxassetid://10734964441",
-	["smile-plus"] = "rbxassetid://10734964188",
-	["snowflake"] = "rbxassetid://10734964600",
-	["sofa"] = "rbxassetid://10734964852",
-	["sort-asc"] = "rbxassetid://10734965115",
-	["sort-desc"] = "rbxassetid://10734965287",
-	["speaker"] = "rbxassetid://10734965419",
-	["sprout"] = "rbxassetid://10734965572",
-	["square"] = "rbxassetid://10734965702",
-	["star"] = "rbxassetid://10734966248",
-	["star-half"] = "rbxassetid://10734965897",
-	["star-off"] = "rbxassetid://10734966097",
-	["stethoscope"] = "rbxassetid://10734966384",
-	["sticker"] = "rbxassetid://10734972234",
-	["sticky-note"] = "rbxassetid://10734972463",
-	["stop-circle"] = "rbxassetid://10734972621",
-	["stretch-horizontal"] = "rbxassetid://10734972862",
-	["stretch-vertical"] = "rbxassetid://10734973130",
-	["strikethrough"] = "rbxassetid://10734973290",
-	["subscript"] = "rbxassetid://10734973457",
-	["sun"] = "rbxassetid://10734974297",
-	["sun-dim"] = "rbxassetid://10734973645",
-	["sun-medium"] = "rbxassetid://10734973778",
-	["sun-moon"] = "rbxassetid://10734973999",
-	["sun-snow"] = "rbxassetid://10734974130",
-	["sunrise"] = "rbxassetid://10734974522",
-	["sunset"] = "rbxassetid://10734974689",
-	["superscript"] = "rbxassetid://10734974850",
-	["swiss-franc"] = "rbxassetid://10734975024",
-	["switch-camera"] = "rbxassetid://10734975214",
-	["sword"] = "rbxassetid://10734975486",
-	["swords"] = "rbxassetid://10734975692",
-	["syringe"] = "rbxassetid://10734975932",
-	["table"] = "rbxassetid://10734976230",
-	["table-2"] = "rbxassetid://10734976097",
-	["tablet"] = "rbxassetid://10734976394",
-	["tag"] = "rbxassetid://10734976528",
-	["tags"] = "rbxassetid://10734976739",
-	["target"] = "rbxassetid://10734977012",
-	["tent"] = "rbxassetid://10734981750",
-	["terminal"] = "rbxassetid://10734982144",
-	["terminal-square"] = "rbxassetid://10734981995",
-	["text-cursor"] = "rbxassetid://10734982395",
-	["text-cursor-input"] = "rbxassetid://10734982297",
-	["thermometer"] = "rbxassetid://10734983134",
-	["thermometer-snowflake"] = "rbxassetid://10734982571",
-	["thermometer-sun"] = "rbxassetid://10734982771",
-	["thumbs-down"] = "rbxassetid://10734983359",
-	["thumbs-up"] = "rbxassetid://10734983629",
-	["ticket"] = "rbxassetid://10734983868",
-	["timer"] = "rbxassetid://10734984606",
-	["timer-off"] = "rbxassetid://10734984138",
-	["timer-reset"] = "rbxassetid://10734984355",
-	["toggle-left"] = "rbxassetid://10734984834",
-	["toggle-right"] = "rbxassetid://10734985040",
-	["tornado"] = "rbxassetid://10734985247",
-	["toy-brick"] = "rbxassetid://10747361919",
-	["train"] = "rbxassetid://10747362105",
-	["trash"] = "rbxassetid://10747362393",
-	["trash-2"] = "rbxassetid://10747362241",
-	["tree-deciduous"] = "rbxassetid://10747362534",
-	["tree-pine"] = "rbxassetid://10747362748",
-	["trees"] = "rbxassetid://10747363016",
-	["trending-down"] = "rbxassetid://10747363205",
-	["trending-up"] = "rbxassetid://10747363465",
-	["triangle"] = "rbxassetid://10747363621",
-	["trophy"] = "rbxassetid://10747363809",
-	["truck"] = "rbxassetid://10747364031",
-	["tv"] = "rbxassetid://10747364593",
-	["tv-2"] = "rbxassetid://10747364302",
-	["type"] = "rbxassetid://10747364761",
-	["umbrella"] = "rbxassetid://10747364971",
-	["underline"] = "rbxassetid://10747365191",
-	["undo"] = "rbxassetid://10747365484",
-	["undo-2"] = "rbxassetid://10747365359",
-	["unlink"] = "rbxassetid://10747365771",
-	["unlink-2"] = "rbxassetid://10747397871",
-	["unlock"] = "rbxassetid://10747366027",
-	["upload"] = "rbxassetid://10747366434",
-	["upload-cloud"] = "rbxassetid://10747366266",
-	["usb"] = "rbxassetid://10747366606",
-	["user"] = "rbxassetid://10747373176",
-	["user-check"] = "rbxassetid://10747371901",
-	["user-cog"] = "rbxassetid://10747372167",
-	["user-minus"] = "rbxassetid://10747372346",
-	["user-plus"] = "rbxassetid://10747372702",
-	["user-x"] = "rbxassetid://10747372992",
-	["users"] = "rbxassetid://10747373426",
-	["utensils"] = "rbxassetid://10747373821",
-	["utensils-crossed"] = "rbxassetid://10747373629",
-	["venetian-mask"] = "rbxassetid://10747374003",
-	["verified"] = "rbxassetid://10747374131",
-	["vibrate"] = "rbxassetid://10747374489",
-	["vibrate-off"] = "rbxassetid://10747374269",
-	["video"] = "rbxassetid://10747374938",
-	["video-off"] = "rbxassetid://10747374721",
-	["view"] = "rbxassetid://10747375132",
-	["voicemail"] = "rbxassetid://10747375281",
-	["volume"] = "rbxassetid://10747376008",
-	["volume-1"] = "rbxassetid://10747375450",
-	["volume-2"] = "rbxassetid://10747375679",
-	["volume-x"] = "rbxassetid://10747375880",
-	["wallet"] = "rbxassetid://10747376205",
-	["wand"] = "rbxassetid://10747376565",
-	["wand-2"] = "rbxassetid://10747376349",
-	["watch"] = "rbxassetid://10747376722",
-	["waves"] = "rbxassetid://10747376931",
-	["webcam"] = "rbxassetid://10747381992",
-	["wifi"] = "rbxassetid://10747382504",
-	["wifi-off"] = "rbxassetid://10747382268",
-	["wind"] = "rbxassetid://10747382750",
-	["wrap-text"] = "rbxassetid://10747383065",
-	["wrench"] = "rbxassetid://10747383470",
-	["x"] = "rbxassetid://10747384394",
-	["x-circle"] = "rbxassetid://10747383819",
-	["x-octagon"] = "rbxassetid://10747384037",
-	["x-square"] = "rbxassetid://10747384217",
-	["zoom-in"] = "rbxassetid://10747384552",
-	["zoom-out"] = "rbxassetid://10747384679",
-}
-return assets
-]]
+    [60] = function()local wax,script,require=ImportGlobals(60)local ImportGlobals return (function(...)local utilities = require(script.Parent.Parent.utilities)
+local customFunctions = utilities.customFunctions
+
+local lucide
+local oldidentity
+if customFunctions.getthreadidentity() < 5 then
+    oldidentity = customFunctions.getthreadidentity()
+    customFunctions.setthreadidentity(5)
+end
+lucide = loadstring(game:GetObjects("rbxassetid://85554466048193")[1].Source)()
+customFunctions.setthreadidentity(oldidentity)
+return lucide
 end)() end,
     [61] = function()local wax,script,require=ImportGlobals(61)local ImportGlobals return (function(...)local cF = require(script.Parent.Parent.utilities.customFunctions)
 local cloneref = cF.cloneref
@@ -5081,46 +4958,197 @@ services = setmetatable(services, {
 return services
 end)() end,
     [62] = function()local wax,script,require=ImportGlobals(62)local ImportGlobals return (function(...)local themeSystem = {}
-local fusion = require(script.Parent.Fusion)
+local services = require(script.Parent.services)
+local HttpService = services.HttpService
+local Bundles = require(script.Parent)
+local fusion = Bundles.Fusion
 local default = require(script.default)
 local value = fusion.Value
 local observe = fusion.Observer
 
 local get = require(script.Parent.Parent.utilities.get)
 local animate = require(script.Parent.Parent.utilities.animate)
+local _warn = require(script.Parent.Parent.components.warn)
+local randomString = require(script.Parent.Parent.utilities.randomString)
+local customFunctions = require(script.Parent.Parent.utilities.customFunctions)
 local functionsOnChange = {}
+local functionsOnCreate = {}
 
 local currentTheme = value({})
+local _currentTheme = value({})
+local dariusUID = ""
 observe(currentTheme):onChange(function()
+    task.wait()
     for _,func in ipairs(functionsOnChange) do
         task.spawn(func)
     end
 end)
 
+local themes = {}
+local potentialFromFiles = {}
+
 local palletteCheck = {}
-table.foreach(default, function(name, color)
+table.foreach(default, function(name)
     table.insert(palletteCheck, name)
 end)
 
-function themeSystem.create(pallette)
-    for _,v in palletteCheck do
-        if pallette[v] == nil then
-            pallette[v] = default[v]
-        end
-        if typeof(pallette[v]) ~= "Color3" then
-            error(v.." isn't type Color3")
-        end
-    end
-    for i,_ in pallette do
-        if not table.find(palletteCheck, i) then
-            warn('Incorrect value removed "'..tostring(i)..'"')
-            pallette[i] = nil
+themeSystem.path = ""
+
+function themeSystem.find(uid)
+    for _,theme in themes do
+        if theme.uid == uid then
+            return true, theme
         end
     end
-    currentTheme:set(pallette)
+    return false
 end
 
-function themeSystem.get(name:string)
+function themeSystem.create(name, palette, uid, fromFile, fromSet)
+    fromFile = fromFile or false
+    if uid == "original" and fromFile then
+        return
+    end
+    for _,v in palletteCheck do
+        if palette[v] == nil then
+            palette[v] = default[v]
+        end
+        if typeof(palette[v]) ~= "Color3" then
+            _warn(v.." isn't type Color3")
+        end
+    end
+    for i,_ in palette do
+        if not table.find(palletteCheck, i) then
+            _warn('Incorrect value removed "'..tostring(i)..'"')
+            palette[i] = nil
+        end
+    end
+
+    if fromSet and fromFile then
+        table.insert(potentialFromFiles, uid)
+    end
+    if fromSet and not fromFile then
+        for _,v in potentialFromFiles do
+            local result = {themeSystem.find(v)}
+            if result[1] and result[2].name == name then
+                return v
+            end
+        end
+    end
+
+    uid = uid or randomString(5)
+    table.insert(themes, {
+        name = name,
+        uid = uid,
+        fromSet = fromSet or false,
+        palette = palette
+    })
+
+    local ctheme = {}
+    ctheme.name = name
+    ctheme.uid = uid
+    ctheme.fromSet = fromSet
+    ctheme.palette = {}
+    for i,v in palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+    task.spawn(function()
+        for _,v in functionsOnCreate do
+            task.spawn(v)
+        end
+    end)
+    return uid
+end
+
+function themeSystem.delete(uid)
+    local results = {themeSystem.find(uid)}
+    if not results[1] then
+        return false, "no theme found"
+    end
+    local position = table.find(themes, results[2])
+    themeSystem.set(dariusUID)
+    table.remove(themes, position)
+    customFunctions.delfile(`{themeSystem.path}/{results[2].uid}.json`)
+end
+
+function themeSystem.edit(name, color)
+    local ctheme = get(currentTheme)
+    ctheme[name] = color
+    currentTheme:set(ctheme)
+end
+function themeSystem.editTheme(uid:string, property:string, new:any)
+    local results = {themeSystem.find(uid)}
+    if not results[1] then
+        return false
+    end
+    local theme = results[2]
+    theme[property] = new
+
+    local ctheme = {}
+    ctheme.name = theme.name
+    ctheme.uid = uid
+    ctheme.fromSet = theme.fromSet
+    ctheme.palette = {}
+    for i,v in theme.palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+
+    return true
+end
+
+function themeSystem.set(uid)
+    local results = {themeSystem.find(uid)}
+    local theme, palette
+    if results[1] then
+        theme, palette = results[2], results[2].palette
+    else
+        return false, "no theme found"
+    end
+
+    local _palette = {}
+    table.foreach(palette,function(i,v)
+        _palette[i] = v
+    end)
+    currentTheme:set(_palette)
+    _currentTheme:set(theme)
+    return true, "successfully set new theme"
+end
+function themeSystem.export()
+    local theme = get(_currentTheme)
+    local ctheme = {}
+    ctheme.name = theme.name
+    ctheme.uid = theme.uid
+    ctheme.fromSet = theme.fromSet
+    ctheme.palette = {}
+    for i,v in theme.palette do
+        ctheme.palette[i] = v:ToHex()
+    end
+    return HttpService:JSONEncode(ctheme)
+end
+
+function themeSystem.save(uid)
+    local results = {themeSystem.find(uid)}
+    if results[1] then
+        local theme = results[2]
+        local ctheme = {}
+        ctheme.name = theme.name
+        ctheme.uid = theme.uid
+        ctheme.fromSet = theme.fromSet
+        ctheme.palette = {}
+        for i,v in theme.palette do
+            ctheme.palette[i] = v:ToHex()
+        end
+        theme.palette = get(currentTheme)
+        customFunctions.writefile(`{themeSystem.path}/{uid}.json`, HttpService:JSONEncode(ctheme))
+        themeSystem.set(uid)
+        return true
+    else
+        return false
+    end
+end
+
+function themeSystem.get(name)
     local theme = get(currentTheme)
     if theme[name] then
         return theme[name]
@@ -5135,12 +5163,34 @@ for _,v in palletteCheck do
     end,40,1)
 end
 
-currentTheme:set(default)
+function themeSystem.init()
+    dariusUID = themeSystem.create("darius", default, "original")
+    themeSystem.set(dariusUID)
+    for _,file in customFunctions.listfiles(themeSystem.path) do
+        local theme = HttpService:JSONDecode(customFunctions.readfile(file))
+        table.foreach(theme.palette,function(i,v)
+            local color = Color3.fromHex(`#{v}`)
+            theme.palette[i] = color
+        end)
+        themeSystem.create(theme.name, theme.palette, theme.uid, true, theme.fromSet)
+    end
+end
+
 function themeSystem.onChange(func)
     table.insert(functionsOnChange, func)
 end
+function themeSystem.onCreate(func)
+    table.insert(functionsOnCreate, func)
+end
 
 function themeSystem.getTheme()
+    return get(_currentTheme)
+end
+
+function themeSystem.getThemes()
+    return themes
+end
+function themeSystem.getColors()
     return get(currentTheme)
 end
 
@@ -5154,6 +5204,8 @@ end)() end,
     text2 = Color3.fromHex("#737C8A"),
 
     selectedTab = Color3.fromHex("#1A1A1B"),
+
+    scrollBar = Color3.fromHex("#DCE1E5"),
 
     colorpickerBar = Color3.fromHex("#DCE1E5"),
 
@@ -5169,7 +5221,7 @@ end)() end,
     toggled = Color3.fromHex("#DCE1E5"),
 
     red = Color3.fromRGB(255,105,97),
-    orange = Color3.fromHex("#ff9b61")
+    orange = Color3.fromHex("#ff9b61"),
 }
 end)() end,
     [65] = function()local wax,script,require=ImportGlobals(65)local ImportGlobals return (function(...)local darius = script.Parent.Parent
@@ -5202,10 +5254,12 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
+		Visible = false,
         Callback = function()end
 	},{
+		property.DisabledText and "" or "DisabledText",
 		property.IsEnabled and "" or "IsEnabled",
-		property.DisabledText and "" or "DisabledText"
+		property.Visible and "" or "Visible"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -5219,9 +5273,10 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
+	local visible = property.Visible or value(true)
 	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local callback = property.Callback
 
 	-- Variables
 
@@ -5243,7 +5298,7 @@ return function(property)
 			return get(isSelected)
 		end),
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -5360,10 +5415,269 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
     [66] = function()local wax,script,require=ImportGlobals(66)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+return function(property)
+	local Bundles = require(darius.Bundles)
+	local data = Bundles.data
+	local theme = Bundles.themeSystem
+	local icons = Bundles.icons
+	local Fusion = Bundles.Fusion
+		local new = Fusion.New
+		local children = Fusion.Children
+		local value = Fusion.Value
+		local observe = Fusion.Observer
+		local onevent = Fusion.OnEvent
+		local computed = Fusion.Computed
+
+	local utilities = require(darius.utilities)
+	local get = utilities.get
+	local animate = utilities.animate
+	local typecheck = utilities.typecheck
+	local customFont = utilities.customFont
+
+	local simpleElements = require(darius.simpleElements)
+    local UIListLayout = simpleElements.UIListLayout
+    local SO = Enum.SortOrder
+	local FD = Enum.FillDirection
+	local HA = Enum.HorizontalAlignment
+	local VA = Enum.VerticalAlignment
+	local UIPadding = simpleElements.UIPadding
+	local UICorner = simpleElements.UICorner
+
+    -- Property
+
+    local _parent = property.Parent
+    local _tab = property.tab
+
+    -- Variables
+
+    local visibleCount = value(0)
+    local visible = value(true)
+
+	-- Button Group
+
+    local buttonGroup = new "Frame" {
+        Visible = visible,
+        Parent = _parent,
+		Size = UDim2.new(1,0,0,36),
+        BackgroundTransparency = 1,
+
+        [children] = {
+            UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,3))
+        }
+    }
+
+    local absSize = value(buttonGroup.AbsoluteSize)
+
+    local returnTable = {}
+    function returnTable:Button(_property)
+
+        -- Typecheck
+
+        local didPass, failedItems = typecheck(_property,{
+            Name = "",
+            DisabledText = "",
+            IsEnabled = false,
+            Visible = false,
+            Callback = function()end
+        },{
+            _property.IsEnabled and "" or "IsEnabled",
+            _property.Visible and "" or "Visible",
+            _property.DisabledText and "" or "DisabledText"
+        })
+        assert(didPass, table.concat(failedItems, "\n"))
+
+        -- Data
+
+        local selectedTab = data.find("selectedTab")
+        local searchText = data.find("searchText")
+        local button = data.add(_property)
+
+        -- Properties
+
+        local name = _property.Name
+        local callback = _property.Callback
+        local isEnabled = _property.IsEnabled or value(true)
+        local disabledText = _property.DisabledText or value("Component Disabled")
+        local _visible = _property.Visible or value(true)
+
+        -- Variables
+
+        local isSelected = value(get(selectedTab.string) == get(_tab).uid)
+        observe(selectedTab.string):onChange(function()
+            isSelected:set(get(selectedTab.string) == get(_tab).uid)
+        end)
+        local selectedAnimation = animate(function()
+            return get(isSelected) and 0 or 1
+        end, 40, 1)
+
+        new "TextButton" {
+            Interactable = computed(function()
+                if not get(isEnabled) then
+                    return false
+                end
+                return get(isSelected)
+            end),
+            Visible = computed(function()
+                if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(_visible) then
+                    return false
+                end
+                return true
+            end),
+            Size = computed(function()
+                return UDim2.new(1/get(visibleCount) - (get(visibleCount) - 1 == 0 and 0 or ((((get(visibleCount)-1)*3)/get(visibleCount))/get(absSize).X)),0,0,36)
+            end),
+            Parent = buttonGroup,
+            BackgroundColor3 = theme.background2,
+            BackgroundTransparency = selectedAnimation,
+
+            [onevent "Activated"] = function()
+                if not get(isEnabled) then
+                    return
+                end
+                task.spawn(get(callback))
+            end,
+
+            [children] = {
+                UICorner(6),
+                new "Frame" { -- Disabled Frame
+                    ZIndex = 2,
+                    Visible = computed(function()
+                        if not get(isEnabled)  then
+                            return true
+                        end
+                        return false
+                    end),
+                    BackgroundTransparency = animate(function()
+                        return get(isSelected) and 0.2 or 1
+                    end,40,1),
+                    BackgroundColor3 = theme.disabledBackground,
+                    Size = UDim2.fromScale(1,1),
+
+                    [children] = {
+                        UICorner(6),
+                        new "ImageLabel" { -- Icon
+                            Size = UDim2.fromOffset(24,24),
+                            AnchorPoint = Vector2.new(0,0.5),
+                            Position = UDim2.new(0,5,0.5,0),
+                            BackgroundTransparency = 1,
+                            Image = icons.lock,
+                            ImageColor3 = theme.disabledText,
+                            ImageTransparency = selectedAnimation,
+                        },
+                        new "TextLabel" {
+                            FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+                            BackgroundTransparency = 1,
+                            Size = UDim2.new(1,-24,0,18),
+                            TextColor3 = theme.disabledText,
+                            TextTransparency = selectedAnimation,
+                            TextScaled = true,
+                            AnchorPoint = Vector2.new(0,0.5),
+                            Position = UDim2.new(0,29,0.5,0),
+                            Text = disabledText,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            RichText = true,
+
+                            [children] = {
+                                UIPadding(0,5)
+                            }
+                        }
+                    }
+                },
+                new "Frame" {
+                    Size = UDim2.fromScale(1,1),
+                    BackgroundTransparency = 1,
+                    [children] = {
+                        UIPadding(0,8),
+                        new "TextLabel" { -- Title
+                            FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+                            Size = UDim2.new(1,-16-16,0,18),
+                            BackgroundTransparency = 1,
+                            TextColor3 = theme.text,
+                            TextScaled = true,
+                            AnchorPoint = Vector2.new(0,0.5),
+                            Position = UDim2.new(0,0,0.5,0),
+                            Text = name,
+                            TextTransparency = selectedAnimation,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            RichText = true
+                        },
+                        new "ImageLabel" { -- Icon
+                            Size = UDim2.fromOffset(16,16),
+                            AnchorPoint = Vector2.new(1,0.5),
+                            Position = UDim2.new(1,0,0.5,0),
+                            BackgroundTransparency = 1,
+                            Image = icons.fingerprint,
+                            ImageColor3 = theme.text2,
+                            ImageTransparency = animate(function()
+                                return get(isSelected) and 0.5 or 1
+                            end, 40, 1)
+                        }
+                    }
+                }
+            }
+        }
+
+        if get(_visible) then
+            visibleCount:set(get(visibleCount) + 1)
+        end
+        observe(_visible):onChange(function()
+            if get(_visible) then
+                visibleCount:set(get(visibleCount) + 1)
+            else
+                visibleCount:set(get(visibleCount) - 1)
+            end
+        end)
+
+        local returnFunctions = {}
+        function returnFunctions:SetName(newText)
+            local _didPass, _failedItems = typecheck({['SetName'] = newText}, {SetName = ""})
+            assert(_didPass, table.concat(_failedItems, "\n"))
+
+            name:set(newText)
+        end
+        function returnFunctions:SetCallback(newFunction)
+            local _didPass, _failedItems = typecheck({['SetCallback'] = newFunction}, {SetCallback = function()end})
+            assert(_didPass, table.concat(_failedItems, "\n"))
+
+            callback:set(newFunction)
+        end
+        function returnFunctions:Fire()
+            task.spawn(get(callback))
+        end
+        function returnFunctions:Enable()
+            isEnabled:set(true)
+        end
+        function returnFunctions:Disable()
+            isEnabled:set(false)
+        end
+        function returnFunctions:Visible()
+            _visible:set(true)
+        end
+        function returnFunctions:Invisible()
+            _visible:set(false)
+        end
+        return returnFunctions
+    end
+    function returnTable:Visible()
+        visible:set(true)
+    end
+    function returnTable:Invisible()
+        visible:set(false)
+    end
+	return returnTable
+end
+end)() end,
+    [67] = function()local wax,script,require=ImportGlobals(67)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -5406,17 +5720,23 @@ return function(property)
 		Name = "",
 		DisabledText = "",
         IsEnabled = false,
+		Visible = false,
         Callback = function()end,
+
 		FLAG = "",
 		Color = Color3.new(),
 		Transparency = 0,
+		HideTransparency = true,
 		IgnoreConfig = true
 	},{
-		property.IsEnabled and "" or "IsEnabled",
 		property.DisabledText and "" or "DisabledText",
+		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
 		property.FLAG and "" or "FLAG",
 		property.Color and "" or "Color",
 		property.Transparency and "" or "Transparency",
+		property.HideTransparency and "" or "HideTransparency",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -5434,12 +5754,16 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local _color = property.Color or value(Color3.new(1))
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local _transparency = property.Transparency or value(0)
+	local hideTransparency = property.HideTransparency or value(false)
+
 	local flag = property.FLAG or value(colorpicker.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -5510,7 +5834,7 @@ return function(property)
 					[ref] = saturationValue,
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						saturationValueDown:set(true)
@@ -5585,7 +5909,7 @@ return function(property)
 					Size = UDim2.new(1,0,0,24),
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						hueDown:set(true)
@@ -5621,13 +5945,13 @@ return function(property)
 							BackgroundColor3 = theme.colorpickerBar,
 							Size = UDim2.new(0,2,1,0),
 							Position = computed(function()
-								local _hue = get(color):ToHSV()
 								return UDim2.fromScale(1 - get(hueAmount),0.5)
 							end)
 						}
 					}
 				},
 				new "ImageButton" { -- Transparency
+					Visible = not get(hideTransparency),
 					ZIndex = 2,
 					Size = UDim2.new(1,0,0,24),
 					BackgroundTransparency = 1,
@@ -5635,7 +5959,7 @@ return function(property)
 					ScaleType = Enum.ScaleType.Crop,
 
 					[onevent "InputBegan"] = function(input)
-						if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+						if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then
 							return
 						end
 						transparencyDown:set(true)
@@ -5891,7 +6215,7 @@ return function(property)
 			return get(isSelected)
 		end),
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -6127,39 +6451,57 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noColor = true
 			local noTransparency = true
 			if file.color ~= nil then
-				local a = string.split(file.color:gsub(" ", ""), ",")
-				table.foreach(a, function(i,v)
-					a[i] = tonumber(v)
-				end)
-				_flag.status.color:set(Color3.new(unpack(a)))
+				if string.find(file.color, ",") then
+					local a = string.split(file.color:gsub(" ", ""), ",")
+					table.foreach(a, function(i,v)
+						a[i] = tonumber(v)
+					end)
+					color:set(Color3.new(unpack(a)))
+				else
+					color:set(Color3.fromHex(`#{string.gsub(file.color,"#","")}`))
+				end
 				noColor = false
 			end
 			if file.transparency ~= nil then
-				_flag.status.transparency:set(tonumber(file.transparency))
+				transparency:set(tonumber(file.transparency))
 				noTransparency = false
 			end
 			if noColor then
-				_flag.status.color:set(get(_color))
+				color:set(get(_color))
 			end
 			if noTransparency then
-				_flag.status.transparency:set(get(_transparency))
+				transparency:set(get(_transparency))
 			end
 			hueAmount:set(({get(color):ToHSV()})[1])
 			saturationAmount:set(({get(color):ToHSV()})[2])
 			valueAmount:set(({get(color):ToHSV()})[3])
 		end)
 		if _flag.private then
-			_flag.status.color:set(get(_color))
-			_flag.status.transparency:set(get(_transparency))
+			color:set(get(_color))
+			transparency:set(get(_transparency))
 		end
 	else
-		_flag.status.color:set(get(_color))
-		_flag.status.transparency:set(get(_transparency))
+		color:set(get(_color))
+		transparency:set(get(_transparency))
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
+		if _flag.preregisteredValue.color and typeof(_flag.preregisteredValue.color) == "string" then
+			local s,result = pcall(function()
+				return Color3.fromHex(_flag.preregisteredValue.color)
+			end)
+			if s then
+				color:set(result)
+			end
+		end
+		if not get(hideTransparency) then
+			if _flag.preregisteredValue.transparency and typeof(_flag.preregisteredValue.transparency) == "number" then
+				transparency:set(_flag.preregisteredValue.transparency)
+			end
+		end
 	end
 
 	hueAmount:set(({get(color):ToHSV()})[1])
@@ -6177,13 +6519,17 @@ return function(property)
 		local _didPass, _failedItems = typecheck({['SetColor'] = newColor}, {SetColor = Color3.new()})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.color:set(newColor)
+		color:set(newColor)
+
+		hueAmount:set(({get(color):ToHSV()})[1])
+		saturationAmount:set(({get(color):ToHSV()})[2])
+		valueAmount:set(({get(color):ToHSV()})[3])
 	end
 	function returnFunctions:SetTransparency(newTransparency)
 		local _didPass, _failedItems = typecheck({['SetTransparency'] = newTransparency}, {SetTransparency = 0})
 		assert(_didPass, table.concat(_failedItems, "\n"))
 
-		_flag.status.transparency:set(newTransparency)
+		transparency:set(newTransparency)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
@@ -6191,10 +6537,16 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [67] = function()local wax,script,require=ImportGlobals(67)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [68] = function()local wax,script,require=ImportGlobals(68)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -6245,7 +6597,7 @@ return function(property)
     }
 end
 end)() end,
-    [68] = function()local wax,script,require=ImportGlobals(68)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [69] = function()local wax,script,require=ImportGlobals(69)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
 	local Bundles = require(darius.Bundles)
@@ -6282,20 +6634,28 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
-        IsEnabled = false,
+		IsEnabled = false,
+		Visible = false,
         Callback = function()end,
+
+		FLAG = "",
         Items = {},
         Multiselect = true,
         Regex = function()end,
-		IgnoreConfig = true
+		IgnoreConfig = true,
+		Alphabetical = true,
+		AlwaysOpen = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Multiselect and "" or "Multiselect",
 		property.Regex and "" or "Regex",
-		property.IgnoreConfig and "" or "IgnoreConfig"
+		property.IgnoreConfig and "" or "IgnoreConfig",
+		property.Alphabetical and "" or "Alphabetical",
+		property.AlwaysOpen and "" or "AlwaysOpen"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
@@ -6321,14 +6681,19 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local callback = property.Callback
+
 	local items = value({})
 	local multiselect = property.Multiselect or value(false)
 	local default = property.Default
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local isEnabled = property.IsEnabled or value(true)
-	local disabledText = property.DisabledText or value("Component Disabled")
+	local alphabetical = property.Alphabetical or value(false)
+	local alwaysOpen = property.AlwaysOpen or value(false)
 	local regex = property.Regex or value(function(itemToClean) return itemToClean end)
+
 	local flag = property.FLAG or value(dropdown.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -6339,35 +6704,39 @@ return function(property)
 		},"dropdown", get(flag) == dropdown.uid)
 		_flag.user.Value = get(multiselect) and get(_flag.status.items) or  get(_flag.status.item)
 	end
+	local _items = _flag.status.items
+	local _item = _flag.status.item
 
 	-- Variables
 
-	local dropdownRef = value()
+
 	local searchRef = value()
 
 	local isDropped = value(false)
 	local lastReturnedValue = value(get(multiselect) and {} or "")
 	local itemElements = value({})
+	local displayValues = value({})
 	local hasSelectedAll = value(false)
 
-	observe(_flag.status.items):onChange(function()
-		if #get(_flag.status.items) == #get(items) then
+	observe(_items):onChange(function()
+		if #get(_items) == #get(items) then
 			hasSelectedAll:set(true)
 		else
 			hasSelectedAll:set(false)
 		end
+
 		local _cbTable = {}
-		for _,v in get(_flag.status.items) do
+		for _,v in get(_items) do
 			table.insert(_cbTable, get(regex)(v))
 		end
 		task.wait()
 		task.spawn(get(callback), _cbTable)
-		lastReturnedValue:set(get(_flag.status.items))
+		lastReturnedValue:set(get(_items))
 	end)
-	observe(_flag.status.item):onChange(function()
+	observe(_item):onChange(function()
 		task.wait()
-		task.spawn(get(callback), get(regex)(get(_flag.status.item)))
-		lastReturnedValue:set(get(regex)(get(_flag.status.item)))
+		task.spawn(get(callback), get(regex)(get(_item)))
+		lastReturnedValue:set(get(regex)(get(_item)))
 	end)
 	local isSelected = value(get(selectedTab.string) == get(dropdown.tab).uid)
 	observe(selectedTab.string):onChange(function()
@@ -6376,28 +6745,29 @@ return function(property)
 	local selectedAnimation = animate(function()
 		return get(isSelected) and 0 or 1
 	end, 40, 1)
+	local function checkIfExists(item)
+		for _,eItem in get(items) do
+			local _value = typeof(eItem) == "table" and eItem.Value or eItem
+			if _value == item then
+				return true
+			end
+		end
+		return false
+	end
 
 	-- Dropdown
 
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
 		end),
 		Size = animate(function()
-			if get(isDropped) and get(dropdownRef) then
-				local _dropdown = get(dropdownRef)
-				local y = 3
-				for _,child in _dropdown:GetChildren() do
-					if child:IsA("UIListLayout") or child:IsA("UICorner") or not child.Visible then
-						continue
-					end
-					y += (4 + child.Size.Y.Offset)
-				end
-				return UDim2.new(1,0,0,y)
+			if get(isDropped) then
+				return UDim2.new(1,0,0,36 + 4 + 32 + 4 + (get(multiselect) and (32 + 4 + 6) or 6) + math.clamp((#get(items)*34), 34, 136))
 			end
 			return UDim2.new(1,0,0,36)
 		end, 40, 1),
@@ -6405,11 +6775,9 @@ return function(property)
 		BackgroundTransparency = selectedAnimation,
 		ClipsDescendants = true,
 
-		[ref] = dropdownRef,
-
 		[children] = {
 			UICorner(6),
-			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,4)),
+			UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Left,VA.Top,UDim.new(0,4)),
 			new "TextButton" {
 				Interactable = computed(function()
 					if not get(isEnabled) then
@@ -6421,6 +6789,9 @@ return function(property)
 				BackgroundTransparency = 1,
 
 				[onevent "Activated"] = function()
+					if get(alwaysOpen) then
+						return
+					end
 					isDropped:set(not get(isDropped))
 				end,
 
@@ -6486,12 +6857,15 @@ return function(property)
 								Position = UDim2.new(0,0,0.5,0),
 								Text = computed(function()
 									if get(multiselect) then
-										return get(name).." "..tostring(#get(_flag.status.items)).."/"..tostring(#get(items))
+										return get(name).." "..tostring(#get(_items)).."/"..tostring(#get(items))
 									end
 									if typeof(get(lastReturnedValue)) == "table" then
 										return get(name)
 									end
-									return get(name)..": "..get(lastReturnedValue)
+									if get(displayValues)[get(lastReturnedValue)] then
+										return `{get(name)}: {get(displayValues)[get(lastReturnedValue)]}`
+									end
+									return `{get(name)}: {get(lastReturnedValue)}`
 								end),
 								TextTransparency = selectedAnimation,
 								TextXAlignment = Enum.TextXAlignment.Left,
@@ -6515,6 +6889,7 @@ return function(property)
 			new "Frame" {
 				Size = UDim2.new(1,0,0,32),
 				BackgroundTransparency = 1,
+
 				[children] = {
 					UIPadding(0,6),
 					new "TextBox" {
@@ -6576,7 +6951,7 @@ return function(property)
 									table.insert(tableToSet, get(regex)(item))
 								end
 							end
-							_flag.status.items:set(tableToSet)
+							_items:set(tableToSet)
 						end,
 
 						[children] = {
@@ -6606,15 +6981,22 @@ return function(property)
 			},
 			new "ScrollingFrame" {
 				ZIndex = 3,
-				Size = UDim2.new(1,0,0,136),
+				Size = computed(function()
+					return UDim2.new(1,-6,0,math.clamp((#get(items)*34), 34, 136))
+				end),
 				BackgroundTransparency = 1,
-				ScrollBarThickness = 0,
+				ScrollBarThickness = computed(function()
+					return #get(items) > 4 and 6 or 0
+				end),
+				ScrollBarImageColor3 = theme.scrollBar,
 				CanvasSize = UDim2.new(0,0,0,0),
 				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 
 				[children] = {
-					UIPadding(6,6,0,6),
-					UIListLayout(SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
+					UIPadding(6,computed(function()
+						return #get(items) > 4 and UDim.new(0,12) or UDim.new(0,0)
+					end),0,6),
+					UIListLayout(get(alphabetical) and SO.Name or SO.LayoutOrder,FD.Vertical,HA.Center,VA.Top,UDim.new(0,6)),
 					itemElements
 				}
 			}
@@ -6624,14 +7006,15 @@ return function(property)
 	observe(items):onChange(function()
 		local tableOfElements = {}
 		for _,item in get(items) do
-			local itemValue, itemImage
+			local itemValue, itemImage, itemDisplayValue
 			local isItemSelected = value(false)
 			if typeof(item) == "table" then
-				local _didPass, _failedItems = typecheck(item, {Value = "",Image = ""},{item.Image and "" or "Image"})
+				local _didPass, _failedItems = typecheck(item, {DisplayValue = "", Value = "",Image = ""},{item.Image and "" or "Image", item.DisplayValue and "" or "DisplayValue"})
 				assert(_didPass, table.concat(_failedItems, "\n"))
 
 				itemValue = item.Value
 				itemImage = item.Image or nil
+				itemDisplayValue = item.DisplayValue or nil
 			else
 				local _didPass, _failedItems = typecheck({['Item'] = item}, {Item = "",})
 				assert(_didPass, table.concat(_failedItems, "\n"))
@@ -6639,16 +7022,22 @@ return function(property)
 				itemValue = item
 			end
 			local cleanedItem = get(regex)(itemValue)
+			if itemDisplayValue then
+				local _displayValues = get(displayValues)
 
-			observe(_flag.status.items):onChange(function()
-				if table.find(get(_flag.status.items), cleanedItem) then
+				_displayValues[itemValue] = itemDisplayValue
+				displayValues:set(_displayValues)
+			end
+
+			observe(_items):onChange(function()
+				if table.find(get(_items), cleanedItem) then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
 				end
 			end)
-			observe(_flag.status.item):onChange(function()
-				if get(_flag.status.item) == cleanedItem then
+			observe(_item):onChange(function()
+				if get(_item) == cleanedItem then
 					isItemSelected:set(true)
 				else
 					isItemSelected:set(false)
@@ -6656,23 +7045,27 @@ return function(property)
 			end)
 
 			local itemElement = new "TextButton" {
-				Name = itemValue,
+				Name = `{itemDisplayValue ~= nil and itemDisplayValue or itemValue}`,
 				Size = UDim2.new(1,0,0,28),
 				BackgroundTransparency = selectedAnimation,
 				BackgroundColor3 = theme.background,
 
 				[onevent "Activated"] = function()
 					if get(multiselect) then
-						local _items = get(_flag.status.items)
+						local _items2 = get(_items)
 						isItemSelected:set(not get(isItemSelected))
 						if get(isItemSelected) then
-							table.insert(_items, cleanedItem)
+							table.insert(_items2, cleanedItem)
 						else
-							table.remove(_items, table.find(_items, cleanedItem))
+							table.remove(_items2, table.find(_items2, cleanedItem))
 						end
-						_flag.status.items:set(_items)
+
+						_items:set(_items2)
 					else
-						_flag.status.item:set(cleanedItem)
+						_item:set(cleanedItem)
+						if get(alwaysOpen) then
+							return
+						end
 						isDropped:set(false)
 					end
 				end,
@@ -6736,7 +7129,7 @@ return function(property)
 						TextScaled = true,
 						AnchorPoint = Vector2.new(0,0.5),
 						Position = UDim2.new(0,0,0.5,0),
-						Text = itemValue,
+						Text = itemDisplayValue or itemValue,
 						TextTransparency = selectedAnimation,
 						TextXAlignment = Enum.TextXAlignment.Left,
 						RichText = true
@@ -6752,27 +7145,47 @@ return function(property)
 	-- Closure
 
 	items:set(get(property.Items))
+	if get(alwaysOpen) then
+		isDropped:set(true)
+	end
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noChange = true
 			if file ~= nil then
 				noChange = false
 			end
 			if get(multiselect) then
-				_flag.status.items:set(file)
+				local cleansed = {}
+				for _,v in file do
+					if checkIfExists(v) then
+						table.insert(cleansed, v)
+					end
+				end
+				local currents = get(_items)
+				local different = false
+				local longerTable = #currents > #cleansed and currents or cleansed
+				local shorterTable = #currents < #cleansed and currents or cleansed
+				for i,v in longerTable do
+					if shorterTable[i] ~= v then
+						different = true
+						break
+					end
+				end
+				if different then
+					_items:set(cleansed)
+				end
 			else
-				_flag.status.item:set(file)
+				_item:set(file)
 			end
 			if noChange then
 				if get(multiselect) then
 					if default and #get(default) > 0 then
-						_flag.status.items:set(get(default))
+						_items:set(get(default))
 					end
 				else
 					if default then
-						_flag.status.item:set(get(default))
+						_item:set(get(default))
 					end
 				end
 			end
@@ -6780,22 +7193,57 @@ return function(property)
 		if _flag.private then
 			if get(multiselect) then
 				if default and #get(default) > 0 then
-					_flag.status.items:set(get(default))
+					_items:set(get(default))
 				end
 			else
 				if default then
-					_flag.status.item:set(get(default))
+					for _,v in get(items) do
+						if typeof(v) == "table" and v.Value == get(default) then
+							_item:set(get(default))
+						elseif v == get(default) then
+							_item:set(get(default))
+						end
+					end
 				end
 			end
 		end
 	else
 		if get(multiselect) then
 			if default and #get(default) > 0 then
-				_flag.status.items:set(get(default))
+				_items:set(get(default))
 			end
 		else
 			if default then
-				_flag.status.item:set(get(default))
+				_item:set(get(default))
+			end
+		end
+	end
+	if _flag.preregistered and _flag.preregisteredValue then
+		if get(multiselect) then
+			if typeof(_flag.preregisteredValue) == "table" then
+				local cleansed = {}
+				for _,v in _flag.preregisteredValue do
+					if checkIfExists(v) then
+						table.insert(cleansed, v)
+					end
+				end
+				local currents = get(_items)
+				local different = false
+				local longerTable = #currents > #cleansed and currents or cleansed
+				local shorterTable = #currents < #cleansed and currents or cleansed
+				for i,v in longerTable do
+					if shorterTable[i] ~= v then
+						different = true
+						break
+					end
+				end
+				if different then
+					_items:set(cleansed)
+				end
+			end
+		else
+			if typeof(_flag.preregisteredValue) == "string" and checkIfExists(_flag.preregisteredValue) then
+				_item:set(_flag.preregisteredValue)
 			end
 		end
 	end
@@ -6810,7 +7258,6 @@ return function(property)
 	function returnFunctions:SetItems(newTable) -- Sets a new table of items
 		local _didPass, _failedItems = typecheck({['SetItems'] = newTable}, {SetItems = {}})
 		assert(_didPass, table.concat(_failedItems, "\n"))
-
 		items:set(newTable)
 		local multiselectTable = {}
 		local foundAnything = false
@@ -6830,14 +7277,20 @@ return function(property)
 			else
 				if get(lastReturnedValue) == cleanedItem then
 					foundAnything = true
-					_flag.status.item:set(cleanedItem)
+					_item:set(cleanedItem)
 					break
 				end
 			end
 		end
 		if foundAnything then
 			if get(multiselect) then
-				_flag.status.items:set(multiselectTable)
+				_items:set(multiselectTable)
+			end
+		else
+			if get(multiselect) then
+				_items:set({})
+			else
+				_item:set("")
 			end
 		end
 	end
@@ -6860,7 +7313,7 @@ return function(property)
 			end
 		end
 		assert(hasItem, ":SelectItem couldn't find "..item)
-		_flag.status.item:set(item)
+		_item:set(item)
 	end
 	function returnFunctions:SelectItems(newSelecteds) -- Sets items used when Multiselect is true
 		assert(get(multiselect), ":SelectItems requires Multiselect to be true")
@@ -6882,7 +7335,7 @@ return function(property)
 				table.remove(newSelecteds, i)
 			end
 		end
-		_flag.status.items:set(newSelecteds)
+		_items:set(newSelecteds)
 	end
 	function returnFunctions:Enable()
 		isEnabled:set(true)
@@ -6890,10 +7343,16 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [69] = function()local wax,script,require=ImportGlobals(69)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [70] = function()local wax,script,require=ImportGlobals(70)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -6936,15 +7395,19 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
-        IsEnabled = false,
+		IsEnabled = false,
+		Visible = false,
         Callback = function()end,
+
+		FLAG = "",
 		Bind = Enum.KeyCode.Q,
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Bind and "" or "Bind",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
@@ -6960,17 +7423,32 @@ return function(property)
 	local instanceName = data.find("instanceName")
 	local isListening = data.find("isListening")
 	local bindData = data.find("bindData")
+	local absoluteOffset = data.find("absoluteOffset").number
 	local keybind = data.add(property)
 
 	-- Properties
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local bind = property.Bind
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
+	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
+
+	local flag = property.FLAG or value(keybind.uid)
+	local _flag
+	if get(flag) ~= "" then
+		_flag = flagCreator.register(get(flag), {
+			coordinate = value(nil),
+			keycode = value(nil),
+			mobile = get(isMobile.boolean)
+		},"keybind", get(flag) == keybind.uid)
+		_flag.user.Value = get(isMobile.boolean) and get(_flag.status.coordinate) or get(_flag.status.keycode)
+	end
+
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -6990,33 +7468,9 @@ return function(property)
 			}
 			bindData:update("bindData", _bindData)
 			currentBinds:update("binds", _currentBinds)
+			_flag.status.keycode:set(get(keyCode).Name)
 		end
 	end
-	local flag = property.FLAG or value(keybind.uid)
-	local _flag
-	if get(flag) ~= "" then
-		_flag = flagCreator.register(get(flag), {
-			coordinate = value(Vector2.new(0,0)),
-			keycode = value(nil),
-			mobile = get(isMobile.boolean)
-		},"keybind", get(flag) == keybind.uid)
-		_flag.user.Value = get(isMobile.boolean) and get(_flag.status.coordinate) or get(_flag.status.keycode)
-	end
-
-	observe(_flag.status.keycode):onChange(function()
-		if get(keyCode) and get(keyCode).Name == get(_flag.status.keycode) then
-			return
-		end
-		local success, result = pcall(function()
-			return Enum.KeyCode[get(_flag.status.keycode)]
-		end)
-		if success then
-			checkKeyCode(result, "RAHHH")
-		end
-	end)
-	observe(keyCode):onChange(function()
-		_flag.status.keycode:set(get(keyCode).Name)
-	end)
 
 	-- Variables
 
@@ -7047,14 +7501,6 @@ return function(property)
 	end)
 	connections.add(keybindConnection)
 	local hasPlaced = value(false)
-	local function findKeyCode(keyName)
-		for _,v in Enum.KeyCode do
-			if v.Name and v.Name == keyName then
-				return v
-			end
-		end
-		return nil
-	end
 
 	-- Keybind
 
@@ -7109,7 +7555,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -7246,7 +7692,7 @@ return function(property)
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
-							_flag.status.coordinate:set(mobileButton.AbsolutePosition)
+							_flag.status.coordinate:set(nil)
 						end,
 
 						[children] = {
@@ -7302,27 +7748,58 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig)  then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noKeyCode = true
-			if file.keycode ~= nil then
-				_flag.status.keycode:set(file.keycode)
+			if file.keycode ~= nil and ((get(keyCode) and get(keyCode).Name or  "") ~= file.keycode) then
+				local success, result = pcall(function()
+					return Enum.KeyCode[file.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "File1")
+				end
 				noKeyCode = false
 			end
-			if noKeyCode then
+			if noKeyCode and get(_flag.status.keycode) == nil then
 				if bind then
-					_flag.status.keycode:set(get(bind).Name)
+					checkKeyCode(get(bind), "NoFileFound")
 				end
+			end
+			if get(isMobile.boolean) and file.coordinate then
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30 + get(absoluteOffset))
+				hasPlaced:set(true)
+				_flag.status.coordinate:set(file.coordinate)
+			elseif get(isMobile.boolean) and not file.coordinate then
+				hasPlaced:set(false)
+				mobileButton.Position = UDim2.fromScale(0.5,0.5)
 			end
 		end)
 		if _flag.private then
 			if bind then
-				_flag.status.keycode:set(get(bind).Name)
+				checkKeyCode(get(bind), "Private")
 			end
 		end
 	else
 		if bind then
-			_flag.status.keycode:set(get(bind).Name)
+			checkKeyCode(get(bind), "IgnoreConfig/UseConfig:false")
+		end
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
+		if not get(isMobile.boolean) then
+			if _flag.preregisteredValue.keycode and typeof(_flag.preregisteredValue.keycode) == "string" then
+				local success, result = pcall(function()
+					return Enum.KeyCode[_flag.preregisteredValue.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "Configuration1")
+				end
+			end
+		else
+			if _flag.preregisteredValue.coordinate and typeof(_flag.preregisteredValue.coordinate) == "table" and _flag.preregisteredValue.coordinate.X and _flag.preregisteredValue.coordinate.Y then
+				if typeof(_flag.preregisteredValue.coordinate.X) == "number" and typeof(_flag.preregisteredValue.coordinate.Y) == "number" then
+					mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30 + get(absoluteOffset))
+					hasPlaced:set(true)
+				end
+			end
 		end
 	end
 
@@ -7345,10 +7822,16 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [70] = function()local wax,script,require=ImportGlobals(70)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [71] = function()local wax,script,require=ImportGlobals(71)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
     local bundles = require(darius.Bundles)
@@ -7559,7 +8042,7 @@ return function(property)
     end)
 end
 end)() end,
-    [71] = function()local wax,script,require=ImportGlobals(71)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [72] = function()local wax,script,require=ImportGlobals(72)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local bundles = require(darius.Bundles)
 	local data = bundles.data
@@ -7583,7 +8066,12 @@ return function(property)
 
 	-- Typecheck
 
-	local didPass, failedItems = typecheck(property,{Text = ""})
+	local didPass, failedItems = typecheck(property,{
+		Text = "",
+		Visible = false
+	},{
+		property.Visible and "" or "Visible"
+	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
 	-- Data
@@ -7596,6 +8084,7 @@ return function(property)
 
 	local _parent = property.Parent
 	local text = property.Text
+	local visible = property.Visible or value(true)
 
 	-- Variables
 
@@ -7611,7 +8100,7 @@ return function(property)
 
 	new "Frame" {
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(text):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(text):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -7657,10 +8146,16 @@ return function(property)
 
 		text:set(newText)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [72] = function()local wax,script,require=ImportGlobals(72)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [73] = function()local wax,script,require=ImportGlobals(73)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -7830,7 +8325,7 @@ return function(property)
     end
 end
 end)() end,
-    [73] = function()local wax,script,require=ImportGlobals(73)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [74] = function()local wax,script,require=ImportGlobals(74)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local bundles = require(darius.Bundles)
     local theme = bundles.themeSystem
@@ -7886,15 +8381,8 @@ return function(property)
 
     local loaded = value(false)
     local resized = value(false)
-    local hideNotification = value(false)
     local tickText = value("")
     local width = value(250)
-    local bodyBounds = value(getStringBounds(get(body), {
-        Size = 14,
-        Font = customFont("Montserrat", Enum.FontWeight.Medium),
-        Width = get(width) - 8 - (image and 32 or 0)
-    }))
-    local height = value(20 + math.clamp(get(bodyBounds).Y + 4 + 10 + (#get(buttons) > 0 and 26 or 0), #get(buttons) > 0 and 56 or 30, 9e9))
     local function roundTo(decimal, number)
         local point = 1
         for _=1,decimal do
@@ -7937,9 +8425,6 @@ return function(property)
                 resized:set(false)
                 task.wait(0.4)
                 loaded:set(false)
-                task.delay(0.3, function()
-                    hideNotification:set(true)
-                end)
                 task.wait(2)
                 newNotification:Destroy()
             end,
@@ -7954,44 +8439,33 @@ return function(property)
     newNotification = new "Frame" {
         Parent = property.Parent,
         BackgroundTransparency = 1,
-        Size = animate(function()
-            return UDim2.fromOffset(get(width), get(loaded) and get(height) + 5 or 0)
-        end, 30, 1),
-        ClipsDescendants = true,
+        Size = UDim2.fromOffset(get(width), 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
 
         [children] = {
+            UIPadding(5,0,0,0),
             new "TextButton" {
-                Visible = computed(function()
-                    return not get(hideNotification)
-                end),
-                Interactable = resized,
-                AnchorPoint = Vector2.new(0,1),
-                Position = UDim2.fromScale(0,1),
                 BackgroundTransparency = 1,
-                Size = UDim2.fromOffset(get(width), get(height)),
+                Size = UDim2.fromScale(1,1),
 
                 [onevent "Activated"] = function()
                     resized:set(false)
                     task.wait(0.4)
                     loaded:set(false)
-                    task.delay(0.3, function()
-                        hideNotification:set(true)
-                    end)
-                    task.wait(2)
                     newNotification:Destroy()
                 end
             },
             new "Frame" {
-                AnchorPoint = Vector2.new(0,1),
+                Size = UDim2.fromScale(1,0),
                 BackgroundColor3 = theme.background,
-                Size = UDim2.fromOffset(get(width), get(height)),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 Position = animate(function()
-                    return UDim2.fromScale(get(resized) and 0 or 1.2, 1)
+                    return UDim2.fromScale(get(resized) and 0 or 1.2, 0)
                 end,30,1),
 
                 [children] = {
-                    UIPadding(0,4),
                     UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4)),
+                    UIPadding(0,4),
                     UICorner(4),
                     new "Frame" {
                         Visible = get(image) ~= "" and true or false,
@@ -8010,8 +8484,9 @@ return function(property)
                         }
                     },
                     new "Frame" {
-                        Size = UDim2.new(1,get(image) ~= "" and -28 or 0,1,0),
+                        Size = UDim2.new(1,get(image) ~= "" and -28 or 0,0,0),
                         BackgroundTransparency = 1,
+                        AutomaticSize = Enum.AutomaticSize.Y,
 
                         [children] = {
                             UIPadding(2,0),
@@ -8066,6 +8541,7 @@ return function(property)
                         }
                     }
                 }
+
             }
         }
     }
@@ -8091,15 +8567,12 @@ return function(property)
         resized:set(false)
         task.wait(0.4)
         loaded:set(false)
-        task.delay(0.3, function()
-            hideNotification:set(true)
-        end)
         task.wait(2)
         newNotification:Destroy()
     end)
 end
 end)() end,
-    [74] = function()local wax,script,require=ImportGlobals(74)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [75] = function()local wax,script,require=ImportGlobals(75)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
     local bundles = require(darius.Bundles)
@@ -8126,7 +8599,13 @@ return function(property)
 
 	-- Typecheck
 
-	local didPass, failedItems = typecheck(property,{Title = "", Body = ""})
+	local didPass, failedItems = typecheck(property,{
+		Title = "",
+		Visible = false,
+		Body = ""
+	},{
+		property.Visible and "" or "Visible",
+	})
 	assert(didPass, table.concat(failedItems, "\n"))
 
 	-- Data
@@ -8140,6 +8619,7 @@ return function(property)
 	local _parent = property.Parent
 	local title = property.Title
 	local body = property.Body
+	local visible = property.Visible or value(true)
 
 	-- Variables
 
@@ -8180,7 +8660,7 @@ return function(property)
 
 	new "Frame" {
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(title):lower(), get(searchText.string):lower()) and not string.find(get(body):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -8249,10 +8729,16 @@ return function(property)
 
 		title:set(newTitle)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [75] = function()local wax,script,require=ImportGlobals(75)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [76] = function()local wax,script,require=ImportGlobals(76)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 
 return function(property)
 	local Bundles = require(darius.Bundles)
@@ -8292,10 +8778,12 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
+		IsEnabled = false,
+		Visible = false,
+		Callback = function()end,
+
         FLAG = "",
-        IsEnabled = false,
 		Default = 0,
-        Callback = function()end,
 		Min = 0,
         Max = 0,
 		DisplayAsPercent = false,
@@ -8303,8 +8791,10 @@ return function(property)
 		IgnoreConfig = true
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Default and "" or "Default",
 		property.Min and "" or "Min",
 		property.Max and "" or "Max",
@@ -8325,26 +8815,26 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
+	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
 	local callback = property.Callback
+
 	local max = property.Max
 	local min = property.Min
 	local displayAsPercent = property.DisplayAsPercent or value(false)
 	local roundTo = property.DecimalPlace or value(0)
-	local isEnabled = property.IsEnabled or value(true)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local ignoreConfig = property.IgnoreConfig or value(false)
 	local default = get(property.Default) and value(math.clamp(get(property.Default), get(min), get(max)))
 	if not get(default) then
 		default = value(get(min))
 	end
-	local flag = property.FLAG or value(slider.uid)
-	local _flag
-	if get(flag) ~= "" then
-		_flag = flagCreator.register(get(flag), {
-			percentageOf = value(get(min))
-		},"slider", get(flag) == slider.uid)
-		_flag.user.Value = get(_flag.status.percentageOf)
-	end
+
+	local flag = (property.FLAG and get(property.FLAG) ~= "") and get(property.FLAG) or slider.uid
+	local _flag = flagCreator.register(flag, {
+		percentageOf = value(get(min))
+	},"slider", flag == slider.uid)
+	_flag.user.Value = get(_flag.status.percentageOf)
 
 	-- Variables
 
@@ -8367,6 +8857,11 @@ return function(property)
 	local percentage = value(0)
 
 	observe(_flag.status.percentageOf):onChange(function()
+		local _percentageOf = get(_flag.status.percentageOf)
+		if _percentageOf > get(max) or _percentageOf < get(min) then
+			_flag.status.percentageOf:set(math.clamp(_percentageOf, get(min), get(max)))
+			return
+		end
 		percentage:set(mapValue(get(_flag.status.percentageOf), get(min), get(max), 0, 1))
 		if not get(isEnabled) then
 			return
@@ -8388,7 +8883,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -8644,11 +9139,10 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noPercentageOf = true
 			if file ~= nil then
-				_flag.status.percentageOf:set(file)
+				_flag.status.percentageOf:set(math.clamp(file, get(min), get(max)))
 				noPercentageOf = false
 			end
 			if noPercentageOf then
@@ -8660,6 +9154,9 @@ return function(property)
 		end
 	else
 		_flag.status.percentageOf:set(get(default))
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "number" then
+		_flag.status.percentageOf:set(math.clamp(_flag.preregisteredValue, get(min), get(max)))
 	end
 
 	local returnFunctions = {}
@@ -8681,10 +9178,16 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [76] = function()local wax,script,require=ImportGlobals(76)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [77] = function()local wax,script,require=ImportGlobals(77)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -8802,7 +9305,7 @@ return function(property)
 	return tab
 end
 end)() end,
-    [77] = function()local wax,script,require=ImportGlobals(77)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [78] = function()local wax,script,require=ImportGlobals(78)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
     local Bundles = require(darius.Bundles)
     local data = Bundles.data
@@ -8841,7 +9344,7 @@ return function(property)
     }
 end
 end)() end,
-    [78] = function()local wax,script,require=ImportGlobals(78)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [79] = function()local wax,script,require=ImportGlobals(79)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local bundles = require(darius.Bundles)
 	local data = bundles.data
@@ -8877,25 +9380,29 @@ return function(property)
 
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
-        Placeholder = "",
 		DisabledText = "",
+		IsEnabled = false,
+		Visible = false,
+		Callback = function()end,
+
+		FLAG = "",
+        PlaceHolderText = "",
         ClearTextOnFocus = false,
         OnlyNumbers = true,
         OnLeave = true,
         Default = "",
-        FLAG = "",
-        IsEnabled = false,
-        Callback = function()end,
 		IgnoreConfig = true
 	},{
-		property.Placeholder and "" or "Placeholder",
+		property.DisabledText and "" or "DisabledText",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.PlaceHolderText and "" or "PlaceHolderText",
 		property.ClearTextOnFocus and "" or "ClearTextOnFocus",
 		property.OnlyNumbers and "" or "OnlyNumbers",
 		property.OnLeave and "" or "OnLeave",
 		property.Default and "" or "Default",
 		property.FLAG and "" or "FLAG",
-		property.DisabledText and "" or "DisabledText",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -8911,15 +9418,18 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local onlyNumbers = property.OnlyNumbers or value(false)
 	local default = property.Default or value("")
 	local onLeave = property.OnLeave or value(false)
 	local clearTextOnFocus = property.ClearTextOnFocus or value(false)
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local placeHolder = property.Placeholder or value("")
+	local placeHolder = property.PlaceHolderText or value("")
+
 	local flag = property.FLAG or value(textbox.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -8991,13 +9501,15 @@ return function(property)
 			end
 		end
 	end)
+	local titleTextLabel = value()
+	local titleX = value(0)
 
 	-- TextBox
 
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -9058,27 +9570,43 @@ return function(property)
 
 				[children] = {
 					UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,3)),
-					new "Frame" {
-						Size = UDim2.new(0.65,-3,1,0),
+					new "TextLabel" {
+						Size = UDim2.fromScale(0,1),
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
+						TextSize = 18,
+						Text = name,
+						AutomaticSize = Enum.AutomaticSize.X,
+						TextTransparency = selectedAnimation,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						RichText = true,
+						TextColor3 = theme.text,
+						FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+						[onevent "Changed"] = function(changedProperty)
+							if changedProperty == "AbsoluteSize" and get(titleTextLabel) ~= nil then
+								titleX:set(get(titleTextLabel).AbsoluteSize.X)
+							end
+						end,
+
+						[ref] = titleTextLabel,
 
 						[children] = {
 							UICorner(6),
 							UIPadding(0,6),
-							new "TextLabel" { -- Title
-								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-								Size = UDim2.new(1,0,0,18),
+							--[[
+							new "TextLabel" {
+								
+								Size = UDim2.new(0,0,0,18),
 								BackgroundTransparency = 1,
-								TextColor3 = theme.text,
-								TextScaled = true,
-								AnchorPoint = Vector2.new(0,0.5),
-								Position = UDim2.new(0,0,0.5,0),
-								Text = name,
-								TextTransparency = selectedAnimation,
-								TextXAlignment = Enum.TextXAlignment.Left,
-								RichText = true
+								
+								--TextScaled = true,
+								
+
+								
+
+								[children] = {}
 							}
+								]]
 						}
 					},
 					new "TextButton" {
@@ -9088,7 +9616,12 @@ return function(property)
 							end
 							return get(isSelected)
 						end),
-						Size = UDim2.fromScale(0.35,1),
+						Size = computed(function()
+							if get(titleTextLabel) then
+								return UDim2.new(1,-get(titleX) - 3,1)
+							end
+							return UDim2.fromScale(0.35,1)
+						end),
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
 
@@ -9207,8 +9740,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noCorrectText = true
 			if file ~= nil then
 				if get(onLeave) then
@@ -9248,6 +9780,18 @@ return function(property)
 			focused:set(false)
 		end
 	end
+	if _flag.preregistered and _flag.preregisteredValue then
+		didPass, failedItems = typecheck({FlagValue = _flag.preregisteredValue},{FlagValue = ""})
+		if didPass then
+			if get(onLeave) then
+				focused:set(true)
+			end
+			correctText:set(_flag.preregisteredValue)
+			if get(onLeave) then
+				focused:set(false)
+			end
+		end
+	end
 
 	local returnFunctions = {}
 	function returnFunctions:SetName(newText)
@@ -9268,10 +9812,16 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [79] = function()local wax,script,require=ImportGlobals(79)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [80] = function()local wax,script,require=ImportGlobals(80)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property)
 	local Bundles = require(darius.Bundles)
 	local data = Bundles.data
@@ -9314,18 +9864,23 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
-        IsEnabled = false,
-		Default = false,
+		IsEnabled = false,
+		Visible = false,
         Callback = function()end,
+
+        FLAG = "",
+		Default = false,
 		LinkKeybind = true,
 		IgnoreConfig = true,
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Default and "" or "Default",
 		property.LinkKeybind and "" or "LinkKeybind",
+		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -9348,28 +9903,34 @@ return function(property)
 	local isListening = data.find("isListening")
 	local bindData = data.find("bindData")
 	local toggles = data.find("toggles")
+	local absoluteOffset = data.find("absoluteOffset").number
 	local toggle = data.add(property)
 
 	-- Properties
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local default = property.Default or value(false)
+	local disabledText = property.DisabledText or value("Component Disabled")
 	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
+	local default = property.Default or value(false)
 	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
+
 	local flag = property.FLAG or value(toggle.uid)
 	local _flag
 	if get(flag) ~= "" then
 		_flag = flagCreator.register(get(flag), {
 			boolean = value(false),
-			keycode = value(nil)
+			keycode = value(nil),
+			coordinate = value(nil)
 		},"toggle", get(flag) == toggle.uid)
 		_flag.user.Value = get(_flag.status.boolean)
 	end
+
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -9390,19 +9951,12 @@ return function(property)
 			}
 			bindData:update("bindData", _bindData)
 			currentBinds:update("binds", _currentBinds)
+			_flag.status.keycode:set(get(keyCode).Name)
 		end
 	end
 	observe(_flag.status.boolean):onChange(function()
 		if get(isEnabled) then
 			task.spawn(get(callback), get(_flag.status.boolean))
-		end
-	end)
-	observe(_flag.status.keycode):onChange(function()
-		local success, result = pcall(function()
-			return Enum.KeyCode[get(_flag.status.keycode)]
-		end)
-		if success then
-			checkKeyCode(result, "RAHHH")
 		end
 	end)
 	table.insert(toggles.list, _flag.status.boolean)
@@ -9440,7 +9994,8 @@ return function(property)
 	-- Toggle
 
 	local dragConnection
-	local mobileButton = new "TextButton" {
+	local mobileButton
+	mobileButton = new "TextButton" {
 		Visible = computed(function()
 			if not get(isEnabled) then
 				return get(isEnabled)
@@ -9463,6 +10018,7 @@ return function(property)
 			if dragConnection then
 				dragConnection:Disconnect()
 				dragConnection = nil
+				_flag.status.coordinate:set(mobileButton.AbsolutePosition)
 			else
 				_flag.status.boolean:set(not get(_flag.status.boolean))
 			end
@@ -9488,7 +10044,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -9638,6 +10194,7 @@ return function(property)
 
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
+							_flag.status.coordinate:set(nil)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
 						end,
 
@@ -9724,16 +10281,20 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noBoolean = true
 			local noKeyCode = true
 			if file.boolean ~= nil then
 				_flag.status.boolean:set(file.boolean)
 				noBoolean = false
 			end
-			if file.keycode ~= nil then
-				_flag.status.keycode:set(file.keycode)
+			if file.keycode ~= nil and ((get(keyCode) and get(keyCode).Name or  "") ~= file.keycode) then
+				local success, result = pcall(function()
+					return Enum.KeyCode[file.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "File1")
+				end
 				noKeyCode = false
 			end
 			if noBoolean then
@@ -9741,20 +10302,54 @@ return function(property)
 			end
 			if noKeyCode then
 				if bind then
-					_flag.status.keycode:set(get(bind).Name)
+					checkKeyCode(get(bind), "NoFileFound")
 				end
 			end
+			if get(isMobile.boolean) and file.coordinate then
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30 + get(absoluteOffset))
+				hasPlaced:set(true)
+				_flag.status.coordinate:set(file.coordinate)
+			elseif get(isMobile.boolean) and not file.coordinate then
+				hasPlaced:set(false)
+				mobileButton.Position = UDim2.fromScale(0.5,0.5)
+			end
 		end)
+
 		if _flag.private then
 			_flag.status.boolean:set(get(default))
 			if bind then
-				_flag.status.keycode:set(get(bind).Name)
+				checkKeyCode(get(bind), "Private")
 			end
 		end
 	else
 		_flag.status.boolean:set(get(default))
 		if bind then
-			_flag.status.keycode:set(get(bind).Name)
+			checkKeyCode(get(bind), "IgnoreConfig/UseConfig:false")
+		end
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
+		if _flag.preregisteredValue.boolean and typeof(_flag.preregisteredValue.boolean) == "boolean" then
+			_flag.status.boolean:set(_flag.preregisteredValue.boolean)
+		end
+		if get(linkKeybind) then
+			if not get(isMobile.boolean) then
+				if _flag.preregisteredValue.keycode and typeof(_flag.preregisteredValue.keycode) == "string" then
+					local success, result = pcall(function()
+						return Enum.KeyCode[_flag.preregisteredValue.keycode]
+					end)
+					if success then
+						checkKeyCode(result, "Configuration1")
+					end
+				end
+			else
+				if _flag.preregisteredValue.coordinate and typeof(_flag.preregisteredValue.coordinate) == "table" and _flag.preregisteredValue.coordinate.X and _flag.preregisteredValue.coordinate.Y then
+					if typeof(_flag.preregisteredValue.coordinate.X) == "number" and typeof(_flag.preregisteredValue.coordinate.Y) == "number" then
+						mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30 + get(absoluteOffset))
+						hasPlaced:set(true)
+						_flag.status.coordinate:set(_flag.preregisteredValue.coordinate)
+					end
+				end
+			end
 		end
 	end
 
@@ -9784,10 +10379,16 @@ return function(property)
 	function returnFunctions:Disable()
 		isEnabled:set(false)
 	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
+	end
 	return returnFunctions
 end
 end)() end,
-    [80] = function()local wax,script,require=ImportGlobals(80)local ImportGlobals return (function(...)local darius = script.Parent.Parent
+    [81] = function()local wax,script,require=ImportGlobals(81)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 local title = ""
 
 local returnTable = {}
@@ -9811,168 +10412,6 @@ table.insert(returnTable, function(newTitle)
 end)
 
 return returnTable
-end)() end,
-    [81] = function()local wax,script,require=ImportGlobals(81)local ImportGlobals return (function(...)--[[
-local darius = require(script.Parent)
-local randomString = require(script.Parent.utilities).randomString
-local lucide = require(script.Parent.Bundles.lucide)
-local HttpService = require(script.Parent.Bundles).services.HttpService
-local customFunctions = require(script.Parent.utilities).customFunctions
-
-local fakeData = {
-	['dropdown_m'] = {"1"},
-    ['colorpicker'] = {color = "0.1,0.2,0.5",transparency = 0.5}
-}
-customFunctions.makefolder("darius")
-customFunctions.makefolder("darius/test")
-customFunctions.writefile("darius/test/config.json", HttpService:JSONEncode(fakeData))
-
-local randomIcons = {}
-for _,v in lucide do
-    table.insert(randomIcons, v)
-end
-local function randomIcon():string
-    return randomIcons[math.floor(math.random(1,#randomIcons))]
-end
-
-return function(target)
-    task.spawn(function()
-        local window = darius:Window({
-            Title = "Darius",
-            Description = "What the sigma this isn't Quantum UI",
-            Icon = randomIcon(),
-            HideBind = Enum.KeyCode.T,
-            UseConfig = true,
-            Config = "test",
-            IsMobile = false,
-
-            Theme = {
-                background = Color3.fromHex("#1C1726"),
-                background2 = Color3.fromHex("#0F0C15"),
-
-                text = Color3.fromHex("#EDEBF2"),
-                text2 = Color3.fromHex("#B7A6D4"),
-
-                selectedTab = Color3.fromHex("#1D1827"),
-
-                colorpickerBar = Color3.fromHex("#DCE1E5"),
-
-                notificationButton = Color3.fromHex("#222427"),
-
-                mobileButtonBackground = Color3.fromHex("#DCE1E5"),
-                mobileButtonText = Color3.fromHex("#2C2F33"),
-                mobileButtonImage = Color3.fromHex("#2C2F33"),
-
-                disabledBackground = Color3.fromHex("#2A2C31"),
-                disabledText = Color3.fromHex("#D6DCE0"),
-
-                toggled = Color3.fromHex("#B7A6D4"),
-
-                red = Color3.fromHex("#B7A6D4"),
-                orange = Color3.fromHex("#B7A6D4")
-            },
-
-            noOffset = true,
-            Parent = target
-        })
-
-        local tab = window:Tab({
-            Name = "Main",
-        })
-        local tab2 = window:Tab({
-            Name = randomString(16),
-            Image = randomIcon()
-        })
-        for i=1,10 do
-            window:Tab({
-                Name = randomString(6),
-                Image = randomIcon()
-            })
-        end
-
-        tab:TextBox({
-            Name = "Textbox",
-            Callback = function(v)
-
-            end
-        })
-        tab:Keybind({
-            Name = "Keybind",
-            Callback = function(v)
-
-            end
-        })
-        tab:Toggle({
-            Name = "Toggle",
-            LinkKeybind = true,
-            Callback = function(v)
-                print(v)
-            end
-        })
-        tab:Dropdown({
-            Name = "Dropdown",
-            Items = {"1","2","3"},
-            Default = "1",
-            FLAG = "dropdown",
-            Callback = function()
-
-            end
-        })
-        print(`dropdown flag: "{darius.flags.dropdown.Value}"`)
-        tab:Dropdown({
-            Name = "Dropdown",
-            Items = {"1","2","3"},
-            FLAG = "dropdown_m",
-            --IgnoreConfig = true,
-            Multiselect = true,
-            Callback = function(v)
-                print(v)
-                print(darius.flags.dropdown_m.Value)
-            end
-        })
-        print(darius.flags.dropdown_m.Value)
-        local a = tab:ColorPicker({
-            Name = "Colorpicker",
-            --Color = Color3.fromHex('#a49ae6'),
-            --Transparency = 0.5,
-            FLAG = "colorpicker",
-            Callback = function(color,transparency)
-
-            end
-        })
-        local b = tab:ColorPicker({
-            Name = "Colorpicker",
-            --Color = Color3.fromHex('#a49ae6'),
-            --Transparency = 0.5,
-            --FLAG = "colorpicker",
-            Callback = function(color,transparency)
-
-            end
-        })
-        tab:Button({
-            Name = "sdfsdf",
-            Callback = function()
-                a:Disable()
-            end
-        })
-        tab:Slider({
-            Name = "Slider",
-            Min = 0,
-            Max = 100,
-            Callback = function(v)
-
-            end
-        })
-        tab:KeybindList()
-        darius:LoadConfig()
-    end)
-    return function()
-        task.spawn(function()
-            darius:Destroy()
-        end)
-    end
-end
-]]
 end)() end,
     [83] = function()local wax,script,require=ImportGlobals(83)local ImportGlobals return (function(...)local darius = script.Parent.Parent
 return function(property, bindableEvent)
@@ -10558,23 +10997,25 @@ return function(property, bindableEvent)
 
 	connections.add(references.get("container"):GetPropertyChangedSignal("Position"):Connect(function()
 		local _container = references.get("container")
-		local correctPosition = _container.AbsolutePosition + Vector2.new(get(x)/2,get(y)/2)
-		if (correctPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) > 0.435 then
+		local centerPosition = _container.AbsolutePosition + Vector2.new(get(x)/2,get(y)/2)
+		local screenSize = inst.screenSize.AbsoluteSize
+		local xCap = screenSize.X + (get(isCollapsed) and get(x)/4 or (get(x)/6)*2.5)
+		local yCap = screenSize.Y + (get(isCollapsed) and get(y)/8 or (get(y)/6)*2.3)
+		local hasProblem = false
+		local _type = ""
+		if centerPosition.X > xCap or  screenSize.X - centerPosition.X > xCap then
+			hasProblem = true
+			_type = "x"
+		end
+		if centerPosition.Y + get(absoluteOffset.number) > yCap or screenSize.Y - centerPosition.Y - get(absoluteOffset.number) > yCap then
+			hasProblem = true
+			_type = "y"
+		end
+		if hasProblem and _type == "x" then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
 			_currentDrag = drag(references.get("container"), 15)
-		end
-		if -((correctPosition.X - inst.screenSize.AbsoluteSize.X)/get(x) + 1) > 0.8 then
-			_currentDrag:Disconnect()
-			_container.Position = UDim2.new(0.5,0,_container.Position.Y.Scale,_container.Position.Y.Offset)
-			_currentDrag = drag(references.get("container"), 15)
-		end
-		if (correctPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) > 0.32 then
-			_currentDrag:Disconnect()
-			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
-			_currentDrag = drag(references.get("container"), 15)
-		end
-		if -((correctPosition.Y - (inst.screenSize.AbsoluteSize.Y + get(absoluteOffset.number)))/get(y) + 1) > 0.935 then
+		elseif hasProblem and _type == "y" then
 			_currentDrag:Disconnect()
 			_container.Position = UDim2.new(_container.Position.X.Scale,_container.Position.X.Offset,0.5,get(absoluteOffset.number))
 			_currentDrag = drag(references.get("container"), 15)
@@ -10592,7 +11033,7 @@ end)() end,
     end
 })
 end)() end,
-    [85] = function()local wax,script,require=ImportGlobals(85)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [85] = function()local wax,script,require=ImportGlobals(85)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(AspectRatio:number, AspectType:Enum.AspectType, DominantAxis:Enum.DominantAxis)
     AspectType = AspectType or Enum.AspectType.FitWithinMaxSize
@@ -10604,7 +11045,7 @@ return function(AspectRatio:number, AspectType:Enum.AspectType, DominantAxis:Enu
     }
 end
 end)() end,
-    [86] = function()local wax,script,require=ImportGlobals(86)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [86] = function()local wax,script,require=ImportGlobals(86)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(offset, scale)
     scale = scale or 0
@@ -10613,7 +11054,7 @@ return function(offset, scale)
     }
 end
 end)() end,
-    [87] = function()local wax,script,require=ImportGlobals(87)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [87] = function()local wax,script,require=ImportGlobals(87)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(SortOrder, FillDirection,HorizontalAlignment,VerticalAlignment,Padding)
     return Fusion.New "UIListLayout" {
@@ -10625,42 +11066,42 @@ return function(SortOrder, FillDirection,HorizontalAlignment,VerticalAlignment,P
     }
 end
 end)() end,
-    [88] = function()local wax,script,require=ImportGlobals(88)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [88] = function()local wax,script,require=ImportGlobals(88)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(...)
     local args = {...}
     if #args == 1 then
         return Fusion.New "UIPadding" {
-            PaddingLeft = UDim.new(0,...),
-            PaddingRight = UDim.new(0,...),
-            PaddingTop = UDim.new(0,...),
-            PaddingBottom = UDim.new(0,...),
+            PaddingTop = typeof(...) == "number" and UDim.new(0,...) or ...,
+            PaddingRight = typeof(...) == "number" and UDim.new(0,...) or ...,
+            PaddingBottom = typeof(...) == "number" and UDim.new(0,...) or ...,
+            PaddingLeft = typeof(...) == "number" and UDim.new(0,...) or ...
         }
     elseif #args == 2 then
         return Fusion.New "UIPadding" {
-            PaddingTop = UDim.new(0,args[1]),
-            PaddingRight = UDim.new(0,args[2]),
-            PaddingBottom = UDim.new(0,args[1]),
-            PaddingLeft = UDim.new(0,args[2]),
+            PaddingTop = typeof(args[1]) == "number" and UDim.new(0,args[1]) or args[1],
+            PaddingRight = typeof(args[2]) == "number" and UDim.new(0,args[2]) or args[2],
+            PaddingBottom = typeof(args[1]) == "number" and UDim.new(0,args[1]) or args[1],
+            PaddingLeft = typeof(args[2]) == "number" and UDim.new(0,args[2]) or args[2]
         }
     elseif #args == 3 then
         return Fusion.New "UIPadding" {
-            PaddingTop = UDim.new(0,args[1]),
-            PaddingRight = UDim.new(0,args[2]),
-            PaddingBottom = UDim.new(0,args[3]),
-            PaddingLeft = UDim.new(0,args[2]),
+            PaddingTop = typeof(args[1]) == "number" and UDim.new(0,args[1]) or args[1],
+            PaddingRight = typeof(args[2]) == "number" and UDim.new(0,args[2]) or args[2],
+            PaddingBottom = typeof(args[3]) == "number" and UDim.new(0,args[3]) or args[3],
+            PaddingLeft = typeof(args[2]) == "number" and UDim.new(0,args[2]) or args[2]
         }
     else
         return Fusion.New "UIPadding" {
-            PaddingTop = UDim.new(0,args[1]),
-            PaddingRight = UDim.new(0,args[2]),
-            PaddingBottom = UDim.new(0,args[3]),
-            PaddingLeft = UDim.new(0,args[4]),
+            PaddingTop = typeof(args[1]) == "number" and UDim.new(0,args[1]) or args[1],
+            PaddingRight = typeof(args[2]) == "number" and UDim.new(0,args[2]) or args[2],
+            PaddingBottom = typeof(args[3]) == "number" and UDim.new(0,args[3]) or args[3],
+            PaddingLeft = typeof(args[4]) == "number" and UDim.new(0,args[4]) or args[4]
         }
     end
 end
 end)() end,
-    [89] = function()local wax,script,require=ImportGlobals(89)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [89] = function()local wax,script,require=ImportGlobals(89)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 
 return function(MinText:number?, MaxText:number?)
     return Fusion.New "UITextSizeConstraint" {
@@ -10679,7 +11120,7 @@ end)() end,
     end
 })
 end)() end,
-    [91] = function()local wax,script,require=ImportGlobals(91)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles.Fusion)
+    [91] = function()local wax,script,require=ImportGlobals(91)local ImportGlobals return (function(...)local Fusion = require(script.Parent.Parent.Bundles).Fusion
 local computed,spring = Fusion.Computed,Fusion.Spring
 
 return function(callback, speed, damping)
@@ -10734,6 +11175,10 @@ function functions.cloneref(service)
     else
         return service
     end
+end
+
+function functions.printFileSystem()
+    print(filesystem)
 end
 
 function functions.gethui(...)
@@ -10892,10 +11337,24 @@ function functions.listfiles(string:string)
         local cleaned = {}
         for i,v in currentPath do
             if typeof(v) == "string" then
-                table.insert(cleaned, i)
+                table.insert(cleaned, `{string}/{i}`)
             end
         end
         return cleaned
+    end
+end
+function functions.getthreadidentity()
+    if getthreadidentity then
+        return getthreadidentity()
+    else
+        return 5
+    end
+end
+function functions.setthreadidentity(number:number)
+    if setthreadidentity then
+        return setthreadidentity(number)
+    else
+        return 5
     end
 end
 return functions
@@ -10979,7 +11438,7 @@ return randomString
 end)() end,
     [99] = function()local wax,script,require=ImportGlobals(99)local ImportGlobals return (function(...)local references = {}
 local returnFunctions = {}
-local observe = require(script.Parent.Parent.Bundles.Fusion).Observer
+local observe = require(script.Parent.Parent.Bundles).Fusion.Observer
 
 local get = require(script.Parent.get)
 
@@ -11066,31 +11525,10 @@ local ObjectTree = {
                 },
                 {
                     {
-                        93,
+                        97,
                         2,
                         {
-                            "customFont"
-                        }
-                    },
-                    {
-                        92,
-                        2,
-                        {
-                            "connections"
-                        }
-                    },
-                    {
-                        96,
-                        2,
-                        {
-                            "get"
-                        }
-                    },
-                    {
-                        91,
-                        2,
-                        {
-                            "animate"
+                            "getStringBounds"
                         }
                     },
                     {
@@ -11101,17 +11539,17 @@ local ObjectTree = {
                         }
                     },
                     {
-                        97,
+                        93,
                         2,
                         {
-                            "getStringBounds"
+                            "customFont"
                         }
                     },
                     {
-                        95,
+                        96,
                         2,
                         {
-                            "drag"
+                            "get"
                         }
                     },
                     {
@@ -11122,10 +11560,10 @@ local ObjectTree = {
                         }
                     },
                     {
-                        101,
+                        94,
                         2,
                         {
-                            "typecheck"
+                            "customFunctions"
                         }
                     },
                     {
@@ -11136,515 +11574,31 @@ local ObjectTree = {
                         }
                     },
                     {
-                        94,
+                        101,
                         2,
                         {
-                            "customFunctions"
-                        }
-                    }
-                }
-            },
-            {
-                81,
-                2,
-                {
-                    "darius.story"
-                }
-            },
-            {
-                84,
-                2,
-                {
-                    "simpleElements"
-                },
-                {
-                    {
-                        89,
-                        2,
-                        {
-                            "UITextSizeConstraint"
+                            "typecheck"
                         }
                     },
                     {
-                        86,
+                        95,
                         2,
                         {
-                            "UICorner"
+                            "drag"
                         }
                     },
                     {
-                        88,
+                        92,
                         2,
                         {
-                            "UIPadding"
+                            "connections"
                         }
                     },
                     {
-                        87,
+                        91,
                         2,
                         {
-                            "UIListLayout"
-                        }
-                    },
-                    {
-                        85,
-                        2,
-                        {
-                            "UIAspectRatioConstraint"
-                        }
-                    }
-                }
-            },
-            {
-                2,
-                2,
-                {
-                    "Bundles"
-                },
-                {
-                    {
-                        58,
-                        2,
-                        {
-                            "flags"
-                        }
-                    },
-                    {
-                        60,
-                        2,
-                        {
-                            "lucide"
-                        }
-                    },
-                    {
-                        62,
-                        2,
-                        {
-                            "themeSystem"
-                        },
-                        {
-                            {
-                                63,
-                                2,
-                                {
-                                    "default"
-                                }
-                            }
-                        }
-                    },
-                    {
-                        61,
-                        2,
-                        {
-                            "services"
-                        }
-                    },
-                    {
-                        3,
-                        2,
-                        {
-                            "Fusion"
-                        },
-                        {
-                            {
-                                22,
-                                1,
-                                {
-                                    "Instances"
-                                },
-                                {
-                                    {
-                                        26,
-                                        2,
-                                        {
-                                            "New"
-                                        }
-                                    },
-                                    {
-                                        29,
-                                        2,
-                                        {
-                                            "Out"
-                                        }
-                                    },
-                                    {
-                                        25,
-                                        2,
-                                        {
-                                            "Hydrate"
-                                        }
-                                    },
-                                    {
-                                        23,
-                                        2,
-                                        {
-                                            "Children"
-                                        }
-                                    },
-                                    {
-                                        31,
-                                        2,
-                                        {
-                                            "applyInstanceProps"
-                                        }
-                                    },
-                                    {
-                                        28,
-                                        2,
-                                        {
-                                            "OnEvent"
-                                        }
-                                    },
-                                    {
-                                        24,
-                                        2,
-                                        {
-                                            "Cleanup"
-                                        }
-                                    },
-                                    {
-                                        32,
-                                        2,
-                                        {
-                                            "defaultProps"
-                                        }
-                                    },
-                                    {
-                                        27,
-                                        2,
-                                        {
-                                            "OnChange"
-                                        }
-                                    },
-                                    {
-                                        30,
-                                        2,
-                                        {
-                                            "Ref"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                14,
-                                1,
-                                {
-                                    "Colour"
-                                },
-                                {
-                                    {
-                                        15,
-                                        2,
-                                        {
-                                            "Oklab"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                39,
-                                2,
-                                {
-                                    "PubTypes"
-                                }
-                            },
-                            {
-                                40,
-                                1,
-                                {
-                                    "State"
-                                },
-                                {
-                                    {
-                                        45,
-                                        2,
-                                        {
-                                            "Observer"
-                                        }
-                                    },
-                                    {
-                                        43,
-                                        2,
-                                        {
-                                            "ForPairs"
-                                        }
-                                    },
-                                    {
-                                        47,
-                                        2,
-                                        {
-                                            "unwrap"
-                                        }
-                                    },
-                                    {
-                                        41,
-                                        2,
-                                        {
-                                            "Computed"
-                                        }
-                                    },
-                                    {
-                                        46,
-                                        2,
-                                        {
-                                            "Value"
-                                        }
-                                    },
-                                    {
-                                        42,
-                                        2,
-                                        {
-                                            "ForKeys"
-                                        }
-                                    },
-                                    {
-                                        44,
-                                        2,
-                                        {
-                                            "ForValues"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                4,
-                                1,
-                                {
-                                    "Animation"
-                                },
-                                {
-                                    {
-                                        5,
-                                        2,
-                                        {
-                                            "Spring"
-                                        }
-                                    },
-                                    {
-                                        6,
-                                        2,
-                                        {
-                                            "SpringScheduler"
-                                        }
-                                    },
-                                    {
-                                        9,
-                                        2,
-                                        {
-                                            "getTweenRatio"
-                                        }
-                                    },
-                                    {
-                                        7,
-                                        2,
-                                        {
-                                            "Tween"
-                                        }
-                                    },
-                                    {
-                                        10,
-                                        2,
-                                        {
-                                            "lerpType"
-                                        }
-                                    },
-                                    {
-                                        11,
-                                        2,
-                                        {
-                                            "packType"
-                                        }
-                                    },
-                                    {
-                                        13,
-                                        2,
-                                        {
-                                            "unpackType"
-                                        }
-                                    },
-                                    {
-                                        8,
-                                        2,
-                                        {
-                                            "TweenScheduler"
-                                        }
-                                    },
-                                    {
-                                        12,
-                                        2,
-                                        {
-                                            "springCoefficients"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                48,
-                                2,
-                                {
-                                    "Types"
-                                }
-                            },
-                            {
-                                49,
-                                1,
-                                {
-                                    "Utility"
-                                },
-                                {
-                                    {
-                                        50,
-                                        2,
-                                        {
-                                            "None"
-                                        }
-                                    },
-                                    {
-                                        56,
-                                        2,
-                                        {
-                                            "xtypeof"
-                                        }
-                                    },
-                                    {
-                                        53,
-                                        2,
-                                        {
-                                            "isSimilar"
-                                        }
-                                    },
-                                    {
-                                        54,
-                                        2,
-                                        {
-                                            "needsDestruction"
-                                        }
-                                    },
-                                    {
-                                        55,
-                                        2,
-                                        {
-                                            "restrictRead"
-                                        }
-                                    },
-                                    {
-                                        51,
-                                        2,
-                                        {
-                                            "cleanup"
-                                        }
-                                    },
-                                    {
-                                        52,
-                                        2,
-                                        {
-                                            "doNothing"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                16,
-                                1,
-                                {
-                                    "Dependencies"
-                                },
-                                {
-                                    {
-                                        17,
-                                        2,
-                                        {
-                                            "captureDependencies"
-                                        }
-                                    },
-                                    {
-                                        21,
-                                        2,
-                                        {
-                                            "useDependency"
-                                        }
-                                    },
-                                    {
-                                        20,
-                                        2,
-                                        {
-                                            "updateAll"
-                                        }
-                                    },
-                                    {
-                                        19,
-                                        2,
-                                        {
-                                            "sharedState"
-                                        }
-                                    },
-                                    {
-                                        18,
-                                        2,
-                                        {
-                                            "initDependency"
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                33,
-                                1,
-                                {
-                                    "Logging"
-                                },
-                                {
-                                    {
-                                        34,
-                                        2,
-                                        {
-                                            "logError"
-                                        }
-                                    },
-                                    {
-                                        35,
-                                        2,
-                                        {
-                                            "logErrorNonFatal"
-                                        }
-                                    },
-                                    {
-                                        37,
-                                        2,
-                                        {
-                                            "messages"
-                                        }
-                                    },
-                                    {
-                                        36,
-                                        2,
-                                        {
-                                            "logWarn"
-                                        }
-                                    },
-                                    {
-                                        38,
-                                        2,
-                                        {
-                                            "parseError"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        57,
-                        2,
-                        {
-                            "data"
-                        }
-                    },
-                    {
-                        59,
-                        2,
-                        {
-                            "icons"
+                            "animate"
                         }
                     }
                 }
@@ -11673,31 +11627,80 @@ local ObjectTree = {
                 },
                 {
                     {
-                        68,
+                        80,
                         2,
                         {
-                            "dropdown"
+                            "toggle"
+                        }
+                    },
+                    {
+                        72,
+                        2,
+                        {
+                            "label"
                         }
                     },
                     {
                         69,
                         2,
                         {
+                            "dropdown"
+                        }
+                    },
+                    {
+                        67,
+                        2,
+                        {
+                            "colorpicker"
+                        }
+                    },
+                    {
+                        70,
+                        2,
+                        {
                             "keybind"
+                        }
+                    },
+                    {
+                        66,
+                        2,
+                        {
+                            "buttonGroup"
+                        }
+                    },
+                    {
+                        76,
+                        2,
+                        {
+                            "slider"
                         }
                     },
                     {
                         78,
                         2,
                         {
-                            "textbox"
+                            "tabFrame"
                         }
                     },
                     {
-                        79,
+                        74,
                         2,
                         {
-                            "toggle"
+                            "notification"
+                        }
+                    },
+                    {
+                        81,
+                        2,
+                        {
+                            "warn"
+                        }
+                    },
+                    {
+                        75,
+                        2,
+                        {
+                            "paragraph"
                         }
                     },
                     {
@@ -11708,80 +11711,536 @@ local ObjectTree = {
                         }
                     },
                     {
-                        80,
-                        2,
-                        {
-                            "warn"
-                        }
-                    },
-                    {
-                        71,
-                        2,
-                        {
-                            "label"
-                        }
-                    },
-                    {
-                        70,
-                        2,
-                        {
-                            "keybindList"
-                        }
-                    },
-                    {
-                        75,
-                        2,
-                        {
-                            "slider"
-                        }
-                    },
-                    {
-                        76,
-                        2,
-                        {
-                            "tabButton"
-                        }
-                    },
-                    {
-                        72,
-                        2,
-                        {
-                            "module"
-                        }
-                    },
-                    {
-                        73,
-                        2,
-                        {
-                            "notification"
-                        }
-                    },
-                    {
-                        67,
+                        68,
                         2,
                         {
                             "divider"
                         }
                     },
                     {
-                        74,
+                        73,
                         2,
                         {
-                            "paragraph"
+                            "module"
                         }
                     },
                     {
-                        66,
+                        79,
                         2,
                         {
-                            "colorpicker"
+                            "textbox"
                         }
                     },
                     {
                         77,
                         2,
                         {
-                            "tabFrame"
+                            "tabButton"
+                        }
+                    },
+                    {
+                        71,
+                        2,
+                        {
+                            "keybindList"
+                        }
+                    }
+                }
+            },
+            {
+                2,
+                2,
+                {
+                    "Bundles"
+                },
+                {
+                    {
+                        59,
+                        2,
+                        {
+                            "icons"
+                        }
+                    },
+                    {
+                        58,
+                        2,
+                        {
+                            "flags"
+                        }
+                    },
+                    {
+                        61,
+                        2,
+                        {
+                            "services"
+                        }
+                    },
+                    {
+                        3,
+                        2,
+                        {
+                            "Fusion"
+                        },
+                        {
+                            {
+                                39,
+                                2,
+                                {
+                                    "PubTypes"
+                                }
+                            },
+                            {
+                                4,
+                                1,
+                                {
+                                    "Animation"
+                                },
+                                {
+                                    {
+                                        9,
+                                        2,
+                                        {
+                                            "getTweenRatio"
+                                        }
+                                    },
+                                    {
+                                        7,
+                                        2,
+                                        {
+                                            "Tween"
+                                        }
+                                    },
+                                    {
+                                        12,
+                                        2,
+                                        {
+                                            "springCoefficients"
+                                        }
+                                    },
+                                    {
+                                        6,
+                                        2,
+                                        {
+                                            "SpringScheduler"
+                                        }
+                                    },
+                                    {
+                                        13,
+                                        2,
+                                        {
+                                            "unpackType"
+                                        }
+                                    },
+                                    {
+                                        5,
+                                        2,
+                                        {
+                                            "Spring"
+                                        }
+                                    },
+                                    {
+                                        11,
+                                        2,
+                                        {
+                                            "packType"
+                                        }
+                                    },
+                                    {
+                                        8,
+                                        2,
+                                        {
+                                            "TweenScheduler"
+                                        }
+                                    },
+                                    {
+                                        10,
+                                        2,
+                                        {
+                                            "lerpType"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                40,
+                                1,
+                                {
+                                    "State"
+                                },
+                                {
+                                    {
+                                        42,
+                                        2,
+                                        {
+                                            "ForKeys"
+                                        }
+                                    },
+                                    {
+                                        43,
+                                        2,
+                                        {
+                                            "ForPairs"
+                                        }
+                                    },
+                                    {
+                                        46,
+                                        2,
+                                        {
+                                            "Value"
+                                        }
+                                    },
+                                    {
+                                        41,
+                                        2,
+                                        {
+                                            "Computed"
+                                        }
+                                    },
+                                    {
+                                        44,
+                                        2,
+                                        {
+                                            "ForValues"
+                                        }
+                                    },
+                                    {
+                                        45,
+                                        2,
+                                        {
+                                            "Observer"
+                                        }
+                                    },
+                                    {
+                                        47,
+                                        2,
+                                        {
+                                            "unwrap"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                33,
+                                1,
+                                {
+                                    "Logging"
+                                },
+                                {
+                                    {
+                                        37,
+                                        2,
+                                        {
+                                            "messages"
+                                        }
+                                    },
+                                    {
+                                        38,
+                                        2,
+                                        {
+                                            "parseError"
+                                        }
+                                    },
+                                    {
+                                        35,
+                                        2,
+                                        {
+                                            "logErrorNonFatal"
+                                        }
+                                    },
+                                    {
+                                        36,
+                                        2,
+                                        {
+                                            "logWarn"
+                                        }
+                                    },
+                                    {
+                                        34,
+                                        2,
+                                        {
+                                            "logError"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                48,
+                                2,
+                                {
+                                    "Types"
+                                }
+                            },
+                            {
+                                14,
+                                1,
+                                {
+                                    "Colour"
+                                },
+                                {
+                                    {
+                                        15,
+                                        2,
+                                        {
+                                            "Oklab"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                49,
+                                1,
+                                {
+                                    "Utility"
+                                },
+                                {
+                                    {
+                                        51,
+                                        2,
+                                        {
+                                            "cleanup"
+                                        }
+                                    },
+                                    {
+                                        56,
+                                        2,
+                                        {
+                                            "xtypeof"
+                                        }
+                                    },
+                                    {
+                                        53,
+                                        2,
+                                        {
+                                            "isSimilar"
+                                        }
+                                    },
+                                    {
+                                        55,
+                                        2,
+                                        {
+                                            "restrictRead"
+                                        }
+                                    },
+                                    {
+                                        52,
+                                        2,
+                                        {
+                                            "doNothing"
+                                        }
+                                    },
+                                    {
+                                        50,
+                                        2,
+                                        {
+                                            "None"
+                                        }
+                                    },
+                                    {
+                                        54,
+                                        2,
+                                        {
+                                            "needsDestruction"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                22,
+                                1,
+                                {
+                                    "Instances"
+                                },
+                                {
+                                    {
+                                        31,
+                                        2,
+                                        {
+                                            "applyInstanceProps"
+                                        }
+                                    },
+                                    {
+                                        27,
+                                        2,
+                                        {
+                                            "OnChange"
+                                        }
+                                    },
+                                    {
+                                        25,
+                                        2,
+                                        {
+                                            "Hydrate"
+                                        }
+                                    },
+                                    {
+                                        23,
+                                        2,
+                                        {
+                                            "Children"
+                                        }
+                                    },
+                                    {
+                                        29,
+                                        2,
+                                        {
+                                            "Out"
+                                        }
+                                    },
+                                    {
+                                        32,
+                                        2,
+                                        {
+                                            "defaultProps"
+                                        }
+                                    },
+                                    {
+                                        24,
+                                        2,
+                                        {
+                                            "Cleanup"
+                                        }
+                                    },
+                                    {
+                                        30,
+                                        2,
+                                        {
+                                            "Ref"
+                                        }
+                                    },
+                                    {
+                                        28,
+                                        2,
+                                        {
+                                            "OnEvent"
+                                        }
+                                    },
+                                    {
+                                        26,
+                                        2,
+                                        {
+                                            "New"
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                16,
+                                1,
+                                {
+                                    "Dependencies"
+                                },
+                                {
+                                    {
+                                        19,
+                                        2,
+                                        {
+                                            "sharedState"
+                                        }
+                                    },
+                                    {
+                                        18,
+                                        2,
+                                        {
+                                            "initDependency"
+                                        }
+                                    },
+                                    {
+                                        20,
+                                        2,
+                                        {
+                                            "updateAll"
+                                        }
+                                    },
+                                    {
+                                        17,
+                                        2,
+                                        {
+                                            "captureDependencies"
+                                        }
+                                    },
+                                    {
+                                        21,
+                                        2,
+                                        {
+                                            "useDependency"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    {
+                        62,
+                        2,
+                        {
+                            "themeSystem"
+                        },
+                        {
+                            {
+                                63,
+                                2,
+                                {
+                                    "default"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        60,
+                        2,
+                        {
+                            "lucide"
+                        }
+                    },
+                    {
+                        57,
+                        2,
+                        {
+                            "data"
+                        }
+                    }
+                }
+            },
+            {
+                84,
+                2,
+                {
+                    "simpleElements"
+                },
+                {
+                    {
+                        86,
+                        2,
+                        {
+                            "UICorner"
+                        }
+                    },
+                    {
+                        85,
+                        2,
+                        {
+                            "UIAspectRatioConstraint"
+                        }
+                    },
+                    {
+                        87,
+                        2,
+                        {
+                            "UIListLayout"
+                        }
+                    },
+                    {
+                        89,
+                        2,
+                        {
+                            "UITextSizeConstraint"
+                        }
+                    },
+                    {
+                        88,
+                        2,
+                        {
+                            "UIPadding"
                         }
                     }
                 }
@@ -11793,97 +12252,97 @@ local ObjectTree = {
 -- Line offsets for debugging (only included when minifyTables is false)
 local LineOffsets = {
     8,
-    272,
-    282,
-    [5] = 356,
-    [6] = 574,
-    [7] = 668,
-    [8] = 804,
-    [9] = 880,
-    [10] = 924,
-    [11] = 1086,
-    [12] = 1185,
-    [13] = 1271,
-    [15] = 1360,
-    [17] = 1415,
-    [18] = 1472,
-    [19] = 1501,
-    [20] = 1525,
-    [21] = 1585,
-    [23] = 1615,
-    [24] = 1764,
-    [25] = 1785,
-    [26] = 1805,
-    [27] = 1841,
-    [28] = 1876,
-    [29] = 1913,
-    [30] = 1957,
-    [31] = 1987,
-    [32] = 2114,
-    [34] = 2225,
-    [35] = 2258,
-    [36] = 2293,
-    [37] = 2317,
-    [38] = 2363,
-    [39] = 2386,
-    [41] = 2533,
-    [42] = 2647,
-    [43] = 2896,
-    [44] = 3206,
-    [45] = 3453,
-    [46] = 3537,
-    [47] = 3600,
-    [48] = 3616,
-    [50] = 3763,
-    [51] = 3777,
-    [52] = 3831,
-    [53] = 3842,
-    [54] = 3860,
-    [55] = 3873,
-    [56] = 3902,
-    [57] = 3922,
-    [58] = 3996,
-    [59] = 4229,
-    [60] = 4247,
-    [61] = 5071,
-    [62] = 5083,
-    [63] = 5149,
-    [65] = 5175,
-    [66] = 5366,
-    [67] = 6197,
-    [68] = 6248,
-    [69] = 6896,
-    [70] = 7351,
-    [71] = 7562,
-    [72] = 7663,
-    [73] = 7833,
-    [74] = 8102,
-    [75] = 8255,
-    [76] = 8687,
-    [77] = 8805,
-    [78] = 8844,
-    [79] = 9274,
-    [80] = 9790,
-    [81] = 9815,
-    [83] = 9977,
-    [84] = 10585,
-    [85] = 10595,
-    [86] = 10607,
-    [87] = 10616,
-    [88] = 10628,
-    [89] = 10663,
-    [90] = 10672,
-    [91] = 10682,
-    [92] = 10689,
-    [93] = 10710,
-    [94] = 10726,
-    [95] = 10903,
-    [96] = 10952,
-    [97] = 10959,
-    [98] = 10970,
-    [99] = 10980,
-    [100] = 11030,
-    [101] = 11037
+    848,
+    858,
+    [5] = 932,
+    [6] = 1150,
+    [7] = 1244,
+    [8] = 1380,
+    [9] = 1456,
+    [10] = 1500,
+    [11] = 1662,
+    [12] = 1761,
+    [13] = 1847,
+    [15] = 1936,
+    [17] = 1991,
+    [18] = 2048,
+    [19] = 2077,
+    [20] = 2101,
+    [21] = 2161,
+    [23] = 2191,
+    [24] = 2340,
+    [25] = 2361,
+    [26] = 2381,
+    [27] = 2417,
+    [28] = 2452,
+    [29] = 2489,
+    [30] = 2533,
+    [31] = 2563,
+    [32] = 2690,
+    [34] = 2801,
+    [35] = 2834,
+    [36] = 2869,
+    [37] = 2893,
+    [38] = 2939,
+    [39] = 2962,
+    [41] = 3109,
+    [42] = 3223,
+    [43] = 3472,
+    [44] = 3782,
+    [45] = 4029,
+    [46] = 4113,
+    [47] = 4176,
+    [48] = 4192,
+    [50] = 4339,
+    [51] = 4353,
+    [52] = 4407,
+    [53] = 4418,
+    [54] = 4436,
+    [55] = 4449,
+    [56] = 4478,
+    [57] = 4498,
+    [58] = 4573,
+    [59] = 4916,
+    [60] = 4935,
+    [61] = 4948,
+    [62] = 4960,
+    [63] = 5199,
+    [65] = 5227,
+    [66] = 5427,
+    [67] = 5680,
+    [68] = 6549,
+    [69] = 6600,
+    [70] = 7355,
+    [71] = 7834,
+    [72] = 8045,
+    [73] = 8158,
+    [74] = 8328,
+    [75] = 8575,
+    [76] = 8741,
+    [77] = 9190,
+    [78] = 9308,
+    [79] = 9347,
+    [80] = 9824,
+    [81] = 10391,
+    [83] = 10416,
+    [84] = 11026,
+    [85] = 11036,
+    [86] = 11048,
+    [87] = 11057,
+    [88] = 11069,
+    [89] = 11104,
+    [90] = 11113,
+    [91] = 11123,
+    [92] = 11130,
+    [93] = 11151,
+    [94] = 11167,
+    [95] = 11362,
+    [96] = 11411,
+    [97] = 11418,
+    [98] = 11429,
+    [99] = 11439,
+    [100] = 11489,
+    [101] = 11496
 }
 
 -- Misc AOT variable imports

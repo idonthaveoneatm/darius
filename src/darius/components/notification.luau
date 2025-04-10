@@ -54,15 +54,8 @@ return function(property)
 
     local loaded = value(false)
     local resized = value(false)
-    local hideNotification = value(false)
     local tickText = value("")
     local width = value(250)
-    local bodyBounds = value(getStringBounds(get(body), {
-        Size = 14,
-        Font = customFont("Montserrat", Enum.FontWeight.Medium),
-        Width = get(width) - 8 - (image and 32 or 0)
-    }))
-    local height = value(20 + math.clamp(get(bodyBounds).Y + 4 + 10 + (#get(buttons) > 0 and 26 or 0), #get(buttons) > 0 and 56 or 30, 9e9))
     local function roundTo(decimal, number)
         local point = 1
         for _=1,decimal do
@@ -105,9 +98,6 @@ return function(property)
                 resized:set(false)
                 task.wait(0.4)
                 loaded:set(false)
-                task.delay(0.3, function()
-                    hideNotification:set(true)
-                end)
                 task.wait(2)
                 newNotification:Destroy()
             end,
@@ -122,44 +112,33 @@ return function(property)
     newNotification = new "Frame" {
         Parent = property.Parent,
         BackgroundTransparency = 1,
-        Size = animate(function()
-            return UDim2.fromOffset(get(width), get(loaded) and get(height) + 5 or 0)
-        end, 30, 1),
-        ClipsDescendants = true,
+        Size = UDim2.fromOffset(get(width), 0),
+        AutomaticSize = Enum.AutomaticSize.Y,
 
         [children] = {
+            UIPadding(5,0,0,0),
             new "TextButton" {
-                Visible = computed(function()
-                    return not get(hideNotification)
-                end),
-                Interactable = resized,
-                AnchorPoint = Vector2.new(0,1),
-                Position = UDim2.fromScale(0,1),
                 BackgroundTransparency = 1,
-                Size = UDim2.fromOffset(get(width), get(height)),
+                Size = UDim2.fromScale(1,1),
 
                 [onevent "Activated"] = function()
                     resized:set(false)
                     task.wait(0.4)
                     loaded:set(false)
-                    task.delay(0.3, function()
-                        hideNotification:set(true)
-                    end)
-                    task.wait(2)
                     newNotification:Destroy()
                 end
             },
             new "Frame" {
-                AnchorPoint = Vector2.new(0,1),
+                Size = UDim2.fromScale(1,0),
                 BackgroundColor3 = theme.background,
-                Size = UDim2.fromOffset(get(width), get(height)),
+                AutomaticSize = Enum.AutomaticSize.Y,
                 Position = animate(function()
-                    return UDim2.fromScale(get(resized) and 0 or 1.2, 1)
+                    return UDim2.fromScale(get(resized) and 0 or 1.2, 0)
                 end,30,1),
 
                 [children] = {
-                    UIPadding(0,4),
                     UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,4)),
+                    UIPadding(0,4),
                     UICorner(4),
                     new "Frame" {
                         Visible = get(image) ~= "" and true or false,
@@ -178,8 +157,9 @@ return function(property)
                         }
                     },
                     new "Frame" {
-                        Size = UDim2.new(1,get(image) ~= "" and -28 or 0,1,0),
+                        Size = UDim2.new(1,get(image) ~= "" and -28 or 0,0,0),
                         BackgroundTransparency = 1,
+                        AutomaticSize = Enum.AutomaticSize.Y,
 
                         [children] = {
                             UIPadding(2,0),
@@ -234,6 +214,7 @@ return function(property)
                         }
                     }
                 }
+
             }
         }
     }
@@ -259,9 +240,6 @@ return function(property)
         resized:set(false)
         task.wait(0.4)
         loaded:set(false)
-        task.delay(0.3, function()
-            hideNotification:set(true)
-        end)
         task.wait(2)
         newNotification:Destroy()
     end)

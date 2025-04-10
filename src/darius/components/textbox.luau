@@ -34,25 +34,29 @@ return function(property)
 
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
-        Placeholder = "",
 		DisabledText = "",
+		IsEnabled = false,
+		Visible = false,
+		Callback = function()end,
+
+		FLAG = "",
+        PlaceHolderText = "",
         ClearTextOnFocus = false,
         OnlyNumbers = true,
         OnLeave = true,
         Default = "",
-        FLAG = "",
-        IsEnabled = false,
-        Callback = function()end,
 		IgnoreConfig = true
 	},{
-		property.Placeholder and "" or "Placeholder",
+		property.DisabledText and "" or "DisabledText",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.PlaceHolderText and "" or "PlaceHolderText",
 		property.ClearTextOnFocus and "" or "ClearTextOnFocus",
 		property.OnlyNumbers and "" or "OnlyNumbers",
 		property.OnLeave and "" or "OnLeave",
 		property.Default and "" or "Default",
 		property.FLAG and "" or "FLAG",
-		property.DisabledText and "" or "DisabledText",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -68,15 +72,18 @@ return function(property)
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local isEnabled = property.IsEnabled or value(true)
 	local disabledText = property.DisabledText or value("Component Disabled")
+	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
 	local onlyNumbers = property.OnlyNumbers or value(false)
 	local default = property.Default or value("")
 	local onLeave = property.OnLeave or value(false)
 	local clearTextOnFocus = property.ClearTextOnFocus or value(false)
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local placeHolder = property.Placeholder or value("")
+	local placeHolder = property.PlaceHolderText or value("")
+
 	local flag = property.FLAG or value(textbox.uid)
 	local _flag
 	if get(flag) ~= "" then
@@ -148,13 +155,15 @@ return function(property)
 			end
 		end
 	end)
+	local titleTextLabel = value()
+	local titleX = value(0)
 
 	-- TextBox
 
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -215,27 +224,43 @@ return function(property)
 
 				[children] = {
 					UIListLayout(SO.LayoutOrder,FD.Horizontal,HA.Left,VA.Center,UDim.new(0,3)),
-					new "Frame" {
-						Size = UDim2.new(0.65,-3,1,0),
+					new "TextLabel" {
+						Size = UDim2.fromScale(0,1),
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
+						TextSize = 18,
+						Text = name,
+						AutomaticSize = Enum.AutomaticSize.X,
+						TextTransparency = selectedAnimation,
+						TextXAlignment = Enum.TextXAlignment.Left,
+						RichText = true,
+						TextColor3 = theme.text,
+						FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
+						[onevent "Changed"] = function(changedProperty)
+							if changedProperty == "AbsoluteSize" and get(titleTextLabel) ~= nil then
+								titleX:set(get(titleTextLabel).AbsoluteSize.X)
+							end
+						end,
+
+						[ref] = titleTextLabel,
 
 						[children] = {
 							UICorner(6),
 							UIPadding(0,6),
-							new "TextLabel" { -- Title
-								FontFace = customFont("Montserrat", Enum.FontWeight.Bold),
-								Size = UDim2.new(1,0,0,18),
+							--[[
+							new "TextLabel" {
+								
+								Size = UDim2.new(0,0,0,18),
 								BackgroundTransparency = 1,
-								TextColor3 = theme.text,
-								TextScaled = true,
-								AnchorPoint = Vector2.new(0,0.5),
-								Position = UDim2.new(0,0,0.5,0),
-								Text = name,
-								TextTransparency = selectedAnimation,
-								TextXAlignment = Enum.TextXAlignment.Left,
-								RichText = true
+								
+								--TextScaled = true,
+								
+
+								
+
+								[children] = {}
 							}
+								]]
 						}
 					},
 					new "TextButton" {
@@ -245,7 +270,12 @@ return function(property)
 							end
 							return get(isSelected)
 						end),
-						Size = UDim2.fromScale(0.35,1),
+						Size = computed(function()
+							if get(titleTextLabel) then
+								return UDim2.new(1,-get(titleX) - 3,1)
+							end
+							return UDim2.fromScale(0.35,1)
+						end),
 						BackgroundColor3 = theme.background2,
 						BackgroundTransparency = selectedAnimation,
 
@@ -364,8 +394,7 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noCorrectText = true
 			if file ~= nil then
 				if get(onLeave) then
@@ -405,6 +434,18 @@ return function(property)
 			focused:set(false)
 		end
 	end
+	if _flag.preregistered and _flag.preregisteredValue then
+		didPass, failedItems = typecheck({FlagValue = _flag.preregisteredValue},{FlagValue = ""})
+		if didPass then
+			if get(onLeave) then
+				focused:set(true)
+			end
+			correctText:set(_flag.preregisteredValue)
+			if get(onLeave) then
+				focused:set(false)
+			end
+		end
+	end
 
 	local returnFunctions = {}
 	function returnFunctions:SetName(newText)
@@ -424,6 +465,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

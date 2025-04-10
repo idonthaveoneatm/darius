@@ -11,6 +11,10 @@ function functions.cloneref(service)
     end
 end
 
+function functions.printFileSystem()
+    print(filesystem)
+end
+
 function functions.gethui(...)
     return gethui(...) or nil
 end
@@ -167,10 +171,24 @@ function functions.listfiles(string:string)
         local cleaned = {}
         for i,v in currentPath do
             if typeof(v) == "string" then
-                table.insert(cleaned, i)
+                table.insert(cleaned, `{string}/{i}`)
             end
         end
         return cleaned
+    end
+end
+function functions.getthreadidentity()
+    if getthreadidentity then
+        return getthreadidentity()
+    else
+        return 5
+    end
+end
+function functions.setthreadidentity(number:number)
+    if setthreadidentity then
+        return setthreadidentity(number)
+    else
+        return 5
     end
 end
 return functions

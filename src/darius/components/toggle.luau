@@ -41,18 +41,23 @@ return function(property)
 	local didPass, failedItems = typecheck(property,{
 		Name = "",
 		DisabledText = "",
-        FLAG = "",
-        IsEnabled = false,
-		Default = false,
+		IsEnabled = false,
+		Visible = false,
         Callback = function()end,
+
+        FLAG = "",
+		Default = false,
 		LinkKeybind = true,
 		IgnoreConfig = true,
 	},{
 		property.DisabledText and "" or "DisabledText",
-		property.FLAG and "" or "FLAG",
 		property.IsEnabled and "" or "IsEnabled",
+		property.Visible and "" or "Visible",
+
+		property.FLAG and "" or "FLAG",
 		property.Default and "" or "Default",
 		property.LinkKeybind and "" or "LinkKeybind",
+		property.IgnoreConfig and "" or "IgnoreConfig",
 		property.IgnoreConfig and "" or "IgnoreConfig"
 	})
 	assert(didPass, table.concat(failedItems, "\n"))
@@ -75,28 +80,34 @@ return function(property)
 	local isListening = data.find("isListening")
 	local bindData = data.find("bindData")
 	local toggles = data.find("toggles")
+	local absoluteOffset = data.find("absoluteOffset").number
 	local toggle = data.add(property)
 
 	-- Properties
 
 	local _parent = property.Parent
 	local name = property.Name
-	local callback = property.Callback
-	local default = property.Default or value(false)
+	local disabledText = property.DisabledText or value("Component Disabled")
 	local isEnabled = property.IsEnabled or value(true)
+	local visible = property.Visible or value(true)
+	local callback = property.Callback
+
+	local default = property.Default or value(false)
 	local bind = property.Bind
 	local ignoreConfig = property.IgnoreConfig or value(false)
-	local disabledText = property.DisabledText or value("Component Disabled")
 	local linkKeybind = property.LinkKeybind or value(false)
+
 	local flag = property.FLAG or value(toggle.uid)
 	local _flag
 	if get(flag) ~= "" then
 		_flag = flagCreator.register(get(flag), {
 			boolean = value(false),
-			keycode = value(nil)
+			keycode = value(nil),
+			coordinate = value(nil)
 		},"toggle", get(flag) == toggle.uid)
 		_flag.user.Value = get(_flag.status.boolean)
 	end
+
 	local keyCode = value()
 	local function checkKeyCode(keycode: EnumItem, dupeMessage:string)
 		local _currentBinds = get(currentBinds.binds)
@@ -117,19 +128,12 @@ return function(property)
 			}
 			bindData:update("bindData", _bindData)
 			currentBinds:update("binds", _currentBinds)
+			_flag.status.keycode:set(get(keyCode).Name)
 		end
 	end
 	observe(_flag.status.boolean):onChange(function()
 		if get(isEnabled) then
 			task.spawn(get(callback), get(_flag.status.boolean))
-		end
-	end)
-	observe(_flag.status.keycode):onChange(function()
-		local success, result = pcall(function()
-			return Enum.KeyCode[get(_flag.status.keycode)]
-		end)
-		if success then
-			checkKeyCode(result, "RAHHH")
 		end
 	end)
 	table.insert(toggles.list, _flag.status.boolean)
@@ -167,7 +171,8 @@ return function(property)
 	-- Toggle
 
 	local dragConnection
-	local mobileButton = new "TextButton" {
+	local mobileButton
+	mobileButton = new "TextButton" {
 		Visible = computed(function()
 			if not get(isEnabled) then
 				return get(isEnabled)
@@ -190,6 +195,7 @@ return function(property)
 			if dragConnection then
 				dragConnection:Disconnect()
 				dragConnection = nil
+				_flag.status.coordinate:set(mobileButton.AbsolutePosition)
 			else
 				_flag.status.boolean:set(not get(_flag.status.boolean))
 			end
@@ -215,7 +221,7 @@ return function(property)
 	new "Frame" {
 		Parent = _parent,
 		Visible = computed(function()
-			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) then
+			if get(searchText.string) ~= "" and not string.find(get(name):lower(), get(searchText.string):lower()) or not get(visible) then
 				return false
 			end
 			return true
@@ -365,6 +371,7 @@ return function(property)
 
 						[onevent "Activated"] = function()
 							hasPlaced:set(false)
+							_flag.status.coordinate:set(nil)
 							mobileButton.Position = UDim2.fromScale(0.5,0.5)
 						end,
 
@@ -451,16 +458,20 @@ return function(property)
 	-- Closure
 
 	if get(useConfig.boolean) and not get(ignoreConfig) then
-		observe(_flag.file):onChange(function()
-			local file = get(_flag.file)
+		_flag.file:Connect(function(file)
 			local noBoolean = true
 			local noKeyCode = true
 			if file.boolean ~= nil then
 				_flag.status.boolean:set(file.boolean)
 				noBoolean = false
 			end
-			if file.keycode ~= nil then
-				_flag.status.keycode:set(file.keycode)
+			if file.keycode ~= nil and ((get(keyCode) and get(keyCode).Name or  "") ~= file.keycode) then
+				local success, result = pcall(function()
+					return Enum.KeyCode[file.keycode]
+				end)
+				if success then
+					checkKeyCode(result, "File1")
+				end
 				noKeyCode = false
 			end
 			if noBoolean then
@@ -468,20 +479,54 @@ return function(property)
 			end
 			if noKeyCode then
 				if bind then
-					_flag.status.keycode:set(get(bind).Name)
+					checkKeyCode(get(bind), "NoFileFound")
 				end
 			end
+			if get(isMobile.boolean) and file.coordinate then
+				mobileButton.Position = UDim2.fromOffset(file.coordinate.X + 30,file.coordinate.Y + 30 + get(absoluteOffset))
+				hasPlaced:set(true)
+				_flag.status.coordinate:set(file.coordinate)
+			elseif get(isMobile.boolean) and not file.coordinate then
+				hasPlaced:set(false)
+				mobileButton.Position = UDim2.fromScale(0.5,0.5)
+			end
 		end)
+
 		if _flag.private then
 			_flag.status.boolean:set(get(default))
 			if bind then
-				_flag.status.keycode:set(get(bind).Name)
+				checkKeyCode(get(bind), "Private")
 			end
 		end
 	else
 		_flag.status.boolean:set(get(default))
 		if bind then
-			_flag.status.keycode:set(get(bind).Name)
+			checkKeyCode(get(bind), "IgnoreConfig/UseConfig:false")
+		end
+	end
+	if _flag.preregistered and _flag.preregisteredValue and typeof(_flag.preregisteredValue) == "table" then
+		if _flag.preregisteredValue.boolean and typeof(_flag.preregisteredValue.boolean) == "boolean" then
+			_flag.status.boolean:set(_flag.preregisteredValue.boolean)
+		end
+		if get(linkKeybind) then
+			if not get(isMobile.boolean) then
+				if _flag.preregisteredValue.keycode and typeof(_flag.preregisteredValue.keycode) == "string" then
+					local success, result = pcall(function()
+						return Enum.KeyCode[_flag.preregisteredValue.keycode]
+					end)
+					if success then
+						checkKeyCode(result, "Configuration1")
+					end
+				end
+			else
+				if _flag.preregisteredValue.coordinate and typeof(_flag.preregisteredValue.coordinate) == "table" and _flag.preregisteredValue.coordinate.X and _flag.preregisteredValue.coordinate.Y then
+					if typeof(_flag.preregisteredValue.coordinate.X) == "number" and typeof(_flag.preregisteredValue.coordinate.Y) == "number" then
+						mobileButton.Position = UDim2.fromOffset(_flag.preregisteredValue.coordinate.X + 30,_flag.preregisteredValue.coordinate.Y + 30 + get(absoluteOffset))
+						hasPlaced:set(true)
+						_flag.status.coordinate:set(_flag.preregisteredValue.coordinate)
+					end
+				end
+			end
 		end
 	end
 
@@ -510,6 +555,12 @@ return function(property)
 	end
 	function returnFunctions:Disable()
 		isEnabled:set(false)
+	end
+	function returnFunctions:Visible()
+		visible:set(true)
+	end
+	function returnFunctions:Invisible()
+		visible:set(false)
 	end
 	return returnFunctions
 end

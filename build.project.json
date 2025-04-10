@@ -6,6 +6,9 @@
         "ReplicatedStorage":{
             "darius":{
                 "$path":"src/darius"
+            },
+            "darius.story":{
+                "$path":"src/darius.story.luau"
             }
         },
         "StarterGui":{
