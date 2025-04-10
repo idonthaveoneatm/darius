@@ -276,6 +276,10 @@ function load(config)
 end
 
 function funcs.set(uid)
+    if not uid then
+        funcs.currentConfig = {}
+        return
+    end
     local config = funcs.find(uid)
     if not config then
         return
@@ -316,6 +320,7 @@ function funcs.delete(uid)
         end
         table.remove(configs, index)
     end
+    funcs.set(nil)
 end
 function funcs.export()
     return HttpService:JSONEncode(funcs.currentConfig)

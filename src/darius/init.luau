@@ -643,6 +643,11 @@ function darius:Window(windowProperty)
 				Callback = function(uid)
 					selectedConfig = uid
 					local config = flagCreator.find(uid)
+					if not config then
+						_delete:Enable()
+						_save:Enable()
+						return
+					end
 					if config.lock and _delete then
 						_delete:Disable()
 						_save:Disable()

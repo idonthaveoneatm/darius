@@ -40,12 +40,12 @@ return function(target)
             HideBind = Enum.KeyCode.T,
             UseConfig = true,
             Workspace = "testing",
-            IsMobile = true,
+            IsMobile = false,
             noOffset = true,
             Parent = target,
             Configuration = {
                 Name = "Configuration",
-                --Lock = true,
+                Lock = true,
                 FlagValues = {
                     textbox = "hey",
                     textbox_n = "123",
