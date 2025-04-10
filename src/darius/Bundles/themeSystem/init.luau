@@ -9,7 +9,7 @@ local observe = fusion.Observer
 
 local get = require(script.Parent.Parent.utilities.get)
 local animate = require(script.Parent.Parent.utilities.animate)
-local _warn = require(script.Parent.Parent.components.warn)
+local _warn = warn
 local randomString = require(script.Parent.Parent.utilities.randomString)
 local customFunctions = require(script.Parent.Parent.utilities.customFunctions)
 local functionsOnChange = {}

@@ -612,70 +612,70 @@ return ag end)()end,[61]=function()local aa,ab,ac=a(61)local ad return(function(
 utilities.customFunctions)local af,ag=ae.cloneref,{}ag=setmetatable(ag,{__index=function(ah,ai)return af(game:
 GetService(ai))end})return ag end)()end,[62]=function()local aa,ab,ac=a(62)local ad return(function(...)local ae,af={},
 ac(ab.Parent.services)local ag,ah=af.HttpService,ac(ab.Parent)local ai,aj=ah.Fusion,ac(ab.default)local ak,al,am,an,ao,
-ap,b,c,d=ai.Value,ai.Observer,ac(ab.Parent.Parent.utilities.get),ac(ab.Parent.Parent.utilities.animate),ac(ab.Parent.
-Parent.components.warn),ac(ab.Parent.Parent.utilities.randomString),ac(ab.Parent.Parent.utilities.customFunctions),{},{}
-local m,n,o=ak{},ak{},''al(m):onChange(function()task.wait()for p,q in ipairs(c)do task.spawn(q)end end)local p,q,r={},{
-},{}table.foreach(aj,function(s)table.insert(r,s)end)ae.path=''function ae.find(s)for t,u in p do if u.uid==s then
-return true,u end end return false end function ae.create(s,t,u,v,w)v=v or false if u=='original'and v then return end
-for x,y in r do if t[y]==nil then t[y]=aj[y]end if typeof(t[y])~='Color3'then ao(y.." isn't type Color3")end end for z,A
-in t do if not table.find(r,z)then ao('Incorrect value removed "'..tostring(z)..'"')t[z]=nil end end if w and v then
-table.insert(q,u)end if w and not v then for B,C in q do local D={ae.find(C)}if D[1]and D[2].name==s then return C end
-end end u=u or ap(5)table.insert(p,{name=s,uid=u,fromSet=w or false,palette=t})local B={}B.name=s B.uid=u B.fromSet=w B.
-palette={}for C,D in t do B.palette[C]=D:ToHex()end b.writefile(`{ae.path}/{u}.json`,ag:JSONEncode(B))task.spawn(
-function()for E,F in d do task.spawn(F)end end)return u end function ae.delete(s)local t={ae.find(s)}if not t[1]then
-return false,'no theme found'end local u=table.find(p,t[2])ae.set(o)table.remove(p,u)b.delfile(`{ae.path}/{t[2].uid}.json`
-)end function ae.edit(s,t)local u=am(m)u[s]=t m:set(u)end function ae.editTheme(s:string,t:string,u:any)local v={ae.
-find(s)}if not v[1]then return false end local w=v[2]w[t]=u local A={}A.name=w.name A.uid=s A.fromSet=w.fromSet A.
-palette={}for B,C in w.palette do A.palette[B]=C:ToHex()end b.writefile(`{ae.path}/{s}.json`,ag:JSONEncode(A))return
-true end function ae.set(s)local t,u,v={ae.find(s)}if t[1]then u,v=t[2],t[2].palette else return false,'no theme found'
-end local w={}table.foreach(v,function(A,B)w[A]=B end)m:set(w)n:set(u)return true,'successfully set new theme'end
-function ae.export()local s,t=am(n),{}t.name=s.name t.uid=s.uid t.fromSet=s.fromSet t.palette={}for u,v in s.palette do
-t.palette[u]=v:ToHex()end return ag:JSONEncode(t)end function ae.save(s)local t={ae.find(s)}if t[1]then local u,v=t[2],{
-}v.name=u.name v.uid=u.uid v.fromSet=u.fromSet v.palette={}for w,A in u.palette do v.palette[w]=A:ToHex()end u.palette=
-am(m)b.writefile(`{ae.path}/{s}.json`,ag:JSONEncode(v))ae.set(s)return true else return false end end function ae.get(s)
-local t=am(m)if t[s]then return t[s]else error(s.." isn't a theme element")end end for s,t in r do ae[t]=an(function()
-return am(m)[t]end,40,1)end function ae.init()o=ae.create('darius',aj,'original')ae.set(o)for u,v in b.listfiles(ae.path
-)do local w=ag:JSONDecode(b.readfile(v))table.foreach(w.palette,function(A,B)local C=Color3.fromHex(`#{B}`)w.palette[A]=
-C end)ae.create(w.name,w.palette,w.uid,true,w.fromSet)end end function ae.onChange(u)table.insert(c,u)end function ae.
-onCreate(u)table.insert(d,u)end function ae.getTheme()return am(n)end function ae.getThemes()return p end function ae.
-getColors()return am(m)end return ae end)()end,[63]=function()local aa,ab,ac=a(63)local ad return(function(...)return{
-background=Color3.fromHex'#2C2F33',background2=Color3.fromHex'#222427',text=Color3.fromHex'#DCE1E5',text2=Color3.fromHex
-'#737C8A',selectedTab=Color3.fromHex'#1A1A1B',scrollBar=Color3.fromHex'#DCE1E5',colorpickerBar=Color3.fromHex'#DCE1E5',
-notificationButton=Color3.fromHex'#222427',mobileButtonBackground=Color3.fromHex'#DCE1E5',mobileButtonText=Color3.
-fromHex'#2C2F33',mobileButtonImage=Color3.fromHex'#2C2F33',disabledBackground=Color3.fromHex'#2A2C31',disabledText=
-Color3.fromHex'#D6DCE0',toggled=Color3.fromHex'#DCE1E5',red=Color3.fromRGB(255,105,97),orange=Color3.fromHex'#ff9b61'}
-end)()end,[65]=function()local aa,ab,ac=a(65)local ad return(function(...)local ae=ab.Parent.Parent return function(af)
-local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,b,c=ak.New,ak.
-Children,ak.Value,ak.Observer,ak.OnEvent,ak.Computed,ac(ae.utilities)local d,m,n,o,p=c.get,c.animate,c.typecheck,c.
-customFont,ac(ae.simpleElements)local q,r,s,t=p.UIPadding,p.UICorner,n(af,{Name='',DisabledText='',IsEnabled=false,
-Visible=false,Callback=function()end},{af.DisabledText and''or'DisabledText',af.IsEnabled and''or'IsEnabled',af.Visible
-and''or'Visible'})assert(s,table.concat(t,'\n'))local u,v,w,A,B,C,D,E,F=ah.find'selectedTab',ah.find'searchText',ah.add(
-af),af.Parent,af.Name,af.Visible or an(true),af.IsEnabled or an(true),af.DisabledText or an'Component Disabled',af.
-Callback local G=an(d(u.string)==d(w.tab).uid)ao(u.string):onChange(function()G:set(d(u.string)==d(w.tab).uid)end)local
-H=m(function()return d(G)and 0 or 1 end,40,1)al'TextButton'{Interactable=b(function()if not d(D)then return false end
-return d(G)end),Visible=b(function()if d(v.string)~=''and not string.find(d(B):lower(),d(v.string):lower())or not d(C)
-then return false end return true end),Parent=A,Size=UDim2.new(1,0,0,36),BackgroundColor3=ai.background2,
-BackgroundTransparency=H,[ap'Activated']=function()if not d(D)then return end task.spawn(d(F))end,[am]={r(6),al'Frame'{
-ZIndex=2,Visible=b(function()if not d(D)then return true end return false end),BackgroundTransparency=m(function()return
-d(G)and 0.2 or 1 end,40,1),BackgroundColor3=ai.disabledBackground,Size=UDim2.fromScale(1,1),[am]={r(6),al'ImageLabel'{
-Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image
-=aj.lock,ImageColor3=ai.disabledText,ImageTransparency=H},al'TextLabel'{FontFace=o('Montserrat',Enum.FontWeight.Bold),
-BackgroundTransparency=1,Size=UDim2.new(1,-24,0,18),TextColor3=ai.disabledText,TextTransparency=H,TextScaled=true,
-AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,29,0.5,0),Text=E,TextXAlignment=Enum.TextXAlignment.Left,RichText=
-true,[am]={q(0,5)}}}},al'Frame'{Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[am]={q(0,8),al'TextLabel'{FontFace=
-o('Montserrat',Enum.FontWeight.Bold),Size=UDim2.new(1,-39,0,18),BackgroundTransparency=1,TextColor3=ai.text,TextScaled=
-true,AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,0,0.5,0),Text=B,TextTransparency=H,TextXAlignment=Enum.
-TextXAlignment.Left,RichText=true},al'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=
-UDim2.new(1,0,0.5,0),BackgroundTransparency=1,Image=aj.fingerprint,ImageColor3=ai.text2,ImageTransparency=H}}}}}local I=
-{}function I.SetName(J,K)local L,M=n({SetName=K},{SetName=''})assert(L,table.concat(M,'\n'))B:set(K)end function I.
-SetCallback(J,K)local L,M=n({SetCallback=K},{SetCallback=function()end})assert(L,table.concat(M,'\n'))F:set(K)end
-function I.Fire(J)task.spawn(d(F))end function I.Enable(J)D:set(true)end function I.Disable(J)D:set(false)end function I
-.Visible(J)C:set(true)end function I.Invisible(J)C:set(false)end return I end end)()end,[66]=function()local aa,ab,ac=a(
-66)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag
-.data,ag.themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,b,c=ak.New,ak.Children,ak.Value,ak.Observer,ak.OnEvent,ak.
-Computed,ac(ae.utilities)local d,m,n,o,p=c.get,c.animate,c.typecheck,c.customFont,ac(ae.simpleElements)local q,r,s,t,u,v
-,w,A,B,C,D=p.UIListLayout,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,p.UIPadding,
-p.UICorner,af.Parent,af.tab,an(0),an(true)local E=al'Frame'{Visible=D,Parent=A,Size=UDim2.new(1,0,0,36),
+ap,b,c,d=ai.Value,ai.Observer,ac(ab.Parent.Parent.utilities.get),ac(ab.Parent.Parent.utilities.animate),warn,ac(ab.
+Parent.Parent.utilities.randomString),ac(ab.Parent.Parent.utilities.customFunctions),{},{}local m,n,o=ak{},ak{},''al(m):
+onChange(function()task.wait()for p,q in ipairs(c)do task.spawn(q)end end)local p,q,r={},{},{}table.foreach(aj,function(
+s)table.insert(r,s)end)ae.path=''function ae.find(s)for t,u in p do if u.uid==s then return true,u end end return false
+end function ae.create(s,t,u,v,w)v=v or false if u=='original'and v then return end for x,y in r do if t[y]==nil then t[
+y]=aj[y]end if typeof(t[y])~='Color3'then ao(y.." isn't type Color3")end end for z,A in t do if not table.find(r,z)then
+ao('Incorrect value removed "'..tostring(z)..'"')t[z]=nil end end if w and v then table.insert(q,u)end if w and not v
+then for B,C in q do local D={ae.find(C)}if D[1]and D[2].name==s then return C end end end u=u or ap(5)table.insert(p,{
+name=s,uid=u,fromSet=w or false,palette=t})local B={}B.name=s B.uid=u B.fromSet=w B.palette={}for C,D in t do B.palette[
+C]=D:ToHex()end b.writefile(`{ae.path}/{u}.json`,ag:JSONEncode(B))task.spawn(function()for E,F in d do task.spawn(F)end
+end)return u end function ae.delete(s)local t={ae.find(s)}if not t[1]then return false,'no theme found'end local u=table
+.find(p,t[2])ae.set(o)table.remove(p,u)b.delfile(`{ae.path}/{t[2].uid}.json`)end function ae.edit(s,t)local u=am(m)u[s]=
+t m:set(u)end function ae.editTheme(s:string,t:string,u:any)local v={ae.find(s)}if not v[1]then return false end local w
+=v[2]w[t]=u local A={}A.name=w.name A.uid=s A.fromSet=w.fromSet A.palette={}for B,C in w.palette do A.palette[B]=C:
+ToHex()end b.writefile(`{ae.path}/{s}.json`,ag:JSONEncode(A))return true end function ae.set(s)local t,u,v={ae.find(s)}
+if t[1]then u,v=t[2],t[2].palette else return false,'no theme found'end local w={}table.foreach(v,function(A,B)w[A]=B
+end)m:set(w)n:set(u)return true,'successfully set new theme'end function ae.export()local s,t=am(n),{}t.name=s.name t.
+uid=s.uid t.fromSet=s.fromSet t.palette={}for u,v in s.palette do t.palette[u]=v:ToHex()end return ag:JSONEncode(t)end
+function ae.save(s)local t={ae.find(s)}if t[1]then local u,v=t[2],{}v.name=u.name v.uid=u.uid v.fromSet=u.fromSet v.
+palette={}for w,A in u.palette do v.palette[w]=A:ToHex()end u.palette=am(m)b.writefile(`{ae.path}/{s}.json`,ag:
+JSONEncode(v))ae.set(s)return true else return false end end function ae.get(s)local t=am(m)if t[s]then return t[s]else
+error(s.." isn't a theme element")end end for s,t in r do ae[t]=an(function()return am(m)[t]end,40,1)end function ae.
+init()o=ae.create('darius',aj,'original')ae.set(o)for u,v in b.listfiles(ae.path)do local w=ag:JSONDecode(b.readfile(v))
+table.foreach(w.palette,function(A,B)local C=Color3.fromHex(`#{B}`)w.palette[A]=C end)ae.create(w.name,w.palette,w.uid,
+true,w.fromSet)end end function ae.onChange(u)table.insert(c,u)end function ae.onCreate(u)table.insert(d,u)end function
+ae.getTheme()return am(n)end function ae.getThemes()return p end function ae.getColors()return am(m)end return ae end)()
+end,[63]=function()local aa,ab,ac=a(63)local ad return(function(...)return{background=Color3.fromHex'#2C2F33',
+background2=Color3.fromHex'#222427',text=Color3.fromHex'#DCE1E5',text2=Color3.fromHex'#737C8A',selectedTab=Color3.
+fromHex'#1A1A1B',scrollBar=Color3.fromHex'#DCE1E5',colorpickerBar=Color3.fromHex'#DCE1E5',notificationButton=Color3.
+fromHex'#222427',mobileButtonBackground=Color3.fromHex'#DCE1E5',mobileButtonText=Color3.fromHex'#2C2F33',
+mobileButtonImage=Color3.fromHex'#2C2F33',disabledBackground=Color3.fromHex'#2A2C31',disabledText=Color3.fromHex
+'#D6DCE0',toggled=Color3.fromHex'#DCE1E5',red=Color3.fromRGB(255,105,97),orange=Color3.fromHex'#ff9b61'}end)()end,[65]=
+function()local aa,ab,ac=a(65)local ad return(function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.
+Bundles)local ah,ai,aj,ak=ag.data,ag.themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,b,c=ak.New,ak.Children,ak.Value
+,ak.Observer,ak.OnEvent,ak.Computed,ac(ae.utilities)local d,m,n,o,p=c.get,c.animate,c.typecheck,c.customFont,ac(ae.
+simpleElements)local q,r,s,t=p.UIPadding,p.UICorner,n(af,{Name='',DisabledText='',IsEnabled=false,Visible=false,Callback
+=function()end},{af.DisabledText and''or'DisabledText',af.IsEnabled and''or'IsEnabled',af.Visible and''or'Visible'})
+assert(s,table.concat(t,'\n'))local u,v,w,A,B,C,D,E,F=ah.find'selectedTab',ah.find'searchText',ah.add(af),af.Parent,af.
+Name,af.Visible or an(true),af.IsEnabled or an(true),af.DisabledText or an'Component Disabled',af.Callback local G=an(d(
+u.string)==d(w.tab).uid)ao(u.string):onChange(function()G:set(d(u.string)==d(w.tab).uid)end)local H=m(function()return
+d(G)and 0 or 1 end,40,1)al'TextButton'{Interactable=b(function()if not d(D)then return false end return d(G)end),Visible
+=b(function()if d(v.string)~=''and not string.find(d(B):lower(),d(v.string):lower())or not d(C)then return false end
+return true end),Parent=A,Size=UDim2.new(1,0,0,36),BackgroundColor3=ai.background2,BackgroundTransparency=H,[ap
+'Activated']=function()if not d(D)then return end task.spawn(d(F))end,[am]={r(6),al'Frame'{ZIndex=2,Visible=b(function()
+if not d(D)then return true end return false end),BackgroundTransparency=m(function()return d(G)and 0.2 or 1 end,40,1),
+BackgroundColor3=ai.disabledBackground,Size=UDim2.fromScale(1,1),[am]={r(6),al'ImageLabel'{Size=UDim2.fromOffset(24,24),
+AnchorPoint=Vector2.new(0,0.5),Position=UDim2.new(0,5,0.5,0),BackgroundTransparency=1,Image=aj.lock,ImageColor3=ai.
+disabledText,ImageTransparency=H},al'TextLabel'{FontFace=o('Montserrat',Enum.FontWeight.Bold),BackgroundTransparency=1,
+Size=UDim2.new(1,-24,0,18),TextColor3=ai.disabledText,TextTransparency=H,TextScaled=true,AnchorPoint=Vector2.new(0,0.5),
+Position=UDim2.new(0,29,0.5,0),Text=E,TextXAlignment=Enum.TextXAlignment.Left,RichText=true,[am]={q(0,5)}}}},al'Frame'{
+Size=UDim2.fromScale(1,1),BackgroundTransparency=1,[am]={q(0,8),al'TextLabel'{FontFace=o('Montserrat',Enum.FontWeight.
+Bold),Size=UDim2.new(1,-39,0,18),BackgroundTransparency=1,TextColor3=ai.text,TextScaled=true,AnchorPoint=Vector2.new(0,
+0.5),Position=UDim2.new(0,0,0.5,0),Text=B,TextTransparency=H,TextXAlignment=Enum.TextXAlignment.Left,RichText=true},al
+'ImageLabel'{Size=UDim2.fromOffset(24,24),AnchorPoint=Vector2.new(1,0.5),Position=UDim2.new(1,0,0.5,0),
+BackgroundTransparency=1,Image=aj.fingerprint,ImageColor3=ai.text2,ImageTransparency=H}}}}}local I={}function I.SetName(
+J,K)local L,M=n({SetName=K},{SetName=''})assert(L,table.concat(M,'\n'))B:set(K)end function I.SetCallback(J,K)local L,M=
+n({SetCallback=K},{SetCallback=function()end})assert(L,table.concat(M,'\n'))F:set(K)end function I.Fire(J)task.spawn(d(F
+))end function I.Enable(J)D:set(true)end function I.Disable(J)D:set(false)end function I.Visible(J)C:set(true)end
+function I.Invisible(J)C:set(false)end return I end end)()end,[66]=function()local aa,ab,ac=a(66)local ad return(
+function(...)local ae=ab.Parent.Parent return function(af)local ag=ac(ae.Bundles)local ah,ai,aj,ak=ag.data,ag.
+themeSystem,ag.icons,ag.Fusion local al,am,an,ao,ap,b,c=ak.New,ak.Children,ak.Value,ak.Observer,ak.OnEvent,ak.Computed,
+ac(ae.utilities)local d,m,n,o,p=c.get,c.animate,c.typecheck,c.customFont,ac(ae.simpleElements)local q,r,s,t,u,v,w,A,B,C,
+D=p.UIListLayout,Enum.SortOrder,Enum.FillDirection,Enum.HorizontalAlignment,Enum.VerticalAlignment,p.UIPadding,p.
+UICorner,af.Parent,af.tab,an(0),an(true)local E=al'Frame'{Visible=D,Parent=A,Size=UDim2.new(1,0,0,36),
 BackgroundTransparency=1,[am]={q(r.LayoutOrder,s.Horizontal,t.Left,u.Center,UDim.new(0,3))}}local F,G=an(E.AbsoluteSize)
 ,{}function G.Button(H,I)local J,K=n(I,{Name='',DisabledText='',IsEnabled=false,Visible=false,Callback=function()end},{I
 .IsEnabled and''or'IsEnabled',I.Visible and''or'Visible',I.DisabledText and''or'DisabledText'})assert(J,table.concat(K,
@@ -1556,29 +1556,29 @@ ab.Parent.Parent.Bundles.Fusion)local af=ae.Computed return function(ag,ah)retur
 =function()local aa,ab,ac=a(101)local ad return(function(...)return function(ae:table,af:table,ag:table?):any ag=ag or{}
 local ah,ai=true,{}for aj,ak in af do if(ae[aj]==nil or typeof(ae[aj])~=typeof(ak))and not table.find(ag,aj)then ah=
 false table.insert(ai,`{aj} expected: {typeof(ak)} got: {typeof(ae[aj])}`)end end return ah,ai end end)()end},{{1,2,{
-'Darius'},{{90,2,{'utilities'},{{92,2,{'connections'}},{98,2,{'randomString'}},{99,2,{'references'}},{93,2,{'customFont'
-}},{96,2,{'get'}},{94,2,{'customFunctions'}},{97,2,{'getStringBounds'}},{95,2,{'drag'}},{100,2,{'tween'}},{101,2,{
-'typecheck'}},{91,2,{'animate'}}}},{2,2,{'Bundles'},{{58,2,{'flags'}},{3,2,{'Fusion'},{{4,1,{'Animation'},{{12,2,{
-'springCoefficients'}},{9,2,{'getTweenRatio'}},{8,2,{'TweenScheduler'}},{13,2,{'unpackType'}},{10,2,{'lerpType'}},{11,2,
-{'packType'}},{7,2,{'Tween'}},{5,2,{'Spring'}},{6,2,{'SpringScheduler'}}}},{39,2,{'PubTypes'}},{49,1,{'Utility'},{{51,2,
-{'cleanup'}},{54,2,{'needsDestruction'}},{52,2,{'doNothing'}},{50,2,{'None'}},{53,2,{'isSimilar'}},{55,2,{'restrictRead'
-}},{56,2,{'xtypeof'}}}},{22,1,{'Instances'},{{29,2,{'Out'}},{32,2,{'defaultProps'}},{25,2,{'Hydrate'}},{30,2,{'Ref'}},{
-24,2,{'Cleanup'}},{23,2,{'Children'}},{26,2,{'New'}},{27,2,{'OnChange'}},{28,2,{'OnEvent'}},{31,2,{'applyInstanceProps'}
-}}},{48,2,{'Types'}},{16,1,{'Dependencies'},{{18,2,{'initDependency'}},{17,2,{'captureDependencies'}},{21,2,{
-'useDependency'}},{20,2,{'updateAll'}},{19,2,{'sharedState'}}}},{33,1,{'Logging'},{{35,2,{'logErrorNonFatal'}},{36,2,{
-'logWarn'}},{38,2,{'parseError'}},{34,2,{'logError'}},{37,2,{'messages'}}}},{14,1,{'Colour'},{{15,2,{'Oklab'}}}},{40,1,{
-'State'},{{47,2,{'unwrap'}},{43,2,{'ForPairs'}},{45,2,{'Observer'}},{41,2,{'Computed'}},{44,2,{'ForValues'}},{46,2,{
-'Value'}},{42,2,{'ForKeys'}}}}}},{60,2,{'lucide'}},{57,2,{'data'}},{61,2,{'services'}},{59,2,{'icons'}},{62,2,{
-'themeSystem'},{{63,2,{'default'}}}}}},{82,1,{'layouts'},{{83,2,{'main'}}}},{84,2,{'simpleElements'},{{86,2,{'UICorner'}
-},{88,2,{'UIPadding'}},{85,2,{'UIAspectRatioConstraint'}},{87,2,{'UIListLayout'}},{89,2,{'UITextSizeConstraint'}}}},{64,
-1,{'components'},{{74,2,{'notification'}},{77,2,{'tabButton'}},{67,2,{'colorpicker'}},{78,2,{'tabFrame'}},{70,2,{
-'keybind'}},{71,2,{'keybindList'}},{73,2,{'module'}},{79,2,{'textbox'}},{66,2,{'buttonGroup'}},{80,2,{'toggle'}},{76,2,{
-'slider'}},{81,2,{'warn'}},{68,2,{'divider'}},{65,2,{'button'}},{75,2,{'paragraph'}},{72,2,{'label'}},{69,2,{'dropdown'}
-}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall,
-tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.remove,aj.freeze or function(aw)return aw end,al.wrap
-,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local aD,aE=ap(ao,'@lune/task')if aD and aE then af=aE end
-end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or function(aE,...)az(aE)(...)end,{[1]='Folder',[2]=
-'ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{},{}local aN,aO={GetFullName={{},
+'Darius'},{{90,2,{'utilities'},{{99,2,{'references'}},{98,2,{'randomString'}},{101,2,{'typecheck'}},{94,2,{
+'customFunctions'}},{93,2,{'customFont'}},{97,2,{'getStringBounds'}},{91,2,{'animate'}},{92,2,{'connections'}},{100,2,{
+'tween'}},{95,2,{'drag'}},{96,2,{'get'}}}},{84,2,{'simpleElements'},{{89,2,{'UITextSizeConstraint'}},{87,2,{
+'UIListLayout'}},{85,2,{'UIAspectRatioConstraint'}},{86,2,{'UICorner'}},{88,2,{'UIPadding'}}}},{64,1,{'components'},{{67
+,2,{'colorpicker'}},{72,2,{'label'}},{66,2,{'buttonGroup'}},{69,2,{'dropdown'}},{70,2,{'keybind'}},{68,2,{'divider'}},{
+71,2,{'keybindList'}},{80,2,{'toggle'}},{78,2,{'tabFrame'}},{77,2,{'tabButton'}},{73,2,{'module'}},{81,2,{'warn'}},{79,2
+,{'textbox'}},{65,2,{'button'}},{76,2,{'slider'}},{75,2,{'paragraph'}},{74,2,{'notification'}}}},{82,1,{'layouts'},{{83,
+2,{'main'}}}},{2,2,{'Bundles'},{{3,2,{'Fusion'},{{16,1,{'Dependencies'},{{17,2,{'captureDependencies'}},{19,2,{
+'sharedState'}},{21,2,{'useDependency'}},{20,2,{'updateAll'}},{18,2,{'initDependency'}}}},{48,2,{'Types'}},{39,2,{
+'PubTypes'}},{40,1,{'State'},{{41,2,{'Computed'}},{47,2,{'unwrap'}},{45,2,{'Observer'}},{44,2,{'ForValues'}},{46,2,{
+'Value'}},{42,2,{'ForKeys'}},{43,2,{'ForPairs'}}}},{22,1,{'Instances'},{{32,2,{'defaultProps'}},{25,2,{'Hydrate'}},{23,2
+,{'Children'}},{24,2,{'Cleanup'}},{29,2,{'Out'}},{31,2,{'applyInstanceProps'}},{28,2,{'OnEvent'}},{26,2,{'New'}},{30,2,{
+'Ref'}},{27,2,{'OnChange'}}}},{49,1,{'Utility'},{{56,2,{'xtypeof'}},{52,2,{'doNothing'}},{51,2,{'cleanup'}},{53,2,{
+'isSimilar'}},{54,2,{'needsDestruction'}},{55,2,{'restrictRead'}},{50,2,{'None'}}}},{33,1,{'Logging'},{{36,2,{'logWarn'}
+},{38,2,{'parseError'}},{34,2,{'logError'}},{37,2,{'messages'}},{35,2,{'logErrorNonFatal'}}}},{14,1,{'Colour'},{{15,2,{
+'Oklab'}}}},{4,1,{'Animation'},{{10,2,{'lerpType'}},{8,2,{'TweenScheduler'}},{13,2,{'unpackType'}},{5,2,{'Spring'}},{12,
+2,{'springCoefficients'}},{6,2,{'SpringScheduler'}},{7,2,{'Tween'}},{9,2,{'getTweenRatio'}},{11,2,{'packType'}}}}}},{57,
+2,{'data'}},{62,2,{'themeSystem'},{{63,2,{'default'}}}},{61,2,{'services'}},{59,2,{'icons'}},{60,2,{'lucide'}},{58,2,{
+'flags'}}}}}}},'0.4.1','WaxRuntime',string,task,setmetatable,error,next,table,unpack,coroutine,script,type,require,pcall
+,tostring,tonumber,_VERSION local aw,ax,ay,az,aA,aB,aC=aj.insert,aj.remove,aj.freeze or function(aw)return aw end,al.
+wrap,ae.sub,ae.match,ae.gmatch if au and aA(au,1,4)=='Lune'then local aD,aE=ap(ao,'@lune/task')if aD and aE then af=aE
+end end local aD=af and af.defer local aE,aF,aG,aH,aI,aJ,aK,aL,aM=aD or function(aE,...)az(aE)(...)end,{[1]='Folder',[2]
+='ModuleScript',[3]='Script',[4]='LocalScript',[5]='StringValue'},{},{},{},{},{},{},{}local aN,aO={GetFullName={{},
 function(aN)local aO,aP=aN.Name,aN.Parent while aP do aO=aP.Name..'.'..aO aP=aP.Parent end return aO end},GetChildren={{
 },function(aN)local aO={}for aP in ai,aM[aN]do aw(aO,aP)end return aO end},GetDescendants={{},function(aN)local aO={}for
 aP in ai,aM[aN]do aw(aO,aP)for aQ,aR in ai,aP:GetDescendants()do aw(aO,aR)end end return aO end},FindFirstChild={{
